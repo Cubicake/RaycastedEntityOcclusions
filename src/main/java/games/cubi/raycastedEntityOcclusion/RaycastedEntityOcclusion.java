@@ -24,6 +24,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     private CommandsManager commands;
     private boolean packetEventsPresent = false;
     private PacketProcessor packetProcessor = null;
+    private UpdateChecker updateChecker;
 
     public int tick = 0;
 
@@ -44,8 +45,9 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     public void onEnable() {
         cfg = new ConfigManager(this);
         snapMgr = new ChunkSnapshotManager(this);
-        tracker = new MovementTracker(this);
+        tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
+        updateChecker = new UpdateChecker(this);
         getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg), this);
         //Brigadier API
         LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();

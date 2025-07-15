@@ -7,13 +7,10 @@ import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 public class RaycastUtil {
+    private static final Particle.DustOptions DUST_RED = new Particle.DustOptions(org.bukkit.Color.RED, 1f);
+    private static final Particle.DustOptions DUST_GREEN = new Particle.DustOptions(org.bukkit.Color.GREEN, 1f);;
+
     public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
-        Particle.DustOptions dustRed = null;
-        Particle.DustOptions dustGreen = null;
-        if (debug) {
-            dustRed = new Particle.DustOptions(org.bukkit.Color.RED, 1f);
-            dustGreen = new Particle.DustOptions(org.bukkit.Color.GREEN, 1f);
-        }
         double total = start.distance(end);
         double traveled = 0;
         Location curr = start.clone();
@@ -28,12 +25,12 @@ public class RaycastUtil {
             if (mat.isOccluding()) {
                 maxOccluding--;
                 if (debug) {
-                    start.getWorld().spawnParticle(Particle.DUST, curr, 1, dustRed);
+                    start.getWorld().spawnParticle(Particle.DUST, curr, 1, DUST_RED);
                 }
                 if (maxOccluding < 1) return false;
             }
             else if (debug) {
-                start.getWorld().spawnParticle(Particle.DUST, curr, 1, dustGreen);
+                start.getWorld().spawnParticle(Particle.DUST, curr, 1, DUST_GREEN);
             }
         }
         return true;

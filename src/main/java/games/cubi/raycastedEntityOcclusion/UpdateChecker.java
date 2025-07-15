@@ -4,9 +4,9 @@ package games.cubi.raycastedEntityOcclusion;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.kyori.adventure.audience.Audience;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 
 
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 
 public class UpdateChecker {
@@ -22,6 +23,7 @@ public class UpdateChecker {
 
     public UpdateChecker(RaycastedEntityOcclusion plugin) {
         this.plugin = plugin;
+        plugin.getLogger().info("Checking for updates...");
         checkForUpdates(plugin, Bukkit.getConsoleSender());
     }
 
@@ -55,9 +57,12 @@ public class UpdateChecker {
     }
 
     public static void checkForUpdates(RaycastedEntityOcclusion plugin, CommandSender audience) {
+        //plugin.getLogger().info("Fetching latest version from Modrinth...");
         fetchFeaturedVersion(plugin).thenAccept(version -> {
+            //plugin.getLogger().info("Latest version fetched: " + version);
             // This runs synchronously when the version is fetched
             Bukkit.getScheduler().runTask(plugin, () -> {
+                //plugin.getLogger().info("Checking if current version matches the latest version...");
                 if (plugin.getDescription().getVersion().equals(version)) {
                     audience.sendRichMessage("<green>You are using the latest version of Raycasted Entity Occlusions.");
                 } else {
