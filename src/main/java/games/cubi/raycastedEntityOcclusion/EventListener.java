@@ -1,5 +1,6 @@
 package games.cubi.raycastedEntityOcclusion;
 
+import games.cubi.raycastedEntityOcclusion.Engine.Engine;
 import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import org.bukkit.Bukkit;
@@ -10,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -29,14 +31,14 @@ public class EventListener implements Listener {
         this.manager = mgr;
         this.config = cfg;
         this.plugin = plugin;
-        //load packet processor after 2 ticks in a bukkit runnable to ensure the plugin is fully loaded
+        //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (config.packetEventsPresent) {
                 packetProcessor = plugin.getPacketProcessor();
             } else {
                 packetProcessor = null;
             }
-        }, 2L);
+        }, 1L);
     }
 
     // Snapshot events
@@ -77,10 +79,11 @@ public class EventListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         if (event.getPlayer().hasPermission("raycastedentityocclusions.updatecheck")) {
-            Player sender = event.getPlayer();
-            checkForUpdates(plugin, sender);
+            Player player = event.getPlayer();
+            checkForUpdates(plugin, player);
         }
+
     }
 }
