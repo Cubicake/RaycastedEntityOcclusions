@@ -5,14 +5,20 @@ import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedEntityOcclusion.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 
+import games.cubi.raycastedEntityOcclusion.Snapshot.EntitySnapshotManager;
+import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class Engine {
 
@@ -43,10 +49,30 @@ public class Engine {
             visible = v;
         }
     }
+    private static class PlayerInfo {
+        final Player player;
+        final Location location;
+        final Location predLoc;
 
-    public static void runEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedEntityOcclusion plugin) {
+        PlayerInfo(Player p, Location loc, Location pred) {
+            player = p;
+            location = loc;
+            predLoc = pred;
+        }
+    }
+
+    private static Consumer<ScheduledTask> raycastEntitiesAroundPlayer(Player player, Location eye, Location predEye){
+
+        return task -> { /* This is needed for it to return, idk why*/ };
+    }
+
+    Map<UUID, RayResult> results = new ConcurrentHashMap<>();
+
+    public static void runEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, EntitySnapshotManager entitySnapshotManager, RaycastedEntityOcclusion plugin) {
         // ----- PHASE 1: SYNC GATHER -----
-        List<RayJob> jobs = new ArrayList<>();
+        List<PlayerInfo> info = new ArrayList<>();
+        // TODO: Store players in EntitySnapshotManager and use that to avoid iterating through all players every tick
+        AsyncScheduler asyncScheduler = plugin.getServer().getAsyncScheduler();
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
             Location eye = p.getEyeLocation().clone();
@@ -55,12 +81,20 @@ public class Engine {
                 // getPredictedLocation returns null if insufficient data or too slow
                 predEye = tracker.getPredictedLocation(p);
             }
+            asyncScheduler.runNow(plugin, raycastEntitiesAroundPlayer(p, eye, predEye));
+        }
 
-            for (Entity e : p.getNearbyEntities(cfg.searchRadius, cfg.searchRadius, cfg.searchRadius)) {
+        // ----- PHASE 2: ASYNC RAYCASTS -----
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            List<RayResult> results = new ArrayList<>();
+
+
+
+            for (Entity e : entitySnapshotManager.getBukkitEntitiesNear(eye, cfg.searchRadius, cfg.searchRadius, cfg.searchRadius)) {
                 if (e == p) continue;
                 // Cull-players logic
                 if (e instanceof Player pl && (!cfg.cullPlayers || (cfg.onlyCullSneakingPlayers && !pl.isSneaking()))) {
-                    p.showEntity(plugin, e);
+                    //TODO: Add to result that player should be shown
                     continue;
                 }
 
@@ -77,11 +111,15 @@ public class Engine {
                     jobs.add(new RayJob(p, e, eye, predEye, target));
                 }
             }
-        }
 
-        // ----- PHASE 2: ASYNC RAYCASTS -----
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            List<RayResult> results = new ArrayList<>(jobs.size());
+
+
+
+
+
+
+
+
             for (RayJob job : jobs) {
                 // if the player is not in the same world as the target, skip
                 if (!job.player.getWorld().equals(job.target.getWorld())) {

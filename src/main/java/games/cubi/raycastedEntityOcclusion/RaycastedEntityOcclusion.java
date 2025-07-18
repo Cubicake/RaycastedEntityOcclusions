@@ -7,6 +7,7 @@ import games.cubi.raycastedEntityOcclusion.Packets.Registrar;
 import games.cubi.raycastedEntityOcclusion.Raycast.Engine;
 import games.cubi.raycastedEntityOcclusion.Raycast.MovementTracker;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedEntityOcclusion.Snapshot.EntitySnapshotManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -20,6 +21,7 @@ import games.cubi.raycastedEntityOcclusion.bStats.MetricsCollector;
 public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecutor {
     private ConfigManager cfg;
     private ChunkSnapshotManager snapMgr;
+    private EntitySnapshotManager entitySnapshotManager;
     private MovementTracker tracker;
     private CommandsManager commands;
     private boolean packetEventsPresent = false;
@@ -48,6 +50,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
         tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
         updateChecker = new UpdateChecker(this);
+        entitySnapshotManager = new EntitySnapshotManager();
         getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg), this);
         //Brigadier API
         LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();
@@ -73,7 +76,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
             @Override
             public void run() {
                 tick++;
-                Engine.runEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
+                Engine.runEngine(cfg, snapMgr, tracker, entitySnapshotManager, RaycastedEntityOcclusion.this);
                 Engine.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
             }
         }.runTaskTimer(this, 0L, 1L);
