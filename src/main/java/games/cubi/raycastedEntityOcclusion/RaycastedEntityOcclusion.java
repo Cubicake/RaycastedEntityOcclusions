@@ -2,9 +2,10 @@ package games.cubi.raycastedEntityOcclusion;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.raycastedEntityOcclusion.Engine.Engine;
 import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
 import games.cubi.raycastedEntityOcclusion.Packets.Registrar;
-import games.cubi.raycastedEntityOcclusion.Raycast.Engine;
+import games.cubi.raycastedEntityOcclusion.Raycast.EngineOld;
 import games.cubi.raycastedEntityOcclusion.Raycast.MovementTracker;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -22,6 +23,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     private ChunkSnapshotManager snapMgr;
     private MovementTracker tracker;
     private CommandsManager commands;
+    private Engine engine;
     private boolean packetEventsPresent = false;
     private PacketProcessor packetProcessor = null;
 
@@ -44,9 +46,11 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     public void onEnable() {
         cfg = new ConfigManager(this);
         snapMgr = new ChunkSnapshotManager(this);
-        tracker = new MovementTracker(this);
+        tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
-        getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg), this);
+        engine = new Engine(this, cfg);
+        new UpdateChecker(this);
+        getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg, engine), this);
         //Brigadier API
         LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();
 
@@ -71,8 +75,8 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
             @Override
             public void run() {
                 tick++;
-                Engine.runEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
-                Engine.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
+                EngineOld.runEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
+                EngineOld.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
             }
         }.runTaskTimer(this, 0L, 1L);
 

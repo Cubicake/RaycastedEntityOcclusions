@@ -26,11 +26,13 @@ public class EventListener implements Listener {
     private final ConfigManager config;
     private PacketProcessor packetProcessor;
     private final RaycastedEntityOcclusion plugin;
+    private final Engine engine;
 
-    public EventListener(RaycastedEntityOcclusion plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
+    public EventListener(RaycastedEntityOcclusion plugin, ChunkSnapshotManager mgr, ConfigManager cfg, Engine engine) {
         this.manager = mgr;
         this.config = cfg;
         this.plugin = plugin;
+        this.engine = engine;
         //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (config.packetEventsPresent) {
@@ -80,10 +82,10 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (event.getPlayer().hasPermission("raycastedentityocclusions.updatecheck")) {
-            Player player = event.getPlayer();
+        Player player = event.getPlayer();
+        if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, player);
         }
-
+        engine.registerPlayer(player.getUniqueId());
     }
 }
