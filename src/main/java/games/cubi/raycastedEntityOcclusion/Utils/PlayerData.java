@@ -14,7 +14,7 @@ public class PlayerData {
     private final UUID PlayerUUID;
     private final boolean hasBypassPermission;
 
-    // UUID = Entity UUID, Boolean = if it is visible to the player
+    // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
     private ConcurrentHashMap<UUID, Boolean> entityVisibility = new ConcurrentHashMap<>();
 
     // Location, time in millis TODO: Is it necessary to store the time as a long? Do we even need a recheck interval at all?

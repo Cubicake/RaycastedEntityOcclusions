@@ -8,10 +8,11 @@ import io.papermc.paper.threadedregions.scheduler.EntityScheduler;
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -19,7 +20,7 @@ public class Engine {
     //TODO: Maybe store the data somewhere else? Could rework chunk storage to be general data storage
     public ConcurrentHashMap<UUID, PlayerData> playerDataMap = new ConcurrentHashMap<>();
     private AsyncScheduler asyncScheduler;
-    private GlobalRegionScheduler globalScheduler;
+    private GlobalRegionScheduler globalScheduler; //TODO: Note that the use of the global scheduler here probs isn't actually done in a folia compat way
 
     private final RaycastedEntityOcclusion plugin;
     private final ConfigManager config;
@@ -30,24 +31,17 @@ public class Engine {
         asyncScheduler = plugin.getServer().getAsyncScheduler();
         globalScheduler = plugin.getServer().getGlobalRegionScheduler();
 
-        globalScheduler.runAtFixedRate(plugin, collectSyncData(), 1, 1);
+        globalScheduler.runAtFixedRate(plugin, syncCollectDataFromBukkit(), 1, 1);
     }
 
     public void registerPlayer(UUID playerUUID, boolean bypass) {
         playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, bypass));
     }
 
-    private Consumer<ScheduledTask> collectSyncData() {
-        for (UUID playerUUID : playerDataMap.keySet()) {
-            PlayerData data = playerDataMap.get(playerUUID);
-            if (data.hasBypassPermission()) continue;
 
-        }
+    private Consumer<ScheduledTask> syncCollectDataFromBukkit() {
 
-        return task  -> {};
-    }
-
-    private Consumer<ScheduledTask> initiateSyncTasks() {
+        HashMap<UUID, HashMap<UUID, Location>> gatheredData = new HashMap<>();
 
         for (UUID playerUUID : playerDataMap.keySet()) {
             PlayerData data = playerDataMap.get(playerUUID);
@@ -57,11 +51,34 @@ public class Engine {
             Map<UUID, Boolean> entities = data.getEntityVisibilityMap();
             Map<BlockLocation, Long> tileEntities = data.getSeenTileEntitiesMap();
 
+            HashMap<UUID, Location> entitiesToCheck = new HashMap<>();
+
             data.incrementTicksSinceVisibleEntityRecheck();
             if (data.getTicksSinceVisibleEntityRecheck() >= config.recheckInterval) {
                 data.resetTicksSinceVisibleEntityRecheck();
+                for (UUID entityUUID : entities.keySet()) {
+                    entitiesToCheck.putIfAbsent(entityUUID, Bukkit.getEntity(entityUUID).getLocation());
+                }
             }
+            else {
+                for (Map.Entry<UUID, Boolean> entry : entities.entrySet()) {
+                    if (!entry.getValue()) {
+                        UUID uuid = entry.getKey();
+                        entitiesToCheck.putIfAbsent(uuid, Bukkit.getEntity(uuid).getLocation());
+                    }
+                }
+            }
+            entitiesToCheck.put(playerUUID, Bukkit.getPlayer(playerUUID).getLocation()); //used to pass in player location
+            gatheredData.put(playerUUID, entitiesToCheck);
         }
+
+        asyncScheduler.runNow(plugin, processData(gatheredData));
+
+        return task -> {};
+    }
+
+    private Consumer<ScheduledTask> processData(HashMap<UUID, HashMap<UUID, Location>> gatheredData) {
+
 
         return task -> {};
     }

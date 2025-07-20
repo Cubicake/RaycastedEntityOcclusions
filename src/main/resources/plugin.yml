@@ -11,7 +11,7 @@ permissions:
         description: Permission to use the RaycastedEntityOcclusions command
         default: op
     raycastedentityocclusions.bypass:
-        description: Permission to bypass all checks
+        description: Permission to bypass all checks. A restart is needed to apply this permission.
         default: false
     raycastedentityocclusions.updatecheck:
         description: Permission to check for plugin updates

@@ -86,6 +86,6 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, player);
         }
-        engine.registerPlayer(player.getUniqueId());
+        engine.registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
     }
 }

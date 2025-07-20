@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class BlockLocation {
@@ -41,5 +42,18 @@ public class BlockLocation {
     public Location toCentredLocation() {
         return new Location(Bukkit.getWorld(world), x + 0.5, y + 0.5, z + 0.5);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BlockLocation other)) return false;
+        return x == other.x && y == other.y && z == other.z && world.equals(other.world);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(world, x, y, z);
+    }
+
 
 }
