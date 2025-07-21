@@ -1,12 +1,69 @@
 package games.cubi.raycastedEntityOcclusion.Raycast;
 
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedEntityOcclusion.Utils.LocationPair;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 public class RaycastUtil {
+
+    public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
+
+        //These locations do not need to be cloned because .toLocation creates a new location object. We can mutate it freely
+        Location currentA = locationPair.first().toLocation();
+        Location currentB = locationPair.second().toLocation();
+
+        Particle.DustOptions dustRed   = null;
+        Particle.DustOptions dustGreen = null;
+        Particle.DustOptions dustBlue = null;
+        if (debug) {
+            dustRed = new Particle.DustOptions(Color.RED,   1f);
+            dustGreen = new Particle.DustOptions(Color.GREEN, 1f);
+            dustBlue = new Particle.DustOptions(Color.BLUE, 1f);
+        }
+
+        double total = currentA.distance(currentB);
+        double traveledA = 0;
+        double traveledB = 0;
+
+        Vector dirA = currentB.toVector().subtract(currentA.toVector()).normalize();
+        Vector dirB = currentA.toVector().subtract(currentB.toVector()).normalize();
+
+        // Walk from each end until the cursors meet in the middle
+        while (traveledA + traveledB < total) {
+
+            /* --- step from A ---> B --- */
+            currentA.add(dirA);
+            traveledA += 1;
+            Material matA = snap.getMaterialAt(currentA);
+            if (matA != null && matA.isOccluding()) {
+                maxOccluding--;
+                if (debug) currentA.getWorld().spawnParticle(Particle.DUST, currentA, 1, dustRed);
+            } else if (debug) {
+                currentA.getWorld().spawnParticle(Particle.DUST, currentA, 1, dustGreen);
+            }
+            if (maxOccluding < 1) return false;
+
+            /* --- step from B ---> A --- */
+            if (traveledA + traveledB >= total) break; // already overlapped
+            currentB.add(dirB);
+            traveledB += 1;
+            Material matB = snap.getMaterialAt(currentB);
+            if (matB != null && matB.isOccluding()) {
+                maxOccluding--;
+                if (debug) currentB.getWorld().spawnParticle(Particle.DUST, currentB, 1, dustRed);
+            } else if (debug) {
+                currentB.getWorld().spawnParticle(Particle.DUST, currentB, 1, dustBlue);
+            }
+            if (maxOccluding < 1) return false;
+        }
+        return true;
+    }
+
+
     public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
         Particle.DustOptions dustRed = null;
         Particle.DustOptions dustGreen = null;

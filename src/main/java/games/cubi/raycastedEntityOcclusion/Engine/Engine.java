@@ -40,7 +40,7 @@ public class Engine {
 
 
     private Consumer<ScheduledTask> syncCollectDataFromBukkit() {
-
+//TODO: Get middle of body height
         HashMap<UUID, HashMap<UUID, Location>> gatheredData = new HashMap<>();
 
         for (UUID playerUUID : playerDataMap.keySet()) {
@@ -79,7 +79,31 @@ public class Engine {
 
     private Consumer<ScheduledTask> processData(HashMap<UUID, HashMap<UUID, Location>> gatheredData) {
 
+        HashMap<LocationPair, Subscribers> raycastResultSubscription = new HashMap<>();
+
+        for (Map.Entry<UUID, HashMap<UUID, Location>> data : gatheredData.entrySet()) {
+            UUID player = data.getKey();
+            HashMap<UUID, Location> entityLocations = data.getValue();
+            QuantisedLocation playerLoc = new QuantisedLocation(entityLocations.get(player));
+
+            for (Map.Entry<UUID, Location> entity : entityLocations.entrySet()) {
+
+                QuantisedLocation entityLoc = new QuantisedLocation(entity.getValue());
+
+                if (!playerLoc.isWithinRadius(entityLoc, config.raycastRadius)) continue;
+
+                LocationPair locationPair = LocationPair.of(playerLoc, entityLoc);
+
+                if (raycastResultSubscription.containsKey(locationPair)) {
+                    raycastResultSubscription.get(locationPair).addSubscriberWithEntity(player, entity.getKey());
+                }
+                else {
+                    raycastResultSubscription.put(locationPair, new Subscribers(player, entity.getKey()));
+                }
+            }
+        }
 
         return task -> {};
     }
+
 }

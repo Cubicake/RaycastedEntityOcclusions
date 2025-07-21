@@ -22,7 +22,23 @@ public class QuantisedLocation {
     }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(world), x / 10.0, y / 10.0, z / 10.0);
+        return new Location(Bukkit.getWorld(world), (x / 10.0)+0.05, (y / 10.0)+0.05, (z / 10.0)+0.05);
+    }
+
+    public boolean isWithinRadius(QuantisedLocation other, double radius) {
+        if (!this.world.equals(other.world())) {
+            throw new IllegalArgumentException("Cannot calculate distance between different worlds.");
+        }
+
+        int dx = this.x - other.x();
+        int dy = this.y - other.y();
+        int dz = this.z - other.z();
+
+        // Convert radius (in blocks) to squared distance in quantised units (tenths of blocks).
+        double radiusSquared = radius * radius * 100; // (radius * 10)²
+        int distanceSquared = dx * dx + dy * dy + dz * dz;
+
+        return distanceSquared <= radiusSquared;
     }
 
     public int x() {
@@ -45,7 +61,7 @@ public class QuantisedLocation {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof QuantisedLocation q)) return false;
-        return x == q.x && y == q.y && z == q.z && world.equals(q.world);
+        return x == q.x() && y == q.y() && z == q.z() && world.equals(q.world());
     }
 
     @Override
