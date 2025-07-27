@@ -86,7 +86,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
                     cfg.setPacketEventsPresent(true);
                     packetProcessor = new PacketProcessor(RaycastedEntityOcclusion.this);
-                    getLogger().info("PacketEvents is enabled, enabling packet-based tablist modification.");
+                    Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.");
                 }
             }
         }.runTaskLater(this, 1L);

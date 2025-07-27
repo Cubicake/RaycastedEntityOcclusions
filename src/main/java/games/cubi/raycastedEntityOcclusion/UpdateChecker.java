@@ -67,7 +67,7 @@ public class UpdateChecker {
         }).exceptionally(ex -> {
             // Handle error (e.g., log the exception)
             Bukkit.getScheduler().runTask(plugin, () -> {
-                plugin.getLogger().warning("Failed to fetch version: " + ex.getMessage());
+                Logger.warning("Failed to fetch version: " + ex.getMessage());
             });
             return null;
         });

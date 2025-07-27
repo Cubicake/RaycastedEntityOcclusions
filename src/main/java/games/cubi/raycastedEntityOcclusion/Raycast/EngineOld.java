@@ -1,22 +1,33 @@
 package games.cubi.raycastedEntityOcclusion.Raycast;
 
 
+import games.cubi.raycastedEntityOcclusion.Logger;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedEntityOcclusion.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.Color;
+import org.bukkit.Chunk;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
+import java.util.List;
 
 public class EngineOld {
 
     public static ConcurrentHashMap<Location, Set<Player>> canSeeTileEntity = new ConcurrentHashMap<>();
+    public static Set<Chunk> syncRecheck = ConcurrentHashMap.newKeySet();
 
     private static class RayJob {
         final Player player;
@@ -46,6 +57,16 @@ public class EngineOld {
 
     public static void runEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedEntityOcclusion plugin) {
         // ----- PHASE 1: SYNC GATHER -----
+
+        if (!syncRecheck.isEmpty()) {
+            Logger.warning(syncRecheck.size() + " chunks failed to snapshot asynchronously, rechecking them now.");
+            for (Chunk c : syncRecheck) {
+                if (c.isLoaded()) {
+                    plugin.getChunkSnapshotManager().snapshotChunk(c);
+                }
+            }
+        }
+
         List<RayJob> jobs = new ArrayList<>();
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
@@ -124,7 +145,7 @@ public class EngineOld {
         if (cfg.checkTileEntities) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
-                String world = p.getWorld().getName();
+                World world = p.getWorld();
                 //get player's chunk location
                 int chunkX = p.getLocation().getBlockX() >> 4;
                 int chunkZ = p.getLocation().getBlockZ() >> 4;
@@ -211,6 +232,3 @@ public class EngineOld {
         });
     }
 }
-
-/*
- */

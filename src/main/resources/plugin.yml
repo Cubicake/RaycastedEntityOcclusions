@@ -16,5 +16,8 @@ permissions:
     raycastedentityocclusions.updatecheck:
         description: Permission to check for plugin updates
         default: op
+    raycastedentityocclusions.receivelogmessages:
+        description: Permission to receive log messages which are sent to the console
+        default: false
 softdepend:
     - packetevents
