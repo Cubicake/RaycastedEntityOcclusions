@@ -4,6 +4,7 @@ engine-mode: 1                    # 1 = straight-line; 2 = predictive and straig
 max-occluding-count: 3            # blocks before blocking
 
 debug-mode: false                 # enable debug particles and more verbose logging
+debug-level: 1                    # Higher level results in more verbose logs. 0-10
 
 always-show-radius: 16            # radius to always show entities
 raycast-radius: 48                # beyond this, entities auto-hide
