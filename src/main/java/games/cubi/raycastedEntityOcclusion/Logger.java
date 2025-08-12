@@ -3,6 +3,7 @@ package games.cubi.raycastedEntityOcclusion;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Range;
 
 public class Logger {
     private final static String PREFIX = "<hover:show_text:'Raycasted Entity Occlusions'><click:suggest_command:'/reo'><grey>[<gold>REO<grey>]</click></hover><reset> ";
@@ -17,15 +18,22 @@ public class Logger {
     }
 
     public static void info(String message) {
-        forwardLog(PREFIX+message, Level.INFO);
+        forwardLog(/*PREFIX+*/message, Level.INFO);
     }
 
     public static void warning(String message) {
-        forwardLog(PREFIX_WARNING+message, Level.WARN);
+        forwardLog(/* PREFIX_WARNING + */ message, Level.WARN);
     }
 
     public static void error(String message) {
-        forwardLog(PREFIX_ERROR+message, Level.ERROR);
+        forwardLog(/* PREFIX_ERROR+ */ message, Level.ERROR);
+    }
+
+    public static void debug(String message, @Range(from = 1, to = 10) int level) {
+        int debugLevel = 2; // TODO: grab real debug level from config
+        if (debugLevel <= level) {
+            forwardLog(message, Level.INFO);
+        }
     }
 
     private static void forwardLog(String message, Level severity) {

@@ -1,11 +1,13 @@
 # User-specific stuff
 .idea/
 
+README.md
+*.md
+
 *.iml
 *.ipr
 *.iws
 
-README.md
 
 # IntelliJ
 out/

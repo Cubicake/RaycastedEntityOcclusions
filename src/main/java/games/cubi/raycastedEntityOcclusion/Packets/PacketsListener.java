@@ -16,13 +16,15 @@ public class PacketsListener implements PacketListener {
     @Override
     public void onPacketSend(PacketSendEvent event) {
         if (event.getPacketType() == PacketType.Play.Server.PLAYER_INFO_REMOVE) {
-            if (packetProcessor == null) {
-                // Initialize the PacketProcessor if it hasn't been initialized yet since the initialization of the PacketsListener is on load, not on enable.
-                packetProcessor = plugin.getPacketProcessor();
-            }
+            initializePacketProcessor();
             packetProcessor.processPlayerInfoRemovePacket(event);
         }
+    }
 
+    private void initializePacketProcessor() {
+        if (packetProcessor == null) {
+            packetProcessor = plugin.getPacketProcessor();
+        }
     }
 
 

@@ -59,9 +59,7 @@ public class ChunkSnapshotManager {
                     if (now - e.getValue().lastRefresh >= cfg.snapshotRefreshInterval * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
                         chunksRefreshed++;
                         String key = e.getKey();
-                        //String[] parts = key.split(":");
-                        Chunk c = getKeyChunk(key);
-                        e.setValue(takeSnapshot(c, now));
+                        snapshotChunk(key);
                     }
                 }
                 if (cfg.debugMode) {
@@ -85,6 +83,9 @@ public class ChunkSnapshotManager {
         }
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
+    public void snapshotChunk(String key) {
+        snapshotChunk(getKeyChunk(key));
+    }
     public void removeChunkSnapshot(Chunk c) {
         if (cfg.debugMode) {
             Logger.info("ChunkSnapshotManager: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
@@ -99,7 +100,7 @@ public class ChunkSnapshotManager {
         }
         Data d = dataMap.get(key(loc.getChunk()));
         if (d != null) {
-            d.delta.put(loc, m);
+            d.delta.put(blockLoc(loc), m);
             if (cfg.checkTileEntities) {
                 // Check if the block is a tile entity
                 BlockState data = loc.getBlock().getState();
@@ -114,6 +115,7 @@ public class ChunkSnapshotManager {
                 }
             }
         }
+        else {Logger.error("Data map value empty, ignoring block update!");}
     }
 
     private Data takeSnapshot(Chunk c, long now) {
@@ -145,7 +147,7 @@ public class ChunkSnapshotManager {
         return c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ();
     }
     public String key(World world, int x, int z) {
-        return world + ":" + x + ":" + z;
+        return world.getName() + ":" + x + ":" + z;
     }
     public int getKeyX(String key) {
         String[] parts = key.split(":");
@@ -176,8 +178,9 @@ public class ChunkSnapshotManager {
         if (yLevel < d.minHeight || yLevel > d.maxHeight) {
             return null;
         }
-        Material dm = d.delta.get(loc);
+        Material dm = d.delta.get(blockLoc(loc));
         if (dm != null) {
+            if (cfg.debugMode) Logger.info("Using delta");
             return dm;
         }
         int x = loc.getBlockX() & 0xF;
@@ -199,6 +202,13 @@ public class ChunkSnapshotManager {
     public int getNumberOfCachedChunks() {
         return dataMap.size();
         //created to use in a debug command maybe
+    }
+
+    public static Location blockLoc(Location fullLoc) {
+        Location blockLoc = fullLoc.toBlockLocation();
+        blockLoc.setYaw(0);
+        blockLoc.setPitch(0);
+        return blockLoc;
     }
 
 }
