@@ -9,6 +9,7 @@ import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -40,6 +41,21 @@ public class Engine {
 
 
     private Consumer<ScheduledTask> syncCollectDataFromBukkit() {
+        // UUID:World UUID -> UUID:Entity UUID -> QuantisedLocation
+        HashMap<UUID, HashMap<UUID, QuantisedLocation>> worldEntities = new HashMap<>();
+        for (World world : Bukkit.getWorlds()) {
+            HashMap<UUID, QuantisedLocation> entitiesInWorld = new HashMap<>();
+            for (Entity entity : world.getEntities()) {
+                if (entity instanceof Player) continue; // Skip players, they are handled separately
+                entitiesInWorld.put(entity.getUniqueId(), new QuantisedLocation(entity.getLocation(), entity.getHeight()));
+            }
+            worldEntities.put(world.getUID(), entitiesInWorld);
+        }
+        HashMap<UUID, QuantisedLocation> players = new HashMap<>();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            players.put(player.getUniqueId(), new QuantisedLocation(player.getLocation(), player.getEyeHeight()));
+        }
+
 //TODO: Get middle of body height
         HashMap<UUID, HashMap<UUID, Location>> gatheredData = new HashMap<>();
 

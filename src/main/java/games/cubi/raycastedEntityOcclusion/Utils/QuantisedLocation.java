@@ -20,19 +20,25 @@ public class QuantisedLocation {
         this.z = (int) Math.floor(location.getZ() * 10);
         this.world = location.getWorld().getUID();
     }
+    public QuantisedLocation(Location location, double height) {
+        this.x = (int) Math.floor(location.getX() * 10);
+        this.y = (int) Math.floor(location.getY()+(height/2) * 10);
+        this.z = (int) Math.floor(location.getZ() * 10);
+        this.world = location.getWorld().getUID();
+    }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(world), (x / 10.0)+0.5, (y / 10.0)+0.5, (z / 10.0)+0.5);
+        return new Location(Bukkit.getWorld(world), (x / 10.0)+0.05, (y / 10.0)+0.05, (z / 10.0)+0.05);
     }
 
     public boolean isWithinRadius(QuantisedLocation other, double radius) {
-        if (!this.world.equals(other.world())) {
+        if (!this.world.equals(other.world)) {
             throw new IllegalArgumentException("Cannot calculate distance between different worlds.");
         }
 
-        int dx = this.x - other.x();
-        int dy = this.y - other.y();
-        int dz = this.z - other.z();
+        int dx = this.x - other.x;
+        int dy = this.y - other.y;
+        int dz = this.z - other.z;
 
         // Convert radius (in blocks) to squared distance in quantised units (tenths of blocks).
         double radiusSquared = radius * radius * 100; // (radius * 10)²
@@ -60,8 +66,8 @@ public class QuantisedLocation {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof QuantisedLocation q)) return false;
-        return x == q.x() && y == q.y() && z == q.z() && world.equals(q.world());
+        if (!(o instanceof QuantisedLocation other)) return false;
+        return x == other.x && y == other.y && z == other.z && world.equals(other.world);
     }
 
     @Override

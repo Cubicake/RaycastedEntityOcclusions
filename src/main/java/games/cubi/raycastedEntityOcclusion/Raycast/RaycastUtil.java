@@ -16,13 +16,13 @@ public class RaycastUtil {
         Location currentA = locationPair.first().toLocation();
         Location currentB = locationPair.second().toLocation();
 
-        Particle.DustOptions dustRed   = null;
+        Particle.DustOptions dustRed = null;
         Particle.DustOptions dustGreen = null;
         Particle.DustOptions dustBlue = null;
         if (debug) {
-            dustRed = new Particle.DustOptions(Color.RED,   1f);
-            dustGreen = new Particle.DustOptions(Color.GREEN, 1f);
-            dustBlue = new Particle.DustOptions(Color.BLUE, 1f);
+            dustRed = new Particle.DustOptions(Color.RED,1f);
+            dustGreen = new Particle.DustOptions(Color.GREEN,1f);
+            dustBlue = new Particle.DustOptions(Color.BLUE,1f);
         }
 
         double total = currentA.distance(currentB);
