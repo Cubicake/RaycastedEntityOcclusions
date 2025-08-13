@@ -22,7 +22,7 @@ public class QuantisedLocation {
     }
 
     public Location toLocation() {
-        return new Location(Bukkit.getWorld(world), (x / 10.0)+0.05, (y / 10.0)+0.05, (z / 10.0)+0.05);
+        return new Location(Bukkit.getWorld(world), (x / 10.0)+0.5, (y / 10.0)+0.5, (z / 10.0)+0.5);
     }
 
     public boolean isWithinRadius(QuantisedLocation other, double radius) {
