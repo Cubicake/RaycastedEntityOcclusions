@@ -8,40 +8,37 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerData {
     // Maps must be thread-safe as their values will be updated while async engine jobs are running, but UUID is probably fine.
-    private final UUID PlayerUUID;
+    private final UUID playerUUID;
     private final boolean hasBypassPermission;
 
     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
-    private ConcurrentHashMap<UUID, Boolean> entityVisibility = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, Boolean> entityVisibility = new ConcurrentHashMap<>();
 
     // Location, time in millis TODO: Is it necessary to store the time as a long? Do we even need a recheck interval at all?
-    private ConcurrentHashMap<BlockLocation, Long> seenTileEntities = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<BlockLocation, Long> seenTileEntities = new ConcurrentHashMap<>();
 
-    private int ticksSinceVisibleEntityRecheck = 0; //This will only be accessed once per tick from a single place so it doesn't need to deal with concurrency
+    private final AtomicInteger ticksSinceVisibleEntityRecheck = new AtomicInteger(0);
 
     public PlayerData(UUID playerUUID, boolean hasBypassPermission) {
-        this.PlayerUUID = playerUUID;
+        this.playerUUID = playerUUID;
         this.hasBypassPermission = hasBypassPermission;
     }
 
     public PlayerData(Player player) {
-        this.PlayerUUID = player.getUniqueId();
+        this.playerUUID = player.getUniqueId();
         this.hasBypassPermission = player.hasPermission("raycastedentityocclusions.bypass");
     }
 
     public UUID getPlayerUUID() {
-        return PlayerUUID;
+        return playerUUID;
     }
 
     public Map<UUID, Boolean> getEntityVisibilityMap() {
         return new HashMap<>(entityVisibility);
-    }
-
-    public void setEntityVisibilityMap(Map<UUID, Boolean> entityVisibility) {
-        this.entityVisibility = new ConcurrentHashMap<>(entityVisibility);
     }
 
     public void addEntities(Set<UUID> entityUUIDs) {
@@ -96,15 +93,15 @@ public class PlayerData {
     }
 
     public void incrementTicksSinceVisibleEntityRecheck() {
-        ticksSinceVisibleEntityRecheck++;
+        ticksSinceVisibleEntityRecheck.incrementAndGet();
     }
 
     public void resetTicksSinceVisibleEntityRecheck() {
-        ticksSinceVisibleEntityRecheck = 0;
+        ticksSinceVisibleEntityRecheck.set(0);
     }
 
     public int getTicksSinceVisibleEntityRecheck() {
-        return ticksSinceVisibleEntityRecheck;
+        return ticksSinceVisibleEntityRecheck.get();
     }
 
     public boolean hasBypassPermission() {

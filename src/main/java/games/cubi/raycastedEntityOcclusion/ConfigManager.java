@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ConfigManager {
+    //TODO: These should all really be private
     private final JavaPlugin plugin;
     public int snapshotRefreshInterval;
     public int engineMode;

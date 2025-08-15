@@ -1,8 +1,10 @@
 package games.cubi.raycastedEntityOcclusion;
 
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import games.cubi.raycastedEntityOcclusion.Engine.Engine;
 import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedEntityOcclusion.Utils.DataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -36,7 +38,7 @@ public class EventListener implements Listener {
         //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (config.packetEventsPresent) {
-                packetProcessor = plugin.getPacketProcessor();
+                packetProcessor = RaycastedEntityOcclusion.getPacketProcessor();
             } else {
                 packetProcessor = null;
             }
@@ -86,6 +88,16 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, player);
         }
-        engine.registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
+        DataHolder.registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
+    }
+
+    @EventHandler
+    public void serverTickStartEvent(ServerTickStartEvent event) {
+        //TODO: connect this to new engine
+    }
+
+    @EventHandler
+    public void serverTickStopEvent(ServerTickStartEvent event) {
+
     }
 }

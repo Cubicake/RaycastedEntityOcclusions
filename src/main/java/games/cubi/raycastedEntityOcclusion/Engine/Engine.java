@@ -56,7 +56,11 @@ public class Engine {
             players.put(player.getUniqueId(), new QuantisedLocation(player.getLocation(), player.getEyeHeight()));
         }
 
-//TODO: Get middle of body height
+
+
+
+
+//TODO: This is old
         HashMap<UUID, HashMap<UUID, Location>> gatheredData = new HashMap<>();
 
         for (UUID playerUUID : playerDataMap.keySet()) {

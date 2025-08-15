@@ -2,6 +2,7 @@ package games.cubi.raycastedEntityOcclusion.Utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 
 import java.util.Objects;
 import java.util.UUID;

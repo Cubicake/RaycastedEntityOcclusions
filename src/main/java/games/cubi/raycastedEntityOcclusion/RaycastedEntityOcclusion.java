@@ -27,11 +27,13 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use ConfigManager's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
     private static RaycastedEntityOcclusion instance;
+    private static java.util.logging.Logger logger;
 
     public int tick = 0;
 
     @Override
     public void onLoad() {
+        logger = getLogger();
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {
             packetEventsPresent = true;
@@ -115,5 +117,8 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     }
     public static RaycastedEntityOcclusion get() {
         return instance;
+    }
+    public static java.util.logging.Logger logger() {
+        return logger;
     }
 }
