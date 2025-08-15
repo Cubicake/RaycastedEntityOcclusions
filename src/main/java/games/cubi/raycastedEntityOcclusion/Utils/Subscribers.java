@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Subscribers {
     //First UUID are the players, second uuid are the entities tied to their subscription
-    private HashMap<UUID, Set<UUID>> subscribers = new HashMap<>();
+    private final HashMap<UUID, Set<UUID>> subscribers = new HashMap<>();
 
     public Subscribers(UUID player, Set<UUID> entities) {
         subscribers.putIfAbsent(player, entities);
