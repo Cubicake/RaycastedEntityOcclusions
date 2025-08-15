@@ -19,13 +19,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import games.cubi.raycastedEntityOcclusion.bStats.MetricsCollector;
 
 public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecutor {
-    private ConfigManager cfg;
-    private ChunkSnapshotManager snapMgr;
-    private MovementTracker tracker;
-    private CommandsManager commands;
-    private Engine engine;
-    private boolean packetEventsPresent = false;
-    private PacketProcessor packetProcessor = null;
+    private static ConfigManager cfg;
+    private static ChunkSnapshotManager snapMgr;
+    private static MovementTracker tracker;
+    private static CommandsManager commands;
+    private static Engine engine;
+    private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use ConfigManager's packetevents field instead. This just checks  if its present, not if its enabled/functional
+    private static PacketProcessor packetProcessor = null;
+    private static RaycastedEntityOcclusion instance;
 
     public int tick = 0;
 
@@ -44,6 +45,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
 
     @Override
     public void onEnable() {
+        instance = this;
         cfg = new ConfigManager(this);
         snapMgr = new ChunkSnapshotManager(this);
         tracker = new MovementTracker(this, cfg);
@@ -93,19 +95,25 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     }
 
 
-    public ConfigManager getConfigManager() {
+    public static ConfigManager getConfigManager() {
         return cfg;
     }
-    public ChunkSnapshotManager getChunkSnapshotManager() {
+    public static ChunkSnapshotManager getChunkSnapshotManager() {
         return snapMgr;
     }
-    public MovementTracker getMovementTracker() {
+    public static MovementTracker getMovementTracker() {
         return tracker;
     }
-    public CommandsManager getCommandsManager() {
+    public static CommandsManager getCommandsManager() {
         return commands;
     }
-    public PacketProcessor getPacketProcessor() {
+    public static PacketProcessor getPacketProcessor() {
         return packetProcessor;
+    }
+    public static Engine getEngine() {
+        return engine;
+    }
+    public static RaycastedEntityOcclusion get() {
+        return instance;
     }
 }
