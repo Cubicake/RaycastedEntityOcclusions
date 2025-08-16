@@ -1,6 +1,6 @@
 package games.cubi.raycastedEntityOcclusion.Raycast;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,7 +19,7 @@ public class MovementTracker {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (config.engineMode == 2) {
+                if (config.getEngineMode() == 2) {
                     for (Player p : Bukkit.getOnlinePlayers()) {
                         history.computeIfAbsent(p, k -> new ArrayDeque<>(5));
                         Deque<Location> dq = history.get(p);

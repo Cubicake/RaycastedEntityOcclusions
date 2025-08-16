@@ -1,6 +1,6 @@
 package games.cubi.raycastedEntityOcclusion.bStats;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -20,12 +20,12 @@ public class MetricsCollector {
         this.plugin = plugin;
         int pluginId = 24553;
         metrics = new Metrics(plugin, pluginId);
-        this.config = config;
+        this.config = config;/*
         registerCustomMetrics();
 
-        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes
+        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
     }
-
+/*
     public void registerCustomMetrics() {
         metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", () -> String.valueOf(config.maxOccludingCount)));
 
@@ -154,4 +154,6 @@ public class MetricsCollector {
             return "5000+";
         }
     }
+
+ */
 }

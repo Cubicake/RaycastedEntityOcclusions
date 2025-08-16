@@ -1,7 +1,7 @@
 package games.cubi.raycastedEntityOcclusion.Config;
 
 
-public class AbstractConfig {
+public class AbstractRaycastConfig {
     private final byte engineMode;
     private final byte maxOccludingCount;
     private final short alwaysShowRadius;
@@ -9,7 +9,7 @@ public class AbstractConfig {
     private final short visibleRecheckInterval;
     private final boolean enabled;
 
-    public AbstractConfig(byte engineMode, byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled) {
+    public AbstractRaycastConfig(byte engineMode, byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled) {
         this.engineMode = engineMode;
         this.maxOccludingCount = maxOccludingCount;
         this.alwaysShowRadius = alwaysShowRadius;
@@ -17,7 +17,17 @@ public class AbstractConfig {
         this.visibleRecheckInterval = visibleRecheckInterval;
         this.enabled = enabled;
     }
-    public AbstractConfig(boolean enabled) {
+
+    public AbstractRaycastConfig(int engineMode, int maxOccludingCount, int alwaysShowRadius, int raycastRadius, int visibleRecheckInterval, boolean enabled) {
+        this.engineMode = (byte) engineMode;
+        this.maxOccludingCount = (byte) maxOccludingCount;
+        this.alwaysShowRadius = (short) alwaysShowRadius;
+        this.raycastRadius = (short) raycastRadius;
+        this.visibleRecheckInterval = (short) visibleRecheckInterval;
+        this.enabled = enabled;
+    }
+
+    public AbstractRaycastConfig(boolean enabled) {
         this.enabled = enabled;
         if (enabled) throw new IllegalArgumentException("Abstract config created without parameters while enabled");
         engineMode = -1; maxOccludingCount = -1; alwaysShowRadius = 48; raycastRadius = -1; visibleRecheckInterval = -1;
@@ -47,4 +57,6 @@ public class AbstractConfig {
     public short getVisibleRecheckIntervalSeconds() {
         return (short) (visibleRecheckInterval * 20);
     }
+
+    public boolean isEnabled() { return enabled; }
 }

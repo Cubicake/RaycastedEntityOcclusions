@@ -11,6 +11,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
+
 
 
 public class CommandsManager {
@@ -44,9 +46,9 @@ public class CommandsManager {
                         //dynamic config values
                         sender.sendMessage("[EntityOcclusions] Config values: ");
 
-                        ConfigurationSection root = cfg.cfg.getConfigurationSection("");
+                        ConfigurationSection root = cfg.getConfigFile().getConfigurationSection("");
                         for (String path : root.getKeys(true)) {
-                            Object val = cfg.cfg.get(path);
+                            Object val = cfg.getConfigFile().get(path);
 
                             sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
                         }

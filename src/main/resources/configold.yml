@@ -1,0 +1,19 @@
+snapshot-refresh-interval: 60     # seconds between chunk snapshot refresh, won't change without restart
+
+engine-mode: 1                    # 1 = straight-line; 2 = predictive and straight-line
+max-occluding-count: 3            # blocks before blocking
+
+debug-mode: false                 # enable debug particles and more verbose logging
+debug-level: 1                    # Higher level results in more verbose logs. 0-10
+
+always-show-radius: 16            # radius to always show entities
+raycast-radius: 48                # beyond this, entities auto-hide
+search-radius: 48                 # search radius for entities
+
+cull-players: false               # cull hidden players as well as other entities
+only-cull-sneaking-players: false # only cull sneaking players (requires cull-players)
+
+recheck-interval: 50             # ticks between forced rechecks for visible entities
+
+check-tile-entities: true         # check tile entities for occlusion
+tile-entity-recheck-interval: 0   # seconds between forced rechecks for visible tile entities. If set to 0, they will never be rechecked.

@@ -8,6 +8,8 @@ import games.cubi.raycastedEntityOcclusion.Packets.Registrar;
 import games.cubi.raycastedEntityOcclusion.Raycast.EngineOld;
 import games.cubi.raycastedEntityOcclusion.Raycast.MovementTracker;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.Utils.DataHolder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -49,10 +51,10 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     public void onEnable() {
         instance = this;
         cfg = new ConfigManager(this);
-        snapMgr = new ChunkSnapshotManager(this);
+        snapMgr = new ChunkSnapshotManager(this, cfg);
         tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
-        engine = new Engine(this, cfg);
+        //engine = new Engine(this, cfg);
         new UpdateChecker(this);
         getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg, engine), this);
         //Brigadier API
@@ -78,9 +80,9 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
         new BukkitRunnable() {
             @Override
             public void run() {
-                tick++;
+                tick++; /*
                 EngineOld.runEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
-                EngineOld.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
+                EngineOld.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);*/
             }
         }.runTaskTimer(this, 0L, 1L);
 
@@ -88,7 +90,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
             @Override
             public void run() {
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-                    cfg.setPacketEventsPresent(true);
+                    DataHolder.packetEventsPresent = true;
                     packetProcessor = new PacketProcessor(RaycastedEntityOcclusion.this);
                     Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.");
                 }

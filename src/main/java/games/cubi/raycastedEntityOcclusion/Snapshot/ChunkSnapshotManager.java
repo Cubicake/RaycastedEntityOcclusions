@@ -1,10 +1,11 @@
 package games.cubi.raycastedEntityOcclusion.Snapshot;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.Logger;
 import games.cubi.raycastedEntityOcclusion.Raycast.EngineOld;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 
+import games.cubi.raycastedEntityOcclusion.Utils.BlockLocation;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChunkSnapshotManager {
     public static class Data {
         public final ChunkSnapshot snapshot;
-        public final ConcurrentHashMap<Location, Material> delta = new ConcurrentHashMap<>();
+        public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
         public final Set<Location> tileEntities = ConcurrentHashMap.newKeySet();
         public long lastRefresh;
         public int minHeight;
@@ -39,8 +40,8 @@ public class ChunkSnapshotManager {
     private final ConfigManager cfg;
     private final RaycastedEntityOcclusion plugin;
 
-    public ChunkSnapshotManager(RaycastedEntityOcclusion plugin) {
-        cfg = plugin.getConfigManager();
+    public ChunkSnapshotManager(RaycastedEntityOcclusion plugin, ConfigManager config) {
+        cfg = config;
         this.plugin = plugin;
         //get loaded chunks and add them to dataMap
         for (World w : plugin.getServer().getWorlds()) {
@@ -56,17 +57,15 @@ public class ChunkSnapshotManager {
                 int chunksRefreshed = 0;
                 int chunksToRefreshMaximum = getNumberOfCachedChunks() / 3;
                 for (Map.Entry<String, Data> e : dataMap.entrySet()) {
-                    if (now - e.getValue().lastRefresh >= cfg.snapshotRefreshInterval * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
+                    if (now - e.getValue().lastRefresh >= cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
                         chunksRefreshed++;
                         String key = e.getKey();
                         snapshotChunk(key);
                     }
                 }
-                if (cfg.debugMode) {
-                    Logger.info("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.");
-                }
+                Logger.debug("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", 10);
             }
-        }.runTaskTimerAsynchronously(plugin, cfg.snapshotRefreshInterval * 2L, cfg.snapshotRefreshInterval * 2L /* This runs 10 times per refreshInterval, spreading out the refreshes */);
+        }.runTaskTimerAsynchronously(plugin, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L /* This runs 10 times per refreshInterval, spreading out the refreshes */);
     }
 
     public void onChunkLoad(Chunk c) {
@@ -78,37 +77,28 @@ public class ChunkSnapshotManager {
     }
 
     public void snapshotChunk(Chunk c) {
-        if (cfg.debugMode) {
-            //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
-        }
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
     public void snapshotChunk(String key) {
         snapshotChunk(getKeyChunk(key));
     }
     public void removeChunkSnapshot(Chunk c) {
-        if (cfg.debugMode) {
-            Logger.info("ChunkSnapshotManager: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
-        }
+        Logger.debug("ChunkSnapshotManager: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), 9);
         dataMap.remove(key(c));
     }
 
     // Used by EventListener to update the delta map when a block is placed or broken
     public void onBlockChange(Location loc, Material m) {
-        if (cfg.debugMode) {
-            Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m);
-        }
+        Logger.debug("ChunkSnapshotManager: Block change at " + loc + " to " + m, 8);
         Data d = dataMap.get(key(loc.getChunk()));
         if (d != null) {
-            d.delta.put(blockLoc(loc), m);
-            if (cfg.checkTileEntities) {
+            d.delta.put(new BlockLocation(loc), m);
+            if (cfg.getTileEntityConfig().isEnabled()) {
                 // Check if the block is a tile entity
                 BlockState data = loc.getBlock().getState();
                 loc = loc.clone().add(0.5, 0.5, 0.5);
                 if (data instanceof TileState) {
-                    if (cfg.debugMode){
-                        Logger.info("ChunkSnapshotManager: Tile entity at " + loc);
-                    }
+                    Logger.debug("ChunkSnapshotManager: Tile entity at " + loc, 10);
                     d.tileEntities.add(loc);
                 } else {
                     d.tileEntities.remove(loc);
@@ -127,7 +117,7 @@ public class ChunkSnapshotManager {
         int maxHeight = w.getMaxHeight();
         data.maxHeight = maxHeight;
         data.minHeight = minHeight;
-        if (cfg.checkTileEntities) {
+        if (cfg.getTileEntityConfig().isEnabled()) {
             for (int x = 0; x < 16; x++) {
                 for (int y = minHeight; y < maxHeight; y++) {
                     for (int z = 0; z < 16; z++) {
@@ -171,16 +161,16 @@ public class ChunkSnapshotManager {
         if (d == null) {
             Chunk c = loc.getChunk();
             Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
-            EngineOld.syncRecheck.add(chunk);
+            //EngineOld.syncRecheck.add(chunk); TODO reenable
             return loc.getBlock().getType();
         }
         double yLevel = loc.getY();
         if (yLevel < d.minHeight || yLevel > d.maxHeight) {
             return null;
         }
-        Material dm = d.delta.get(blockLoc(loc));
+        Material dm = d.delta.get(new BlockLocation(loc));
         if (dm != null) {
-            if (cfg.debugMode) Logger.info("Using delta");
+            Logger.debug("Using delta", 9);
             return dm;
         }
         int x = loc.getBlockX() & 0xF;
@@ -202,13 +192,6 @@ public class ChunkSnapshotManager {
     public int getNumberOfCachedChunks() {
         return dataMap.size();
         //created to use in a debug command maybe
-    }
-
-    public static Location blockLoc(Location fullLoc) {
-        Location blockLoc = fullLoc.toBlockLocation();
-        blockLoc.setYaw(0);
-        blockLoc.setPitch(0);
-        return blockLoc;
     }
 
 }

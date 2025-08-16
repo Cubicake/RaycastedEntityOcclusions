@@ -3,7 +3,7 @@ package games.cubi.raycastedEntityOcclusion;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class ConfigManager {
+public class ConfigManagerDep {
     //TODO: These should all really be private
     private final JavaPlugin plugin;
     public int snapshotRefreshInterval;
@@ -34,7 +34,7 @@ public class ConfigManager {
     public static final boolean CHECK_TILE_ENTITIES_DEFAULT = true;
     public static final int TILE_ENTITY_RECHECK_INTERVAL_DEFAULT = 0;
 
-    public ConfigManager(JavaPlugin plugin) {
+    public ConfigManagerDep(JavaPlugin plugin) {
         this.plugin = plugin;
         load();
     }

@@ -5,6 +5,7 @@ import games.cubi.raycastedEntityOcclusion.Engine.Engine;
 import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedEntityOcclusion.Utils.DataHolder;
+import games.cubi.raycastedEntityOcclusion.Config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -37,7 +38,7 @@ public class EventListener implements Listener {
         this.engine = engine;
         //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (config.packetEventsPresent) {
+            if (DataHolder.packetEventsPresent) {
                 packetProcessor = RaycastedEntityOcclusion.getPacketProcessor();
             } else {
                 packetProcessor = null;
@@ -76,7 +77,7 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerDisconnect(PlayerQuitEvent e) {
-        if (config.packetEventsPresent && packetProcessor != null) {
+        if (DataHolder.packetEventsPresent && packetProcessor != null) {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
         }

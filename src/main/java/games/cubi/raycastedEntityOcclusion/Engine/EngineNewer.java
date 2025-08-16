@@ -1,9 +1,10 @@
 package games.cubi.raycastedEntityOcclusion.Engine;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.Config.*;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 import games.cubi.raycastedEntityOcclusion.Utils.DataHolder;
 import games.cubi.raycastedEntityOcclusion.Utils.QuantisedLocation;
+import games.cubi.raycastedEntityOcclusion.Utils.ThreadSafeLoc;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.GlobalRegionScheduler;
 import org.bukkit.Bukkit;
@@ -28,15 +29,15 @@ public class EngineNewer {
 
     //Todo: call this method from EventListener onTickStart
     public void gatherData() {
-        if (true /* Todo: replace this with a check for entitysnapshotinterval or something*/)
+        if (true /* Todo: replace this with a check for entitysnapshotinterval or something*/) {}
     }
 
     private void forceEntityLocationUpdate() {
-        HashMap<UUID, QuantisedLocation> entities = new HashMap<>();
+        HashMap<UUID, ThreadSafeLoc> entities = new HashMap<>();
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
                 if (entity instanceof Player) continue; // Skip players, they are handled separately
-                entities.put(entity.getUniqueId(), new QuantisedLocation(entity.getLocation(), entity.getHeight()));
+                entities.put(entity.getUniqueId(), new ThreadSafeLoc(entity.getLocation(), entity.getHeight()));
             }
 
         }

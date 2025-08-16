@@ -1,5 +1,7 @@
 package games.cubi.raycastedEntityOcclusion.Engine;
 
+public class Engine {}
+/*
 import games.cubi.raycastedEntityOcclusion.ConfigManager;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 import games.cubi.raycastedEntityOcclusion.Utils.*;
@@ -20,8 +22,9 @@ import java.util.function.Consumer;
 public class Engine {
     //TODO: Maybe store the data somewhere else? Could rework chunk storage to be general data storage
     public ConcurrentHashMap<UUID, PlayerData> playerDataMap = new ConcurrentHashMap<>();
-    private AsyncScheduler asyncScheduler;
-    private GlobalRegionScheduler globalScheduler; //TODO: Note that the use of the global scheduler here probs isn't actually done in a folia compat way
+    private final AsyncScheduler asyncScheduler;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final GlobalRegionScheduler globalScheduler; //TODO: Note that the use of the global scheduler here probs isn't actually done in a folia compat way
 
     private final RaycastedEntityOcclusion plugin;
     private final ConfigManager config;
@@ -127,3 +130,4 @@ public class Engine {
     }
 
 }
+*/

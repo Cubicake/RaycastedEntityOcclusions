@@ -1,6 +1,7 @@
 package games.cubi.raycastedEntityOcclusion.Raycast;
 
-
+public class EngineOld {}
+/*
 import games.cubi.raycastedEntityOcclusion.Logger;
 import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedEntityOcclusion.ConfigManager;
@@ -260,4 +261,4 @@ public class EngineOld {
             hideTileEntity(p, loc, plugin);
         }
     }
-}
+}*/
