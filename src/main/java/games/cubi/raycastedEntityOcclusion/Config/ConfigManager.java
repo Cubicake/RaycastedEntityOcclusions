@@ -1,5 +1,6 @@
 package games.cubi.raycastedEntityOcclusion.Config;
 
+import games.cubi.raycastedEntityOcclusion.Logger;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -32,6 +33,8 @@ public class ConfigManager {
      * Load or reload the configuration from file
      */
     public void load() {
+        //assert that we are on the main bukkit thread
+        if (!plugin.getServer().isPrimaryThread()) Logger.error(new RuntimeException("Config attempted to reload off the main thread"));
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         config = plugin.getConfig();
