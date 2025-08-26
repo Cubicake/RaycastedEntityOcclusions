@@ -1,6 +1,6 @@
 name: RaycastedEntityOcclusions
 version: ${version}
-main: games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion
+main: games.cubi.raycastedAntiESP.RaycastedAntiESP
 api-version: '1.21'
 prefix: REO
 authors: [ _Cubicake ]
