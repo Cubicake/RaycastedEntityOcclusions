@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -18,7 +18,7 @@ public class ConfigManager {
     private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, false, false);
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true);
-    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 60);
+    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 60, false);
     private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(1, 2, 2, false);
 
     private int maxEngineMode;
@@ -85,6 +85,7 @@ public class ConfigManager {
         // Snapshot defaults
         config.addDefault("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval());
         config.addDefault("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval());
+        config.addDefault("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots());
 
         // Debug defaults
         config.addDefault("debug.info-level", DEFAULT_DEBUG_CONFIG.getInfoLevel());
@@ -145,7 +146,8 @@ public class ConfigManager {
     private void loadSnapshotConfig() {
         snapshotConfig = new SnapshotConfig(
                 (short) config.getInt("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval()),
-                (short) config.getInt("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval())
+                (short) config.getInt("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval()),
+                config.getBoolean("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots())
         );
     }
 

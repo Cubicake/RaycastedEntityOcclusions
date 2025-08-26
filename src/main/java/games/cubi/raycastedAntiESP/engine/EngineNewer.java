@@ -1,9 +1,9 @@
-package games.cubi.raycastedAntiESP.Engine;
+package games.cubi.raycastedAntiESP.engine;
 
-import games.cubi.raycastedAntiESP.Config.*;
+import games.cubi.raycastedAntiESP.config.*;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import games.cubi.raycastedAntiESP.Utils.DataHolder;
-import games.cubi.raycastedAntiESP.Utils.ThreadSafeLoc;
+import games.cubi.raycastedAntiESP.utils.DataHolder;
+import games.cubi.raycastedAntiESP.utils.ThreadSafeLoc;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.World;

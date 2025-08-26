@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Utils;
+package games.cubi.raycastedAntiESP.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

@@ -1,10 +1,10 @@
-package games.cubi.raycastedAntiESP.Snapshot;
+package games.cubi.raycastedAntiESP.snapshot;
 
-import games.cubi.raycastedAntiESP.Config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 
-import games.cubi.raycastedAntiESP.Utils.BlockLocation;
+import games.cubi.raycastedAntiESP.utils.BlockLocation;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;

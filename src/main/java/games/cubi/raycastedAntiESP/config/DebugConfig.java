@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 public class DebugConfig {
     private final byte infoLevel;
@@ -20,7 +20,6 @@ public class DebugConfig {
         this.debugParticles = debugParticles;
     }
 
-    //getters
     public byte getInfoLevel() {
         return infoLevel;
     }

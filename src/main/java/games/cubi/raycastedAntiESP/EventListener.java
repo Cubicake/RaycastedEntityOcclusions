@@ -1,11 +1,11 @@
 package games.cubi.raycastedAntiESP;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import games.cubi.raycastedAntiESP.Engine.Engine;
-import games.cubi.raycastedAntiESP.Packets.PacketProcessor;
-import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedAntiESP.Utils.DataHolder;
-import games.cubi.raycastedAntiESP.Config.ConfigManager;
+import games.cubi.raycastedAntiESP.engine.Engine;
+import games.cubi.raycastedAntiESP.packets.PacketProcessor;
+import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.utils.DataHolder;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

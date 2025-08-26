@@ -1,6 +1,6 @@
-package games.cubi.raycastedAntiESP.Raycast;
+package games.cubi.raycastedAntiESP.raycast;
 
-import games.cubi.raycastedAntiESP.Config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

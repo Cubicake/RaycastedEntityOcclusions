@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Raycast;
+package games.cubi.raycastedAntiESP.raycast;
 
 public class EngineOld {}
 /*

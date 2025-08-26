@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 
 public abstract class RaycastConfig {

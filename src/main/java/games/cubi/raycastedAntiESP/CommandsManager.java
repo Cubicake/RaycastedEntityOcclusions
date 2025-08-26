@@ -11,7 +11,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
-import games.cubi.raycastedAntiESP.Config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 
 
 

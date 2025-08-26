@@ -1,17 +1,20 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 public class SnapshotConfig {
     private final short worldSnapshotRefreshInterval;
     private final short entityLocationRefreshInterval;
+    private final boolean performUnsafeWorldSnapshots;
 
-    public SnapshotConfig(short worldRefresh, short entityRefresh) {
+    public SnapshotConfig(short worldRefresh, short entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = worldRefresh;
         entityLocationRefreshInterval = entityRefresh;
+        performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
     }
 
-    public SnapshotConfig(int worldRefresh, int entityRefresh) {
+    public SnapshotConfig(int worldRefresh, int entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = (short) worldRefresh;
         entityLocationRefreshInterval = (short) entityRefresh;
+        performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
     }
 
     public short getWorldSnapshotRefreshInterval() {
@@ -20,5 +23,9 @@ public class SnapshotConfig {
 
     public short getEntityLocationRefreshInterval() {
         return entityLocationRefreshInterval;
+    }
+
+    public boolean performUnsafeWorldSnapshots() {
+        return performUnsafeWorldSnapshots;
     }
 }

@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Engine;
+package games.cubi.raycastedAntiESP.engine;
 
 public class Engine {}
 /*

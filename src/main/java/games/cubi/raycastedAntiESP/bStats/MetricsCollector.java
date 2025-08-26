@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.bStats;
 
-import games.cubi.raycastedAntiESP.Config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 
 import java.util.ArrayList;

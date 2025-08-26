@@ -1,7 +1,7 @@
-package games.cubi.raycastedAntiESP.Raycast;
+package games.cubi.raycastedAntiESP.raycast;
 
-import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedAntiESP.Utils.LocationPair;
+import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.utils.LocationPair;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;

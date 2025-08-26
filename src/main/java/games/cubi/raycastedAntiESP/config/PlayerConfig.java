@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 public class PlayerConfig extends RaycastConfig {
     private final boolean onlyCullWhileSneaking;

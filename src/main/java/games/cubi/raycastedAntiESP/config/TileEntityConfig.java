@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Config;
+package games.cubi.raycastedAntiESP.config;
 
 public class TileEntityConfig extends RaycastConfig {
 
@@ -15,7 +15,7 @@ public class TileEntityConfig extends RaycastConfig {
     }
 
     @Override
-    public short getVisibleRecheckIntervalSeconds() {
+    public int getVisibleRecheckIntervalSeconds() {
         return super.getVisibleRecheckInterval();
     }
 }
