@@ -5,6 +5,8 @@ import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigManager {
+    private static ConfigManager instance;
+
     private final RaycastedAntiESP plugin;
     private FileConfiguration config;
 
@@ -16,7 +18,7 @@ public class ConfigManager {
     private DebugConfig debugConfig;
 
     // Default config objects
-    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, false, false);
+    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true);
     private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 60, false);
@@ -24,17 +26,25 @@ public class ConfigManager {
 
     private int maxEngineMode;
 
-    public ConfigManager(RaycastedAntiESP plugin) {
+    private ConfigManager(RaycastedAntiESP plugin) {
         this.plugin = plugin;
         load();
+    }
+
+    public static ConfigManager initiateConfigManager(RaycastedAntiESP plugin) {
+        if (instance == null) {
+            if (isNotOnMainThread()) return null;
+            instance = new ConfigManager(plugin);
+        }
+        return instance;
     }
 
     /**
      * Load or reload the configuration from file
      */
     public void load() {
-        //assert that we are on the main bukkit thread
-        if (!plugin.getServer().isPrimaryThread()) Logger.error(new RuntimeException("Config attempted to reload off the main thread"));
+        //assert that we are on the main bukkit thread to prevent concurrency issues
+        if (isNotOnMainThread()) return;
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
         config = plugin.getConfig();
@@ -267,5 +277,13 @@ public class ConfigManager {
 
     public int getEngineMode() {
         return maxEngineMode;
+    }
+
+    private static boolean isNotOnMainThread() {
+        if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
+            return false;
+        }
+        Logger.error(new RuntimeException("Config attempted to be accessed off the main thread"));
+        return true;
     }
 }

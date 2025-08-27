@@ -49,7 +49,7 @@ public class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     @Override
     public void onEnable() {
         instance = this;
-        cfg = new ConfigManager(this);
+        cfg = ConfigManager.initiateConfigManager(this);
         snapMgr = new ChunkSnapshotManager(this, cfg);
         tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);

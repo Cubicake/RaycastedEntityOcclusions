@@ -6,6 +6,7 @@ import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.utils.DataHolder;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
+import io.papermc.paper.event.entity.EntityMoveEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -99,5 +100,10 @@ public class EventListener implements Listener {
     @EventHandler
     public void serverTickStopEvent(ServerTickStartEvent event) {
 
+    }
+
+    @EventHandler
+    public void onEntityMove(EntityMoveEvent event) {
+        DataHolder.setOrUpdateEntityLocation(event.getEntity().getUniqueId(), event.getTo());
     }
 }

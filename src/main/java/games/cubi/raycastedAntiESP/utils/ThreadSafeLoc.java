@@ -8,41 +8,45 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThreadSafeLoc
+public class ThreadSafeLoc //TBH I still don't even know if this is needed
 {
     private final UUID world;
-    private volatile Vector vector1;
-    private volatile Vector vector2;
+    private final Vector vector1;
+    private final Vector vector2;
     private volatile byte pointer = 1;
     private final AtomicBoolean writeLock = new AtomicBoolean(false);
 
+
+    public ThreadSafeLoc(Vector vec, UUID world) {
+        writeLock.set(true);
+        this.world = world;
+        vector1 = vec.clone(); //clone to ensure a new vector
+        writeLock.set(false);
+        vector2 = vector1.clone();
+    }
+
     public ThreadSafeLoc(Location loc) {
-        writeLock.set(true);
-        world = loc.getWorld().getUID();
-        vector1 = loc.toVector(); //this provides a new vector
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this(loc.toVector(), loc.getWorld().getUID());
     }
+
     public ThreadSafeLoc(Location loc, double height) {
-        writeLock.set(true);
-        world = loc.getWorld().getUID();
-        vector1 = loc.toVector(); //this provides a new vector
-        vector1.setY(vector1.getY()+(height/2));
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this(loc.add(0, height/2, 0).toVector(), loc.getWorld().getUID());
     }
+
     public ThreadSafeLoc(QuantisedLocation loc) {
-        writeLock.set(true);
-        world = loc.world();
-        vector1 = new Vector(loc.realX(), loc.realY(), loc.realZ());
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this(new Vector(loc.realX(), loc.realY(), loc.realZ()), loc.world());
     }
+
     /**This returns the actual vector, so make sure it is cloned before use*/
     private Vector getPointedVector() {
         if (pointer == 1) return vector1;
         return vector2;
     }
+
+    public Vector getPointedVectorClone() {
+        return getPointedVector().clone();
+    }
+
     /**Returns a clone of the vector*/
     public Vector read() {
         return getPointedVector().clone();
@@ -65,9 +69,9 @@ public class ThreadSafeLoc
         if (writeLock.compareAndSet(false, true)) {
             try {
                 pointer = 2;
-                vector1 = newVec.clone();
+                overwriteVector(vector1, newVec);
                 pointer = 1;
-                vector2 = vector1.clone();
+                overwriteVector(vector2, vector1);
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
@@ -83,7 +87,7 @@ public class ThreadSafeLoc
                 pointer = 2;
                 vector1.add(delta);
                 pointer = 1;
-                vector2 = vector1.clone();
+                overwriteVector(vector2, vector1);
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
@@ -91,6 +95,18 @@ public class ThreadSafeLoc
             }
         }
         else return false;
+    }
+
+    /**
+     * Overwrites the first object with the x,y,z values of the second object to avoid creating new vector objects
+     @param object the vector being overwritten
+     @param newVec the source of the x,y,z values
+     @return the overwritten vector (same as object param)
+     * **/
+    @SuppressWarnings("UnusedReturnValue")
+    private Vector overwriteVector(Vector object, Vector newVec) {
+        object.setX(newVec.getX()).setY(newVec.getY()).setZ(newVec.getZ());
+        return object;
     }
 
     @Override
