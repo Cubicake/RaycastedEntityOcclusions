@@ -21,6 +21,7 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
@@ -104,6 +105,6 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onEntityMove(EntityMoveEvent event) {
-        DataHolder.setOrUpdateEntityLocation(event.getEntity().getUniqueId(), event.getTo());
+        DataHolder.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo());
     }
 }

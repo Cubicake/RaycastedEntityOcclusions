@@ -43,7 +43,7 @@ public class ConfigManager {
      * Load or reload the configuration from file
      */
     public void load() {
-        //assert that we are on the main bukkit thread to prevent concurrency issues
+        //check that we are on the main bukkit thread to prevent concurrency issues
         if (isNotOnMainThread()) return;
         plugin.saveDefaultConfig();
         plugin.reloadConfig();
@@ -53,9 +53,9 @@ public class ConfigManager {
         setDefaults();
 
         // Load config objects
-        loadPlayerConfig();
-        loadEntityConfig();
-        loadTileEntityConfig();
+        playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
+        entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
+        tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
         loadSnapshotConfig();
         loadDebugConfig();
 
@@ -70,30 +70,10 @@ public class ConfigManager {
      */
     private void setDefaults() {
         config.addDefault("config-version", "1.0");
-        // Player defaults
-        config.addDefault("player.enabled", DEFAULT_PLAYER_CONFIG.isEnabled());
-        config.addDefault("player.engine-mode", DEFAULT_PLAYER_CONFIG.getEngineMode());
-        config.addDefault("player.max-occluding-count", DEFAULT_PLAYER_CONFIG.getMaxOccludingCount());
-        config.addDefault("player.always-show-radius", DEFAULT_PLAYER_CONFIG.getAlwaysShowRadius());
-        config.addDefault("player.raycast-radius", DEFAULT_PLAYER_CONFIG.getRaycastRadius());
-        config.addDefault("player.visible-recheck-interval", DEFAULT_PLAYER_CONFIG.getVisibleRecheckInterval());
-        config.addDefault("player.only-cull-while-sneaking", DEFAULT_PLAYER_CONFIG.onlyCullWhileSneaking());
 
-        // Entity defaults
-        config.addDefault("entity.enabled", DEFAULT_ENTITY_CONFIG.isEnabled());
-        config.addDefault("entity.engine-mode", DEFAULT_ENTITY_CONFIG.getEngineMode());
-        config.addDefault("entity.max-occluding-count", DEFAULT_ENTITY_CONFIG.getMaxOccludingCount());
-        config.addDefault("entity.always-show-radius", DEFAULT_ENTITY_CONFIG.getAlwaysShowRadius());
-        config.addDefault("entity.raycast-radius", DEFAULT_ENTITY_CONFIG.getRaycastRadius());
-        config.addDefault("entity.visible-recheck-interval", DEFAULT_ENTITY_CONFIG.getVisibleRecheckInterval());
-
-        // Tile Entity defaults
-        config.addDefault("tile-entity.enabled", DEFAULT_TILE_ENTITY_CONFIG.isEnabled());
-        config.addDefault("tile-entity.engine-mode", DEFAULT_TILE_ENTITY_CONFIG.getEngineMode());
-        config.addDefault("tile-entity.max-occluding-count", DEFAULT_TILE_ENTITY_CONFIG.getMaxOccludingCount());
-        config.addDefault("tile-entity.always-show-radius", DEFAULT_TILE_ENTITY_CONFIG.getAlwaysShowRadius());
-        config.addDefault("tile-entity.raycast-radius", DEFAULT_TILE_ENTITY_CONFIG.getRaycastRadius());
-        config.addDefault("tile-entity.visible-recheck-interval", DEFAULT_TILE_ENTITY_CONFIG.getVisibleRecheckInterval());
+        PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
+        EntityConfig.setDefaults(config, getDefaultEntityConfig());
+        TileEntityConfig.setDefaults(config, getTileEntityConfig());
 
         // Snapshot defaults
         config.addDefault("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval());
@@ -108,49 +88,6 @@ public class ConfigManager {
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
-    }
-
-    /**
-     * Load player configuration
-     */
-    private void loadPlayerConfig() {
-        playerConfig = new PlayerConfig(
-                (byte) config.getInt("player.engine-mode", DEFAULT_PLAYER_CONFIG.getEngineMode()),
-                (byte) config.getInt("player.max-occluding-count", DEFAULT_PLAYER_CONFIG.getMaxOccludingCount()),
-                (short) config.getInt("player.always-show-radius", DEFAULT_PLAYER_CONFIG.getAlwaysShowRadius()),
-                (short) config.getInt("player.raycast-radius", DEFAULT_PLAYER_CONFIG.getRaycastRadius()),
-                (short) config.getInt("player.visible-recheck-interval", DEFAULT_PLAYER_CONFIG.getVisibleRecheckInterval()),
-                config.getBoolean("player.enabled", DEFAULT_PLAYER_CONFIG.isEnabled()),
-                config.getBoolean("player.only-cull-while-sneaking", DEFAULT_PLAYER_CONFIG.onlyCullWhileSneaking())
-        );
-    }
-
-    /**
-     * Load entity configuration
-     */
-    private void loadEntityConfig() {
-        entityConfig = new EntityConfig(
-                (byte) config.getInt("entity.engine-mode", DEFAULT_ENTITY_CONFIG.getEngineMode()),
-                (byte) config.getInt("entity.max-occluding-count", DEFAULT_ENTITY_CONFIG.getMaxOccludingCount()),
-                (short) config.getInt("entity.always-show-radius", DEFAULT_ENTITY_CONFIG.getAlwaysShowRadius()),
-                (short) config.getInt("entity.raycast-radius", DEFAULT_ENTITY_CONFIG.getRaycastRadius()),
-                (short) config.getInt("entity.visible-recheck-interval", DEFAULT_ENTITY_CONFIG.getVisibleRecheckInterval()),
-                config.getBoolean("player.enabled", DEFAULT_PLAYER_CONFIG.isEnabled())
-        );
-    }
-
-    /**
-     * Load tile entity configuration
-     */
-    private void loadTileEntityConfig() {
-        tileEntityConfig = new TileEntityConfig(
-                (byte) config.getInt("tile-entity.engine-mode", DEFAULT_TILE_ENTITY_CONFIG.getEngineMode()),
-                (byte) config.getInt("tile-entity.max-occluding-count", DEFAULT_TILE_ENTITY_CONFIG.getMaxOccludingCount()),
-                (short) config.getInt("tile-entity.always-show-radius", DEFAULT_TILE_ENTITY_CONFIG.getAlwaysShowRadius()),
-                (short) config.getInt("tile-entity.raycast-radius", DEFAULT_TILE_ENTITY_CONFIG.getRaycastRadius()),
-                (short) config.getInt("tile-entity.visible-recheck-interval", DEFAULT_TILE_ENTITY_CONFIG.getVisibleRecheckInterval()),
-                config.getBoolean("player.enabled", DEFAULT_PLAYER_CONFIG.isEnabled())
-        );
     }
 
     /**
@@ -283,7 +220,7 @@ public class ConfigManager {
         if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
             return false;
         }
-        Logger.error(new RuntimeException("Config attempted to be accessed off the main thread"));
+        Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."));
         return true;
     }
 }

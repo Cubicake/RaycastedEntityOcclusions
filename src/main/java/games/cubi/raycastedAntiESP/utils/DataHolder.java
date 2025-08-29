@@ -6,6 +6,7 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class DataHolder {
 
@@ -22,13 +23,19 @@ public class DataHolder {
     //
     //Quantised locations are immutable, so there are no concerns about concurrent modification
     /**UUID -> Entity UUID, QuantisedLocation -> Entity Location*/
+    private static final ConcurrentLinkedQueue<EntityLocationPair> entityLocProcessingQueue = new ConcurrentLinkedQueue<>();
+
+    public static void queueEntityLocationUpdate(UUID entityUUID, Location location) {
+        entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
+    }
+
     private static volatile ConcurrentHashMap<UUID, ThreadSafeLoc> entityLocationMap = new ConcurrentHashMap<>();
 
     public static void updateEntireEntityLocationMap(HashMap<UUID, ThreadSafeLoc> newLocations) {
         entityLocationMap = new ConcurrentHashMap<>(newLocations);
     }
 
-    public static void setOrUpdateEntityLocation(UUID entityUUID, Vector location, UUID world) {
+    private static void setOrUpdateEntityLocation(UUID entityUUID, Vector location, UUID world) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
             if (oldLoc == null) return new ThreadSafeLoc(location, world);
             while (!oldLoc.update(location)) {
@@ -38,12 +45,17 @@ public class DataHolder {
         });
     }
 
-    public static void setOrUpdateEntityLocation(UUID entityUUID, ThreadSafeLoc location) {
-        setOrUpdateEntityLocation(entityUUID, location.read(), location.readWorld());
+    private static void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
+        setOrUpdateEntityLocation(entityUUID, location.toVector(), location.getWorld().getUID());
     }
 
-    public static void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
-        setOrUpdateEntityLocation(entityUUID, location.toVector(), location.getWorld().getUID());
+    // Run this async
+    public static void processEntityLocationQueue() {
+        while (!entityLocProcessingQueue.isEmpty()) {
+            EntityLocationPair entityLocationPair = entityLocProcessingQueue.poll();
+            if (entityLocationPair == null) return;
+            setOrUpdateEntityLocation(entityLocationPair.getEntity(), entityLocationPair.getLoc());
+        }
     }
 
     public static ThreadSafeLoc getEntityLocation(UUID entityUUID) {

@@ -1,7 +1,8 @@
 package games.cubi.raycastedAntiESP.config;
 
+import org.bukkit.configuration.file.FileConfiguration;
 
-public abstract class RaycastConfig {
+public class RaycastConfig {
     private final byte engineMode;
     private final byte maxOccludingCount;
     private final short alwaysShowRadius;
@@ -32,6 +33,37 @@ public abstract class RaycastConfig {
         if (enabled) throw new IllegalArgumentException("Abstract config created without parameters while enabled");
         engineMode = -1; maxOccludingCount = -1; alwaysShowRadius = 48; raycastRadius = -1; visibleRecheckInterval = -1;
 
+    }
+
+    public RaycastConfig(RaycastConfig other) {
+        // This is unhinged but also the simplest way I can think of to do this
+        this.engineMode = other.engineMode;
+        this.maxOccludingCount = other.maxOccludingCount;
+        this.alwaysShowRadius = other.alwaysShowRadius;
+        this.raycastRadius = other.raycastRadius;
+        this.visibleRecheckInterval = other.visibleRecheckInterval;
+        this.enabled = other.enabled;
+    }
+
+
+    static RaycastConfig getFromConfig(FileConfiguration config, String path, RaycastConfig defaults) {
+        return new RaycastConfig(
+                config.getInt(path+".engine-mode", defaults.getEngineMode()),
+                config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
+                config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
+                config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
+                config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval()),
+                config.getBoolean(path+".enabled", defaults.isEnabled())
+        );
+    }
+
+    static void setDefaults(FileConfiguration config, String path, RaycastConfig defaults) {
+        config.addDefault(path+".enabled", defaults.isEnabled());
+        config.addDefault(path+".engine-mode", defaults.getEngineMode());
+        config.addDefault(path+".max-occluding-count", defaults.getMaxOccludingCount());
+        config.addDefault(path+".always-show-radius", defaults.getAlwaysShowRadius());
+        config.addDefault(path+".raycast-radius", defaults.getRaycastRadius());
+        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval());
     }
 
     public byte getEngineMode() {

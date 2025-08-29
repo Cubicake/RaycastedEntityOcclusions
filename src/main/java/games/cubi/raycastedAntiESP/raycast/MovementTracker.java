@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MovementTracker {
-    private final Map<Player, Deque<Location>> history = new ConcurrentHashMap<>();
+    private final Map<Player, Deque<Location>> history = new ConcurrentHashMap<>(); //TODO: Queue makes more sense than deque, also this should be moved elsewhere
 
     public MovementTracker(RaycastedAntiESP plugin, ConfigManager config) {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, updateLocationHistory(config), 1L, 1L);
