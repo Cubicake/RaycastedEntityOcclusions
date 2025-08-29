@@ -54,7 +54,8 @@ public class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
         tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
         //engine = new Engine(this, cfg);
-        new UpdateChecker(this);
+        //new UpdateChecker(this);
+        UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
         getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg, engine), this);
         //Brigadier API
         LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();
