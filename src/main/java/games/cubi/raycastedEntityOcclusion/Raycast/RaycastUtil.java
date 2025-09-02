@@ -7,13 +7,21 @@ import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 public class RaycastUtil {
-    public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
-        Particle.DustOptions dustRed = null;
-        Particle.DustOptions dustGreen = null;
-        if (debug) {
+    static Particle.DustOptions dustRed = null;
+    static Particle.DustOptions dustGreen = null;
+
+    private static void initDebugParticles() {
+        if (dustRed == null) {
             dustRed = new Particle.DustOptions(org.bukkit.Color.RED, 1f);
+        }
+        if (dustGreen == null) {
             dustGreen = new Particle.DustOptions(org.bukkit.Color.GREEN, 1f);
         }
+    }
+
+    public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
+        initDebugParticles();
+        if (!start.getWorld().equals(end.getWorld())) return false;
         double total = start.distance(end);
         double traveled = 0;
         Location curr = start.clone();
