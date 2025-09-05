@@ -38,6 +38,12 @@ public class ConfigManager {
         }
         return instance;
     }
+    public static ConfigManager get() {
+        if (instance == null) {
+            Logger.error(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."));
+        }
+        return instance;
+    }
 
     /**
      * Load or reload the configuration from file
@@ -56,8 +62,8 @@ public class ConfigManager {
         playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
         entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
         tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
-        loadSnapshotConfig();
-        loadDebugConfig();
+        snapshotConfig = SnapshotConfig.getFromConfig(config, getDefaultSnapshotConfig());
+        debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
 
         // Save any new defaults that were added
         plugin.saveConfig();
@@ -75,42 +81,12 @@ public class ConfigManager {
         EntityConfig.setDefaults(config, getDefaultEntityConfig());
         TileEntityConfig.setDefaults(config, getTileEntityConfig());
 
-        // Snapshot defaults
-        config.addDefault("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval());
-        config.addDefault("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval());
-        config.addDefault("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots());
+        SnapshotConfig.setDefaults(config, getDefaultSnapshotConfig());
 
-        // Debug defaults
-        config.addDefault("debug.info-level", DEFAULT_DEBUG_CONFIG.getInfoLevel());
-        config.addDefault("debug.warn-level", DEFAULT_DEBUG_CONFIG.getWarnLevel());
-        config.addDefault("debug.error-level", DEFAULT_DEBUG_CONFIG.getErrorLevel());
-        config.addDefault("debug.particles", DEFAULT_DEBUG_CONFIG.showDebugParticles());
+        DebugConfig.setDefaults(config, getDefaultDebugConfig());
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
-    }
-
-    /**
-     * Load snapshot configuration
-     */
-    private void loadSnapshotConfig() {
-        snapshotConfig = new SnapshotConfig(
-                (short) config.getInt("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval()),
-                (short) config.getInt("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval()),
-                config.getBoolean("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots())
-        );
-    }
-
-    /**
-     * Load debug configuration
-     */
-    private void loadDebugConfig() {
-        debugConfig = new DebugConfig(
-                (byte) config.getInt("debug.info-level", DEFAULT_DEBUG_CONFIG.getInfoLevel()),
-                (byte) config.getInt("debug.warn-level", DEFAULT_DEBUG_CONFIG.getWarnLevel()),
-                (byte) config.getInt("debug.error-level", DEFAULT_DEBUG_CONFIG.getErrorLevel()),
-                config.getBoolean("debug.particles", DEFAULT_DEBUG_CONFIG.showDebugParticles())
-        );
     }
 
     /**

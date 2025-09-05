@@ -1,5 +1,7 @@
 package games.cubi.raycastedAntiESP;
 
+import games.cubi.raycastedAntiESP.config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.DebugConfig;
 import org.jetbrains.annotations.Range;
 
 public class Logger {
@@ -12,15 +14,13 @@ public class Logger {
         WARN,
         ERROR
     }
-    private static final int debugLevel = 1;
-    private static final int errorLevel = 1;
-    private static final int warningLevel = 1;
 
     private static int getLevel(Level severity) {
+        DebugConfig config = ConfigManager.get().getDebugConfig();
         return switch (severity) {
-            case INFO -> debugLevel;
-            case WARN -> warningLevel;
-            case ERROR -> errorLevel;
+            case INFO -> config.getInfoLevel();
+            case WARN -> config.getWarnLevel();
+            case ERROR -> config.getErrorLevel();
             default -> 10;
         };
     }

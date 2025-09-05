@@ -5,10 +5,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class SnapshotConfig {
     private static final String PATH = "snapshot";
     private final short worldSnapshotRefreshInterval;
-    private final short entityLocationRefreshInterval;
+    private final int entityLocationRefreshInterval;
     private final boolean performUnsafeWorldSnapshots;
 
-    public SnapshotConfig(short worldRefresh, short entityRefresh, boolean doUnsafeWorldSnapshots) {
+    public SnapshotConfig(short worldRefresh, int entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = worldRefresh;
         entityLocationRefreshInterval = entityRefresh;
         performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
@@ -16,7 +16,7 @@ public class SnapshotConfig {
 
     public SnapshotConfig(int worldRefresh, int entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = (short) worldRefresh;
-        entityLocationRefreshInterval = (short) entityRefresh;
+        entityLocationRefreshInterval = entityRefresh;
         performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
     }
 
@@ -24,8 +24,12 @@ public class SnapshotConfig {
         return worldSnapshotRefreshInterval;
     }
 
-    public short getEntityLocationRefreshInterval() {
+    public int getEntityLocationRefreshInterval() {
         return entityLocationRefreshInterval;
+    }
+
+    public int getEntityLocationRefreshIntervalTicks() {
+        return getEntityLocationRefreshInterval();
     }
 
     public boolean performUnsafeWorldSnapshots() {
@@ -40,12 +44,9 @@ public class SnapshotConfig {
         );
     }
 
-    static void setDefaults(FileConfiguration config, String path, RaycastConfig defaults) {
-        config.addDefault(path+".enabled", defaults.isEnabled());
-        config.addDefault(path+".engine-mode", defaults.getEngineMode());
-        config.addDefault(path+".max-occluding-count", defaults.getMaxOccludingCount());
-        config.addDefault(path+".always-show-radius", defaults.getAlwaysShowRadius());
-        config.addDefault(path+".raycast-radius", defaults.getRaycastRadius());
-        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval());
+    static void setDefaults(FileConfiguration config, SnapshotConfig defaults) {
+        config.addDefault(PATH+".world-refresh-interval", defaults.getWorldSnapshotRefreshInterval());
+        config.addDefault(PATH+".entity-location-refresh-interval", defaults.getEntityLocationRefreshInterval());
+        config.addDefault(PATH+".perform-unsafe-world-snapshots", defaults.performUnsafeWorldSnapshots());
     }
 }
