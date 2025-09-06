@@ -18,6 +18,10 @@ public class DataHolder {
         playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, bypass));
     }
 
+    public static PlayerData getPlayerData(UUID playerUUID) {
+        return playerDataMap.get(playerUUID);
+    }
+
     //Divider between methods for player data map and entity location map
     //
     //
@@ -66,4 +70,26 @@ public class DataHolder {
         return new HashMap<>(entityLocationMap);
     }
 
+    //
+    // Cache for whether an entity should be shown
+    //
+    //                       Entity UUID, Timestamp
+    private static final HashMap<UUID, Long> shouldShowEntity = new HashMap<>(); // Should only ever be accessed from main thread
+
+    public static void addEntityToShouldShowCache(UUID entityUUID) {
+        synchronized (shouldShowEntity) {
+            shouldShowEntity.put(entityUUID, System.currentTimeMillis());
+        }
+    }
+    public static boolean isEntityInShouldShowCache(UUID entityUUID) {
+        synchronized (shouldShowEntity) {
+            return shouldShowEntity.remove(entityUUID) != null;
+        }
+    }
+    public static void cleanShouldShowEntityCache() {
+        long currentTime = System.currentTimeMillis();
+        synchronized (shouldShowEntity) {
+            shouldShowEntity.entrySet().removeIf(entry -> currentTime - entry.getValue() > 1000); // Remove entries older than 1 second
+        }
+    }
 }

@@ -7,10 +7,12 @@ import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.utils.DataHolder;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import io.papermc.paper.event.entity.EntityMoveEvent;
+import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
@@ -49,34 +51,34 @@ public class EventListener implements Listener {
 
     // Snapshot events
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onChunkLoad(ChunkLoadEvent e) {
         manager.onChunkLoad(e.getChunk());
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onChunkUnload(ChunkUnloadEvent e) {
         manager.onChunkUnload(e.getChunk());
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlace(BlockPlaceEvent e) {
         manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType());
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBreak(BlockBreakEvent e) {
         manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBurn(BlockBurnEvent e) {
         manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
     }
     // These events do not cover all cases, but I can't be bothered to figure out a better solution rn. Frequent snapshot refreshes is the solution. If anyone has a solution please let me know.
 
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDisconnect(PlayerQuitEvent e) {
         if (DataHolder.packetEventsPresent && packetProcessor != null) {
             UUID player = e.getPlayer().getUniqueId();
@@ -84,7 +86,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
@@ -93,18 +95,28 @@ public class EventListener implements Listener {
         DataHolder.registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
         //TODO: connect this to new engine
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR) //Runs last
     public void serverTickStopEvent(ServerTickStartEvent event) {
 
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
-        DataHolder.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo());
+        DataHolder.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo().add(0,event.getEntity().getHeight()/2,0));
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerTrackEntity(PlayerTrackEntityEvent event) {
+        UUID entityUUID = event.getEntity().getUniqueId();
+        if (DataHolder.isEntityInShouldShowCache(entityUUID)) return;
+        Player player = event.getPlayer();
+        event.setCancelled(true);
+        player.hideEntity(plugin, event.getEntity());
+        DataHolder.getPlayerData(player.getUniqueId()).addEntity(entityUUID);
     }
 }

@@ -5,10 +5,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 public class SnapshotConfig {
     private static final String PATH = "snapshot";
     private final short worldSnapshotRefreshInterval;
-    private final short entityLocationRefreshInterval;
+    private final int entityLocationRefreshInterval;
     private final boolean performUnsafeWorldSnapshots;
 
-    public SnapshotConfig(short worldRefresh, short entityRefresh, boolean doUnsafeWorldSnapshots) {
+    public SnapshotConfig(short worldRefresh, int entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = worldRefresh;
         entityLocationRefreshInterval = entityRefresh;
         performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
@@ -16,7 +16,7 @@ public class SnapshotConfig {
 
     public SnapshotConfig(int worldRefresh, int entityRefresh, boolean doUnsafeWorldSnapshots) {
         worldSnapshotRefreshInterval = (short) worldRefresh;
-        entityLocationRefreshInterval = (short) entityRefresh;
+        entityLocationRefreshInterval = entityRefresh;
         performUnsafeWorldSnapshots = doUnsafeWorldSnapshots;
     }
 
@@ -24,8 +24,12 @@ public class SnapshotConfig {
         return worldSnapshotRefreshInterval;
     }
 
-    public short getEntityLocationRefreshInterval() {
+    public int getEntityLocationRefreshInterval() {
         return entityLocationRefreshInterval;
+    }
+
+    public int getEntityLocationRefreshIntervalTicks() {
+        return getEntityLocationRefreshInterval();
     }
 
     public boolean performUnsafeWorldSnapshots() {

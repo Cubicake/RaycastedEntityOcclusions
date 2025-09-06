@@ -48,7 +48,7 @@ public class PlayerData {
     }
 
     public void addEntity(UUID entityUUID) {
-        entityVisibility.putIfAbsent(entityUUID, true); // Default to visible if not already present
+        entityVisibility.putIfAbsent(entityUUID, false); // Default to hidden if not already present
     }
 
     public void setEntityVisibility(UUID entityUUID, boolean visible) {

@@ -38,6 +38,12 @@ public class ConfigManager {
         }
         return instance;
     }
+    public static ConfigManager get() {
+        if (instance == null) {
+            Logger.error(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."));
+        }
+        return instance;
+    }
 
     /**
      * Load or reload the configuration from file
