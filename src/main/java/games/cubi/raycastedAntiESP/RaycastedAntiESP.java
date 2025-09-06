@@ -19,7 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import games.cubi.raycastedAntiESP.bStats.MetricsCollector;
 
-public class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
+public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager cfg;
     private static ChunkSnapshotManager snapMgr;
     private static MovementTracker tracker;
@@ -89,8 +89,8 @@ public class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
             public void run() {
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
                     DataHolder.packetEventsPresent = true;
-                    packetProcessor = new PacketProcessor(RaycastedAntiESP.this);
-                    Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.");
+                    packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
+                    Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.", 3);
                 }
             }
         }.runTaskLater(this, 1L);

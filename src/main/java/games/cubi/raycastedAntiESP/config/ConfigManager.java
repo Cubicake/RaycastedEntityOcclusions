@@ -17,12 +17,12 @@ public class ConfigManager {
     private SnapshotConfig snapshotConfig;
     private DebugConfig debugConfig;
 
-    // Default config objects
+    // Default config objects TODO: Keep these here or move into individual config classes?
     private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true);
-    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 60, false);
-    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(1, 2, 2, false);
+    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
+    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(3, 3, 3, false, false);
 
     private int maxEngineMode;
 
@@ -56,8 +56,8 @@ public class ConfigManager {
         playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
         entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
         tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
-        loadSnapshotConfig();
-        loadDebugConfig();
+        snapshotConfig = SnapshotConfig.getFromConfig(config, getDefaultSnapshotConfig());
+        debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
 
         // Save any new defaults that were added
         plugin.saveConfig();
@@ -75,42 +75,12 @@ public class ConfigManager {
         EntityConfig.setDefaults(config, getDefaultEntityConfig());
         TileEntityConfig.setDefaults(config, getTileEntityConfig());
 
-        // Snapshot defaults
-        config.addDefault("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval());
-        config.addDefault("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval());
-        config.addDefault("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots());
+        SnapshotConfig.setDefaults(config, getDefaultSnapshotConfig());
 
-        // Debug defaults
-        config.addDefault("debug.info-level", DEFAULT_DEBUG_CONFIG.getInfoLevel());
-        config.addDefault("debug.warn-level", DEFAULT_DEBUG_CONFIG.getWarnLevel());
-        config.addDefault("debug.error-level", DEFAULT_DEBUG_CONFIG.getErrorLevel());
-        config.addDefault("debug.particles", DEFAULT_DEBUG_CONFIG.showDebugParticles());
+        DebugConfig.setDefaults(config, getDefaultDebugConfig());
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
-    }
-
-    /**
-     * Load snapshot configuration
-     */
-    private void loadSnapshotConfig() {
-        snapshotConfig = new SnapshotConfig(
-                (short) config.getInt("snapshot.world-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getWorldSnapshotRefreshInterval()),
-                (short) config.getInt("snapshot.entity-location-refresh-interval", DEFAULT_SNAPSHOT_CONFIG.getEntityLocationRefreshInterval()),
-                config.getBoolean("snapshot.perform-unsafe-world-snapshots", DEFAULT_SNAPSHOT_CONFIG.performUnsafeWorldSnapshots())
-        );
-    }
-
-    /**
-     * Load debug configuration
-     */
-    private void loadDebugConfig() {
-        debugConfig = new DebugConfig(
-                (byte) config.getInt("debug.info-level", DEFAULT_DEBUG_CONFIG.getInfoLevel()),
-                (byte) config.getInt("debug.warn-level", DEFAULT_DEBUG_CONFIG.getWarnLevel()),
-                (byte) config.getInt("debug.error-level", DEFAULT_DEBUG_CONFIG.getErrorLevel()),
-                config.getBoolean("debug.particles", DEFAULT_DEBUG_CONFIG.showDebugParticles())
-        );
     }
 
     /**
@@ -166,6 +136,13 @@ public class ConfigManager {
         return maxMode;
     }
 
+    private static boolean isNotOnMainThread() {
+        if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
+            return false;
+        }
+        Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."));
+        return true;
+    }
 
     public static PlayerConfig getDefaultPlayerConfig() {
         return DEFAULT_PLAYER_CONFIG;
@@ -214,13 +191,5 @@ public class ConfigManager {
 
     public int getEngineMode() {
         return maxEngineMode;
-    }
-
-    private static boolean isNotOnMainThread() {
-        if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
-            return false;
-        }
-        Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."));
-        return true;
     }
 }

@@ -62,7 +62,7 @@ public class ChunkSnapshotManager {
                         snapshotChunk(key);
                     }
                 }
-                Logger.debug("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", 10);
+                Logger.info("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", 10);
             }
         }.runTaskTimerAsynchronously(plugin, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L /* This runs 10 times per refreshInterval, spreading out the refreshes */);
     }
@@ -82,29 +82,30 @@ public class ChunkSnapshotManager {
         snapshotChunk(getKeyChunk(key));
     }
     public void removeChunkSnapshot(Chunk c) {
-        Logger.debug("ChunkSnapshotManager: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), 9);
+        Logger.info("ChunkSnapshotManager: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), 9);
         dataMap.remove(key(c));
     }
 
     // Used by EventListener to update the delta map when a block is placed or broken
     public void onBlockChange(Location loc, Material m) {
-        Logger.debug("ChunkSnapshotManager: Block change at " + loc + " to " + m, 8);
+        Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m, 9);
         Data d = dataMap.get(key(loc.getChunk()));
-        if (d != null) {
-            d.delta.put(new BlockLocation(loc), m);
-            if (cfg.getTileEntityConfig().isEnabled()) {
-                // Check if the block is a tile entity
-                BlockState data = loc.getBlock().getState();
-                loc = loc.clone().add(0.5, 0.5, 0.5);
-                if (data instanceof TileState) {
-                    Logger.debug("ChunkSnapshotManager: Tile entity at " + loc, 10);
-                    d.tileEntities.add(loc);
-                } else {
-                    d.tileEntities.remove(loc);
-                }
+        if (d == null) {
+            Logger.error("Data map value empty, ignoring block update!",3);
+        }
+        d.delta.put(new BlockLocation(loc), m);
+        if (cfg.getTileEntityConfig().isEnabled()) {
+            // Check if the block is a tile entity
+            BlockState data = loc.getBlock().getState();
+            loc = loc.clone().add(0.5, 0.5, 0.5);
+            if (data instanceof TileState) {
+                Logger.info("ChunkSnapshotManager: Tile entity at " + loc, 8);
+                d.tileEntities.add(loc);
+            }
+            else {
+                d.tileEntities.remove(loc);
             }
         }
-        else {Logger.error("Data map value empty, ignoring block update!");}
     }
 
     private Data takeSnapshot(Chunk c, long now) {
@@ -159,7 +160,7 @@ public class ChunkSnapshotManager {
         Data d = dataMap.get(key(chunk));
         if (d == null) {
             Chunk c = loc.getChunk();
-            Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
+            Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)", 3);
             //EngineOld.syncRecheck.add(chunk); TODO reenable
             return loc.getBlock().getType();
         }
@@ -169,7 +170,7 @@ public class ChunkSnapshotManager {
         }
         Material dm = d.delta.get(new BlockLocation(loc));
         if (dm != null) {
-            Logger.debug("Using delta", 9);
+            Logger.info("Using delta", 9);
             return dm;
         }
         int x = loc.getBlockX() & 0xF;
@@ -190,7 +191,7 @@ public class ChunkSnapshotManager {
 
     public int getNumberOfCachedChunks() {
         return dataMap.size();
-        //created to use in a debug command maybe
+        //created to use in a info command maybe
     }
 
 }

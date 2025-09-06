@@ -40,12 +40,9 @@ public class SnapshotConfig {
         );
     }
 
-    static void setDefaults(FileConfiguration config, String path, RaycastConfig defaults) {
-        config.addDefault(path+".enabled", defaults.isEnabled());
-        config.addDefault(path+".engine-mode", defaults.getEngineMode());
-        config.addDefault(path+".max-occluding-count", defaults.getMaxOccludingCount());
-        config.addDefault(path+".always-show-radius", defaults.getAlwaysShowRadius());
-        config.addDefault(path+".raycast-radius", defaults.getRaycastRadius());
-        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval());
+    static void setDefaults(FileConfiguration config, SnapshotConfig defaults) {
+        config.addDefault(PATH+".world-refresh-interval", defaults.getWorldSnapshotRefreshInterval());
+        config.addDefault(PATH+".entity-location-refresh-interval", defaults.getEntityLocationRefreshInterval());
+        config.addDefault(PATH+".perform-unsafe-world-snapshots", defaults.performUnsafeWorldSnapshots());
     }
 }
