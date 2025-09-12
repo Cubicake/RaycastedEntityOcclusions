@@ -8,7 +8,7 @@ import games.cubi.raycastedAntiESP.packets.Registrar;
 import games.cubi.raycastedAntiESP.raycast.MovementTracker;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
-import games.cubi.raycastedAntiESP.utils.DataHolder;
+import games.cubi.raycastedAntiESP.data.DataHolder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -88,12 +88,17 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
             @Override
             public void run() {
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-                    DataHolder.packetEventsPresent = true;
+                    DataHolder.setPacketEventsPresent();
                     packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
                     Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.", 3);
                 }
             }
         }.runTaskLater(this, 1L);
+    }
+
+    @Override
+    public void onDisable() {
+        Logger.flush();
     }
 
 

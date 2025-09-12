@@ -58,9 +58,7 @@ public class UpdateChecker {
                 }
             });
         }).exceptionally(ex -> {
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                Logger.error(ex);
-            });
+            Logger.errorAndReturn(ex);
             return null;
         });
     }

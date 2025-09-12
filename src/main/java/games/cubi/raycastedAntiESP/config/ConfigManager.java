@@ -22,7 +22,7 @@ public class ConfigManager {
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true);
     private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
-    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(3, 3, 3, false, false);
+    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(3, 3, 3, false, false, false);
 
     private int maxEngineMode;
 
@@ -39,9 +39,7 @@ public class ConfigManager {
         return instance;
     }
     public static ConfigManager get() {
-        if (instance == null) {
-            Logger.error(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."));
-        }
+        if (instance == null) Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."));
         return instance;
     }
 

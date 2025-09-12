@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -33,6 +34,10 @@ public class QuantisedLocation {
 
     public ThreadSafeLoc toThreadSafeLoc() {
         return new ThreadSafeLoc(this);
+    }
+
+    public Vector toNewVector() {
+        return new Vector((x / 10.0)+0.05, (y / 10.0)+0.05, (z / 10.0)+0.05);
     }
 
     public boolean isWithinRadius(QuantisedLocation other, double radius) {

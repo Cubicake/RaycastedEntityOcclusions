@@ -4,7 +4,7 @@ import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import games.cubi.raycastedAntiESP.engine.Engine;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedAntiESP.utils.DataHolder;
+import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
@@ -23,7 +23,6 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.UUID;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
@@ -41,7 +40,7 @@ public class EventListener implements Listener {
         this.engine = engine;
         //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (DataHolder.packetEventsPresent) {
+            if (DataHolder.isPacketEventsPresent()) {
                 packetProcessor = RaycastedAntiESP.getPacketProcessor();
             } else {
                 packetProcessor = null;
@@ -80,7 +79,7 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDisconnect(PlayerQuitEvent e) {
-        if (DataHolder.packetEventsPresent && packetProcessor != null) {
+        if (DataHolder.isPacketEventsPresent() && packetProcessor != null) {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
         }
@@ -92,7 +91,7 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, player);
         }
-        DataHolder.registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
+        DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
@@ -107,16 +106,16 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
-        DataHolder.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo().add(0,event.getEntity().getHeight()/2,0));
+        DataHolder.entityLocation().queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo().add(0,event.getEntity().getHeight()/2,0));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerTrackEntity(PlayerTrackEntityEvent event) {
         UUID entityUUID = event.getEntity().getUniqueId();
-        if (DataHolder.isEntityInShouldShowCache(entityUUID)) return;
+        if (DataHolder.entityVisibility().isEntityInShouldShowCache(entityUUID)) return;
         Player player = event.getPlayer();
         event.setCancelled(true);
         player.hideEntity(plugin, event.getEntity());
-        DataHolder.getPlayerData(player.getUniqueId()).addEntity(entityUUID);
+        DataHolder.players().getPlayerData(player.getUniqueId()).addEntity(entityUUID);
     }
 }

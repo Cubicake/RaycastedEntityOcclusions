@@ -75,7 +75,7 @@ public class ThreadSafeLoc //TBH I still don't even know if this is needed
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.error(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
             }
         }
         else return false;
@@ -91,7 +91,7 @@ public class ThreadSafeLoc //TBH I still don't even know if this is needed
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.error(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
             }
         }
         else return false;
