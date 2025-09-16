@@ -1,7 +1,6 @@
 package games.cubi.raycastedAntiESP;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import games.cubi.raycastedAntiESP.engine.Engine;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.data.DataHolder;
@@ -31,13 +30,13 @@ public class EventListener implements Listener {
     private final ConfigManager config;
     private PacketProcessor packetProcessor;
     private final RaycastedAntiESP plugin;
-    private final Engine engine;
 
-    public EventListener(RaycastedAntiESP plugin, ChunkSnapshotManager mgr, ConfigManager cfg, Engine engine) {
+    private static EventListener instance = null;
+
+    private EventListener(RaycastedAntiESP plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
         this.manager = mgr;
         this.config = cfg;
         this.plugin = plugin;
-        this.engine = engine;
         //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (DataHolder.isPacketEventsPresent()) {
@@ -46,6 +45,13 @@ public class EventListener implements Listener {
                 packetProcessor = null;
             }
         }, 1L);
+    }
+
+    public static EventListener getInstance(RaycastedAntiESP plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
+        if (instance == null) {
+            instance = new EventListener(plugin, mgr, cfg);
+        }
+        return instance;
     }
 
     // Snapshot events
@@ -85,7 +91,7 @@ public class EventListener implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
@@ -96,12 +102,13 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
+        DataHolder.incrementTick();
         //TODO: connect this to new engine
     }
 
     @EventHandler(priority = EventPriority.MONITOR) //Runs last
     public void serverTickStopEvent(ServerTickStartEvent event) {
-
+        DataHolder.incrementTick();
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -112,10 +119,25 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerTrackEntity(PlayerTrackEntityEvent event) {
         UUID entityUUID = event.getEntity().getUniqueId();
-        if (DataHolder.entityVisibility().isEntityInShouldShowCache(entityUUID)) return;
         Player player = event.getPlayer();
+        UUID playerUUID = player.getUniqueId();
+
+        if (DataHolder.entityVisibility().entityVisibilityShouldChange(entityUUID, playerUUID)) return; // The player is meant to see the entity, do nothing
+
         event.setCancelled(true);
-        player.hideEntity(plugin, event.getEntity());
-        DataHolder.players().getPlayerData(player.getUniqueId()).addEntity(entityUUID);
+        DataHolder.entityVisibility().hideEntity(entityUUID, player);
+        DataHolder.players().getPlayerData(playerUUID).addEntity(entityUUID);
     }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerUntrackEntity(PlayerTrackEntityEvent event) {
+        UUID entityUUID = event.getEntity().getUniqueId();
+        Player player = event.getPlayer();
+        UUID playerUUID = player.getUniqueId();
+
+        if (DataHolder.entityVisibility().entityVisibilityShouldChange(entityUUID, playerUUID)) return; // State change was triggered by us, do nothing
+
+        DataHolder.players().getPlayerData(playerUUID).removeEntity(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
+    }
+
 }

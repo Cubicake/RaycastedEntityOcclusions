@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP.utils;
 
+import games.cubi.raycastedAntiESP.data.DataHolder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -11,17 +12,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerData {
+
+    private record EntityVisibilityAndLastCheckTime(boolean visible, int lastChecked) {
+        public EntityVisibilityAndLastCheckTime(boolean visible) {
+            this(visible, DataHolder.getTick());
+        }
+    }
+
     // Maps must be thread-safe as their values will be updated while async engine jobs are running, but UUID is probably fine.
     private final UUID playerUUID;
-    private final boolean hasBypassPermission;
+    private boolean hasBypassPermission;
 
     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
-    private final ConcurrentHashMap<UUID, Boolean> entityVisibility = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> entityVisibility = new ConcurrentHashMap<>();
 
     // Location, time in millis TODO: Is it necessary to store the time as a long? Do we even need a recheck interval at all?
     private final ConcurrentHashMap<BlockLocation, Long> seenTileEntities = new ConcurrentHashMap<>();
-
-    private final AtomicInteger ticksSinceVisibleEntityRecheck = new AtomicInteger(0);
 
     public PlayerData(UUID playerUUID, boolean hasBypassPermission) {
         this.playerUUID = playerUUID;
@@ -37,26 +43,25 @@ public class PlayerData {
         return playerUUID;
     }
 
-    public Map<UUID, Boolean> getEntityVisibilityMap() {
-        return new HashMap<>(entityVisibility);
-    }
-
+    /**
+     * Adds the provided set of entity UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
+     * **/
     public void addEntities(Set<UUID> entityUUIDs) {
         for (UUID entityUUID : entityUUIDs) {
-            entityVisibility.putIfAbsent(entityUUID, true);
+            entityVisibility.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false));
         }
     }
 
     public void addEntity(UUID entityUUID) {
-        entityVisibility.putIfAbsent(entityUUID, false); // Default to hidden if not already present
+        entityVisibility.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false)); // Default to hidden if not already present
     }
 
     public void setEntityVisibility(UUID entityUUID, boolean visible) {
-        entityVisibility.put(entityUUID, visible); // This can be used for both adding new entries and updating visibility
+        entityVisibility.put(entityUUID, new EntityVisibilityAndLastCheckTime(visible)); // This can be used for both adding new entries and updating visibility
     }
 
     public boolean isEntityVisible(UUID entityUUID) {
-        return entityVisibility.getOrDefault(entityUUID, true);
+        return entityVisibility.getOrDefault(entityUUID, new EntityVisibilityAndLastCheckTime(true)).visible;
         //Default to true as entities are visible unless explicitly hidden
     }
 
@@ -92,19 +97,11 @@ public class PlayerData {
         return seenTileEntities.containsKey(new BlockLocation(tileEntityLocation));
     }
 
-    public void incrementTicksSinceVisibleEntityRecheck() {
-        ticksSinceVisibleEntityRecheck.incrementAndGet();
-    }
-
-    public void resetTicksSinceVisibleEntityRecheck() {
-        ticksSinceVisibleEntityRecheck.set(0);
-    }
-
-    public int getTicksSinceVisibleEntityRecheck() {
-        return ticksSinceVisibleEntityRecheck.get();
-    }
-
     public boolean hasBypassPermission() {
         return hasBypassPermission;
+    }
+
+    public void setBypassPermission(boolean hasBypassPermission) {
+        this.hasBypassPermission = hasBypassPermission;
     }
 }
