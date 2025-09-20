@@ -26,8 +26,8 @@ public class CommandsManager {
 
     public LiteralCommandNode<CommandSourceStack> registerCommand() {
         //run help command if no context provided
-        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedentityocclusions")
-                .requires(sender -> sender.getSender().hasPermission("raycastedentityocclusions.command"))
+        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedantiesp")
+                .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
                 .executes(context -> {
                     helpCommand(context);
                     return Command.SINGLE_SUCCESS;
@@ -37,14 +37,14 @@ public class CommandsManager {
                 .then(Commands.literal("reload")
                     .executes(context -> {
                     cfg.load();
-                    context.getSource().getSender().sendMessage("[EntityOcclusions] Config reloaded.");
+                    context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
                     return Command.SINGLE_SUCCESS;
                 }))
                 .then(Commands.literal("config-values")
                     .executes(context -> {
                         CommandSender sender = context.getSource().getSender();
                         //dynamic config values
-                        sender.sendMessage("[EntityOcclusions] Config values: ");
+                        sender.sendMessage("[RaycastedAntiESP] Config values: ");
 
                         ConfigurationSection root = cfg.getConfigFile().getConfigurationSection("");
                         for (String path : root.getKeys(true)) {
@@ -58,7 +58,7 @@ public class CommandsManager {
                 .then(Commands.literal("set")
                         .executes(context -> {
                             CommandSender sender = context.getSource().getSender();
-                            sender.sendRichMessage("<red>Usage: /raycastedentityocclusions set <key> <value>");;
+                            sender.sendRichMessage("<red>Usage: /raycastedantiesp set <key> <value>");;
                             return 0;
                         })
                         .then(Commands.argument("key", StringArgumentType.string())

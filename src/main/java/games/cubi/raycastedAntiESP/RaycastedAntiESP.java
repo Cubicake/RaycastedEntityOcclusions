@@ -60,9 +60,9 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(buildCommand);
-            //alias "reo"
-            commands.registrar().register(Commands.literal("reo")
-                    .requires(sender -> sender.getSender().hasPermission("raycastedentityocclusions.command"))
+            //alias "antiesp"
+            commands.registrar().register(Commands.literal("antiesp")
+                    .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
                     .executes(context -> {
                         new CommandsManager(this, cfg).helpCommand(context);
                         return Command.SINGLE_SUCCESS;
