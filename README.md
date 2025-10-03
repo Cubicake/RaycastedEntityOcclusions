@@ -15,7 +15,10 @@ Use cases:
   - Massive megabases containing hundreds of armour stands, item frames, banners etc can cause performance issues on low-end devices unable to process so many entities. REO will cull those entities for the client, reducing the number of entities to process.
 - Hide nametags behind walls
   - Yes, this plugin is a bit overkill for doing that, yes you can do it anyways.
+ 
+Dependencies:
+- Packetevents (soft depend)
+  - Only needed if you are using the cull-players option and wish for the players to remain in the tablist
 
 Known issues:
-- Due to the nature of the plugin, there will be a short delay once an entity should be visible before it appears, causing it to appear like it "popped" into view. This issue is partially resolved by turning engine-mode to 2
-- If cull-player is set to true any culled players will be removed from tablist. Potential solutions are being investigated, suggestions are welcome.
+- Due to the nature of the plugin, there will be a short delay once an entity should be visible before it appears, causing it to appear like it "popped" into view. This issue is partially resolved by turning engine-mode to 2, and is worse for players with higher ping.
