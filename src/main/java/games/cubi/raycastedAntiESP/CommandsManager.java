@@ -49,7 +49,7 @@ public class CommandsManager {
                         ConfigurationSection root = cfg.getConfigFile().getConfigurationSection("");
                         for (String path : root.getKeys(true)) {
                             Object val = cfg.getConfigFile().get(path);
-
+                            if (val instanceof ConfigurationSection) continue;
                             sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
                         }
                         return Command.SINGLE_SUCCESS;
@@ -102,11 +102,11 @@ public class CommandsManager {
 
     public int helpCommand(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        sender.sendRichMessage("<white>RaycastedEntityOcclusions <yellow>v" + plugin.getDescription().getVersion());
+        sender.sendRichMessage("<white>RaycastedAntiESP <yellow>v" + plugin.getDescription().getVersion());
         sender.sendRichMessage("<white>Commands:");
-        sender.sendRichMessage("<green>/raycastedentityocclusions reload <gray>- Reloads the config");
-        sender.sendRichMessage("<green>/raycastedentityocclusions config-values <gray>- Shows all config values");
-        sender.sendRichMessage("<green>/raycastedentityocclusions set <key> <value> <gray>- Sets a config value");
+        sender.sendRichMessage("<green>/raycastedantiesp reload <gray>- Reloads the config");
+        sender.sendRichMessage("<green>/raycastedantiesp config-values <gray>- Shows all config values");
+        sender.sendRichMessage("<green>/raycastedantiesp set <key> <value> <gray>- Sets a config value");
         return Command.SINGLE_SUCCESS;
     }
 

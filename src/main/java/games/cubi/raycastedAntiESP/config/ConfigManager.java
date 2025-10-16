@@ -2,7 +2,10 @@ package games.cubi.raycastedAntiESP.config;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+
+import java.util.List;
 
 public class ConfigManager {
     private static ConfigManager instance;
@@ -20,7 +23,7 @@ public class ConfigManager {
     // Default config objects TODO: Keep these here or move into individual config classes?
     private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
-    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true);
+    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true, List.of(Material.BEACON));
     private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
     private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(3, 3, 3, false, false, false);
 
@@ -77,7 +80,7 @@ public class ConfigManager {
 
         PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
         EntityConfig.setDefaults(config, getDefaultEntityConfig());
-        TileEntityConfig.setDefaults(config, getTileEntityConfig());
+        TileEntityConfig.setDefaults(config, getDefaultTileEntityConfig());
 
         SnapshotConfig.setDefaults(config, getDefaultSnapshotConfig());
 
@@ -91,7 +94,7 @@ public class ConfigManager {
      * Update a single config value both in memory and in the file
      * @param path The config path (e.g., "player.enabled")
      * @param rawValue The raw string value to set
-     * @return 1 for success, 0 for out of range, -1 for invalid input
+     * @return 1 for success, 0 for out of range, -1 for invalid input  TODO: This is currently broken, and even if it worked it doesn't handle setting lists
      */
     public int setConfigValue(String path, String rawValue) {
         if (!config.contains(path)) {

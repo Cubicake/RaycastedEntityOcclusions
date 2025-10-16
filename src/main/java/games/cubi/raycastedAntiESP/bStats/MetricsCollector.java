@@ -20,7 +20,7 @@ public class MetricsCollector {
         metrics = new Metrics(plugin, pluginId);
         this.config = config;/*
         registerCustomMetrics();
-
+            TODO: Re-enable metrics
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
     }
 /*

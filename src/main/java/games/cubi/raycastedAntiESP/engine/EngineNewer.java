@@ -45,6 +45,24 @@ public class EngineNewer {
         }
     }
 
+    private void /*TODO: return the subscriber list*/ createSubscriberList() {
+        for (PlayerData playerData : DataHolder.players().getAllPlayerData()) {
+            if (playerData.hasBypassPermission()) continue;
+            ThreadSafeLoc playerLocation = DataHolder.entityLocation().getEntityLocation(playerData.getPlayerUUID());
+
+            if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player location missing for " + playerData.getPlayerUUID()));
+
+            boolean checkEntities = config.getEntityConfig().isEnabled();
+            boolean checkBlocks = config.getTileEntityConfig().isEnabled();
+            boolean checkPlayers = config.getPlayerConfig().isEnabled();
+        }
+    }
+
+
+
+
+
+
     private void forceEntityLocationUpdate() {
         int recheckInterval = ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
         if (recheckInterval <= 0) {
@@ -77,5 +95,4 @@ public class EngineNewer {
         }
         asyncScheduler.runDelayed(plugin, this::flushLogCache, 2, TimeUnit.SECONDS);
     }
-
 }

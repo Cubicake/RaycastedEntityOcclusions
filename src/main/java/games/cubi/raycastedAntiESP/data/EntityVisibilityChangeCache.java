@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EntityVisibilityChangeCache {
     private static EntityVisibilityChangeCache instance;
@@ -25,6 +26,10 @@ public class EntityVisibilityChangeCache {
 
     private final HashMap<PlayerEntityPair, Long> visibilityStatusChange = new HashMap<>(); // Should only ever be accessed from main thread
 
+    private record ShowOrHideEntityToPlayer (UUID entityUUID, UUID playerUUID, boolean show) {}
+
+    private final ConcurrentLinkedQueue<ShowOrHideEntityToPlayer> entityVisibilityProcessingQueue = new ConcurrentLinkedQueue<>();
+
     public void showEntity(UUID entityUUID, Player player) {
         Entity entity = Bukkit.getEntity(entityUUID);
         Objects.requireNonNull(entity);
@@ -37,6 +42,35 @@ public class EntityVisibilityChangeCache {
     public void showEntity(Entity entity, UUID entityUUID, Player player) {
         addToVisibilityChangeCache(entityUUID, player.getUniqueId());
         player.showEntity(RaycastedAntiESP.get(), entity);
+    }
+
+    public void showEntityAsync(UUID entityUUID, UUID playerUUID) {
+        addToVisibilityChangeCache(entityUUID, playerUUID);
+        addToEntityVisibilityProcessingQueue(entityUUID, playerUUID, true);
+    }
+
+    public void hideEntityAsync(UUID entityUUID, UUID playerUUID) {
+        addToVisibilityChangeCache(entityUUID, playerUUID);
+        addToEntityVisibilityProcessingQueue(entityUUID, playerUUID, false);
+    }
+
+    private void addToEntityVisibilityProcessingQueue(UUID entityUUID, UUID playerUUID, boolean show) {
+        entityVisibilityProcessingQueue.add(new ShowOrHideEntityToPlayer(entityUUID, playerUUID, show));
+    }
+
+    private void processEntityVisibilityProcessingQueue() {
+        while (!entityVisibilityProcessingQueue.isEmpty()) {
+            ShowOrHideEntityToPlayer task = entityVisibilityProcessingQueue.poll();
+            if (task == null) return;
+            Entity entity = Bukkit.getEntity(task.entityUUID());
+            Player player = Bukkit.getPlayer(task.playerUUID());
+            if (entity == null || player == null) continue; // Entity or player might have logged out or despawned
+            if (task.show()) {
+                player.showEntity(RaycastedAntiESP.get(), entity);
+            } else {
+                player.hideEntity(RaycastedAntiESP.get(), entity);
+            }
+        }
     }
 
     public void hideEntity(UUID entityUUID, Player player) {

@@ -118,8 +118,7 @@ public class Logger {
         flushLock.lock();
         try {
             // Atomically swap buffers so producers can keep logging without blocking on I/O.
-            ConcurrentLinkedQueue<String> toWrite =
-                    logBuffer.getAndSet(new ConcurrentLinkedQueue<>());
+            ConcurrentLinkedQueue<String> toWrite = logBuffer.getAndSet(new ConcurrentLinkedQueue<>());
 
             if (toWrite.isEmpty()) return;
 
