@@ -7,7 +7,6 @@ import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 
 
 import java.io.BufferedReader;
