@@ -18,15 +18,15 @@ public class Logger {
     }
 
     public static void info(String message) {
-        //forwardLog(/*PREFIX+*/message, Level.INFO);
+        forwardLog(/*PREFIX+*/message, Level.INFO);
     }
 
     public static void warning(String message) {
-        //forwardLog(/* PREFIX_WARNING + */ message, Level.WARN);
+        forwardLog(/* PREFIX_WARNING + */ message, Level.WARN);
     }
 
     public static void error(String message) {
-        //forwardLog(/* PREFIX_ERROR+ */ message, Level.ERROR);
+        forwardLog(/* PREFIX_ERROR+ */ message, Level.ERROR);
     }
 
     public static void debug(String message, @Range(from = 1, to = 10) int level) {
@@ -54,7 +54,5 @@ public class Logger {
             default:
                 plugin.getComponentLogger().error("{} | Additionally, severity {} is not supported by the logger.", messageComponent, severity);
         }
-        //Bukkit.getConsoleSender().sendRichMessage(message);
-        //Bukkit.broadcast(MiniMessage.miniMessage().deserialize(message), "raycastedentityocclusions.receivelogmessages");
     }
 }
