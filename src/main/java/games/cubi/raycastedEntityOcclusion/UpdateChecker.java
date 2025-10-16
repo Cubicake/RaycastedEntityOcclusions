@@ -60,7 +60,7 @@ public class UpdateChecker {
         String[] currentParts = currentVersion.replace("v", "").split("\\.");
         String[] fetchedParts = fetchedVersion.replace("v", "").split("\\.");
 
-        if (currentParts.length != 3 || fetchedParts.length != 3) {
+        if (currentParts.length < 3 || fetchedParts.length < 3) {
             return INVALID_VERSION_FORMAT;
         }
 
