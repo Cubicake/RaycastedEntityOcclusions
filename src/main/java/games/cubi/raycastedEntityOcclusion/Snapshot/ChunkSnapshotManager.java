@@ -15,16 +15,17 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChunkSnapshotManager {
-    public static class Data {
+    private static class Data {
         public final ChunkSnapshot snapshot;
-        public final ConcurrentHashMap<Location, Material> delta = new ConcurrentHashMap<>();
-        public final Set<Location> tileEntities = ConcurrentHashMap.newKeySet();
+        public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
+        public final Set<BlockLocation> tileEntities = ConcurrentHashMap.newKeySet();
         public long lastRefresh;
         public int minHeight;
         public int maxHeight;
@@ -98,7 +99,7 @@ public class ChunkSnapshotManager {
         }
         Data d = dataMap.get(key(loc.getChunk()));
         if (d != null) {
-            d.delta.put(blockLoc(loc), m);
+            d.delta.put(BlockLocation.fromLocation(loc), m);
             if (cfg.checkTileEntities) {
                 // Check if the block is a tile entity
                 BlockState data = loc.getBlock().getState();
@@ -107,9 +108,9 @@ public class ChunkSnapshotManager {
                     if (cfg.debugMode){
                         Logger.info("ChunkSnapshotManager: Tile entity at " + loc);
                     }
-                    d.tileEntities.add(loc);
+                    d.tileEntities.add(BlockLocation.fromLocation(loc));
                 } else {
-                    d.tileEntities.remove(loc);
+                    d.tileEntities.remove(BlockLocation.fromLocation(loc));
                 }
             }
         }
@@ -132,7 +133,7 @@ public class ChunkSnapshotManager {
                         BlockState bs = data.snapshot.getBlockData(x, y, z).createBlockState();
 
                         if (bs instanceof TileState) {
-                            data.tileEntities.add(new Location(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
+                            data.tileEntities.add(BlockLocation.fromValues(w, x+ chunkX, y, z + chunkZ));
                         }
                     }
                 }
@@ -176,7 +177,7 @@ public class ChunkSnapshotManager {
         if (yLevel < d.minHeight || yLevel > d.maxHeight) {
             return null;
         }
-        Material dm = d.delta.get(blockLoc(loc));
+        Material dm = d.delta.get(BlockLocation.fromLocation(loc));
         if (dm != null) {
             if (cfg.debugMode) Logger.info("Using delta");
             return dm;
@@ -194,14 +195,14 @@ public class ChunkSnapshotManager {
         if (d == null) {
             return Collections.emptySet();
         }
-        return d.tileEntities;
+        return BlockLocation.toLocations(d.tileEntities);
     }
 
     public void removeTileEntity(Location loc) {
         Chunk c = loc.getChunk();
         Data d = dataMap.get(key(c));
         if (d != null) {
-            d.tileEntities.remove(blockLoc(loc));
+            d.tileEntities.remove(BlockLocation.fromLocation(loc));
             Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc);
         } else {
             Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc);
@@ -213,11 +214,33 @@ public class ChunkSnapshotManager {
         //created to use in a debug command maybe
     }
 
-    public static Location blockLoc(Location fullLoc) {
-        Location blockLoc = fullLoc.toBlockLocation();
-        blockLoc.setYaw(0);
-        blockLoc.setPitch(0);
-        return blockLoc;
+    private static class BlockLocation {
+        private final Location location;
+
+        private BlockLocation(Location location) {
+            this.location = location.toBlockLocation().setRotation(0,0).add(0.5, 0.5, 0.5);
+        }
+
+        static BlockLocation fromLocation(Location loc) {
+            return new BlockLocation(loc);
+        }
+
+        static BlockLocation fromValues(World world, double x, double y, double z) {
+            return new BlockLocation(new Location(world, x, y, z));
+        }
+
+        static Location toLocation(BlockLocation blockLocation) {
+            return blockLocation.location;
+        }
+
+        static Set<Location> toLocations(Set<BlockLocation> blockLocations) {
+            Set<Location> locations = new HashSet<>();
+            for (BlockLocation bl : blockLocations) {
+                locations.add(toLocation(bl));
+            }
+            return locations;
+        }
     }
+
 
 }
