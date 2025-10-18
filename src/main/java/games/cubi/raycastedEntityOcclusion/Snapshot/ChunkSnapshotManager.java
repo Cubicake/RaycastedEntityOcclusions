@@ -241,6 +241,4 @@ public class ChunkSnapshotManager {
             return locations;
         }
     }
-
-
 }
