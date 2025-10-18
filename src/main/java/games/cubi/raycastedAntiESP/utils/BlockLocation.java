@@ -4,7 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class BlockLocation {
@@ -41,6 +43,18 @@ public class BlockLocation {
 
     public Location toCentredLocation() {
         return new Location(Bukkit.getWorld(world), x + 0.5, y + 0.5, z + 0.5);
+    }
+
+    public static Location toCentredLocation(BlockLocation blockLocation) {
+        return new Location(Bukkit.getWorld(blockLocation.world), blockLocation.x + 0.5, blockLocation.y + 0.5, blockLocation.z + 0.5);
+    }
+
+    public static Set<Location> toCentredLocations(Set<BlockLocation> blockLocations) {
+        Set<Location> locations = new HashSet<>();
+        for (BlockLocation bl : blockLocations) {
+            locations.add(BlockLocation.toCentredLocation(bl));
+        }
+        return locations;
     }
 
     @Override

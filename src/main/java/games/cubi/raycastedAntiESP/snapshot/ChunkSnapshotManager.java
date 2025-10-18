@@ -21,21 +21,21 @@ import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChunkSnapshotManager {
-    public static class Data {
+    private static class ChunkData {
         public final ChunkSnapshot snapshot;
         public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
-        public final Set<Location> tileEntities = ConcurrentHashMap.newKeySet();
+        public final Set<BlockLocation> tileEntities = ConcurrentHashMap.newKeySet();
         public long lastRefresh;
         public int minHeight;
         public int maxHeight;
 
-        public Data(ChunkSnapshot snapshot, long time) {
+        public ChunkData(ChunkSnapshot snapshot, long time) {
             this.snapshot = snapshot;
             this.lastRefresh = time;
         }
     }
 
-    private static final ConcurrentHashMap<String, Data> dataMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ChunkData> dataMap = new ConcurrentHashMap<>();
     private final ConfigManager cfg;
     private final RaycastedAntiESP plugin;
 
@@ -55,7 +55,7 @@ public class ChunkSnapshotManager {
                 long now = System.currentTimeMillis();
                 int chunksRefreshed = 0;
                 int chunksToRefreshMaximum = getNumberOfCachedChunks() / 3;
-                for (Map.Entry<String, Data> e : dataMap.entrySet()) {
+                for (Map.Entry<String, ChunkData> e : dataMap.entrySet()) {
                     if (now - e.getValue().lastRefresh >= cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
                         chunksRefreshed++;
                         String key = e.getKey();
@@ -76,6 +76,7 @@ public class ChunkSnapshotManager {
     }
 
     public void snapshotChunk(Chunk c) {
+        Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(),10);
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
     public void snapshotChunk(String key) {
@@ -89,28 +90,31 @@ public class ChunkSnapshotManager {
     // Used by EventListener to update the delta map when a block is placed or broken
     public void onBlockChange(Location loc, Material m) {
         Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m, 9);
-        Data d = dataMap.get(key(loc.getChunk()));
+        ChunkData d = dataMap.get(key(loc.getChunk()));
         if (d == null) {
-            Logger.error("Data map value empty, ignoring block update!",3);
+            Logger.error("Data map value empty, ignoring block update!",2);
+            return;
         }
-        d.delta.put(new BlockLocation(loc), m);
+        BlockLocation location = new BlockLocation(loc);
+        d.delta.put(location, m);
         if (cfg.getTileEntityConfig().isEnabled()) {
             // Check if the block is a tile entity
             BlockState data = loc.getBlock().getState();
             loc = loc.clone().add(0.5, 0.5, 0.5);
             if (data instanceof TileState) {
                 Logger.info("ChunkSnapshotManager: Tile entity at " + loc, 8);
-                d.tileEntities.add(loc);
+                d.tileEntities.add(location);
             }
             else {
-                d.tileEntities.remove(loc);
+                d.tileEntities.remove(location);
             }
         }
+        else {Logger.error("Data map value empty, ignoring block update!", 2);}
     }
 
-    private Data takeSnapshot(Chunk c, long now) {
+    private ChunkData takeSnapshot(Chunk c, long now) {
         World w = c.getWorld();
-        Data data = new Data(c.getChunkSnapshot(), now);
+        ChunkData data = new ChunkData(c.getChunkSnapshot(), now);
         int chunkX = c.getX() * 16;
         int chunkZ = c.getZ() * 16;
         int minHeight = w.getMinHeight();
@@ -124,7 +128,7 @@ public class ChunkSnapshotManager {
                         BlockState bs = data.snapshot.getBlockData(x, y, z).createBlockState();
 
                         if (bs instanceof TileState) {
-                            data.tileEntities.add(new Location(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
+                            data.tileEntities.add(new BlockLocation(w, x+ chunkX, y, z + chunkZ));
                         }
                     }
                 }
@@ -157,7 +161,7 @@ public class ChunkSnapshotManager {
 
     public Material getMaterialAt(Location loc) {
         Chunk chunk = loc.getChunk();
-        Data d = dataMap.get(key(chunk));
+        ChunkData d = dataMap.get(key(chunk));
         if (d == null) {
             Chunk c = loc.getChunk();
             Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)", 3);
@@ -182,11 +186,11 @@ public class ChunkSnapshotManager {
 
     //get TileEntity Locations in chunk
     public Set<Location> getTileEntitiesInChunk(World world, int x, int z) {
-        Data d = dataMap.get(key(world, x, z));
+        ChunkData d = dataMap.get(key(world, x, z));
         if (d == null) {
             return Collections.emptySet();
         }
-        return d.tileEntities;
+        return BlockLocation.toCentredLocations(d.tileEntities);
     }
 
     public int getNumberOfCachedChunks() {
