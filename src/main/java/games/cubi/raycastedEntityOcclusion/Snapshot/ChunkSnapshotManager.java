@@ -1,6 +1,7 @@
 package games.cubi.raycastedEntityOcclusion.Snapshot;
 
 import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.EventListener;
 import games.cubi.raycastedEntityOcclusion.Logger;
 import games.cubi.raycastedEntityOcclusion.Raycast.Engine;
 import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
@@ -15,27 +16,28 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ChunkSnapshotManager {
-    public static class Data {
+    private static class ChunkData {
         public final ChunkSnapshot snapshot;
-        public final ConcurrentHashMap<Location, Material> delta = new ConcurrentHashMap<>();
-        public final Set<Location> tileEntities = ConcurrentHashMap.newKeySet();
+        public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
+        public final Set<BlockLocation> tileEntities = ConcurrentHashMap.newKeySet();
         public long lastRefresh;
         public int minHeight;
         public int maxHeight;
 
-        public Data(ChunkSnapshot snapshot, long time) {
+        public ChunkData(ChunkSnapshot snapshot, long time) {
             this.snapshot = snapshot;
             this.lastRefresh = time;
         }
     }
 
-    private static final ConcurrentHashMap<String, Data> dataMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ChunkData> dataMap = new ConcurrentHashMap<>();
     private final ConfigManager cfg;
 
     public ChunkSnapshotManager(RaycastedEntityOcclusion plugin) {
@@ -53,7 +55,7 @@ public class ChunkSnapshotManager {
                 long now = System.currentTimeMillis();
                 int chunksRefreshed = 0;
                 int chunksToRefreshMaximum = getNumberOfCachedChunks() / 3;
-                for (Map.Entry<String, Data> e : dataMap.entrySet()) {
+                for (Map.Entry<String, ChunkData> e : dataMap.entrySet()) {
                     if (now - e.getValue().lastRefresh >= cfg.snapshotRefreshInterval * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
                         chunksRefreshed++;
                         String key = e.getKey();
@@ -77,7 +79,7 @@ public class ChunkSnapshotManager {
 
     public void snapshotChunk(Chunk c) {
         //if (cfg.debugMode) {
-            //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
+        //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
         //}
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
@@ -92,33 +94,35 @@ public class ChunkSnapshotManager {
     }
 
     // Used by EventListener to update the delta map when a block is placed or broken
-    public void onBlockChange(Location loc, Material m) {
+    public void onBlockChange(Location loc, Material m, int change) {
         if (cfg.debugMode) {
             Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m);
         }
-        Data d = dataMap.get(key(loc.getChunk()));
+        ChunkData d = dataMap.get(key(loc.getChunk()));
         if (d != null) {
-            d.delta.put(blockLoc(loc), m);
+            d.delta.put(BlockLocation.fromLocation(loc), m);
             if (cfg.checkTileEntities) {
                 // Check if the block is a tile entity
                 BlockState data = loc.getBlock().getState();
-                loc = loc.clone().add(0.5, 0.5, 0.5);
                 if (data instanceof TileState) {
-                    if (cfg.debugMode){
+                    if (cfg.debugMode) {
                         Logger.info("ChunkSnapshotManager: Tile entity at " + loc);
                     }
-                    d.tileEntities.add(loc);
-                } else {
-                    d.tileEntities.remove(loc);
+                    if (change == EventListener.PLACE) {
+                        d.tileEntities.add(BlockLocation.fromLocation(loc));
+                    }
+                    if (change == EventListener.BREAK) {
+                        d.tileEntities.remove(BlockLocation.fromLocation(loc));
+                    }
                 }
             }
         }
         else {Logger.error("Data map value empty, ignoring block update!");}
     }
 
-    private Data takeSnapshot(Chunk c, long now) {
+    private ChunkData takeSnapshot(Chunk c, long now) {
         World w = c.getWorld();
-        Data data = new Data(c.getChunkSnapshot(), now);
+        ChunkData data = new ChunkData(c.getChunkSnapshot(), now);
         int chunkX = c.getX() * 16;
         int chunkZ = c.getZ() * 16;
         int minHeight = w.getMinHeight();
@@ -132,7 +136,7 @@ public class ChunkSnapshotManager {
                         BlockState bs = data.snapshot.getBlockData(x, y, z).createBlockState();
 
                         if (bs instanceof TileState) {
-                            data.tileEntities.add(new Location(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
+                            data.tileEntities.add(BlockLocation.fromValues(w, x+ chunkX, y, z + chunkZ));
                         }
                     }
                 }
@@ -165,7 +169,7 @@ public class ChunkSnapshotManager {
 
     public Material getMaterialAt(Location loc) {
         Chunk chunk = loc.getChunk();
-        Data d = dataMap.get(key(chunk));
+        ChunkData d = dataMap.get(key(chunk));
         if (d == null) {
             Chunk c = loc.getChunk();
             Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
@@ -176,7 +180,7 @@ public class ChunkSnapshotManager {
         if (yLevel < d.minHeight || yLevel > d.maxHeight) {
             return null;
         }
-        Material dm = d.delta.get(blockLoc(loc));
+        Material dm = d.delta.get(BlockLocation.fromLocation(loc));
         if (dm != null) {
             if (cfg.debugMode) Logger.info("Using delta");
             return dm;
@@ -190,19 +194,21 @@ public class ChunkSnapshotManager {
 
     //get TileEntity Locations in chunk
     public Set<Location> getTileEntitiesInChunk(World world, int x, int z) {
-        Data d = dataMap.get(key(world, x, z));
+        ChunkData d = dataMap.get(key(world, x, z));
         if (d == null) {
             return Collections.emptySet();
         }
-        return d.tileEntities;
+        return BlockLocation.toLocations(d.tileEntities);
     }
 
     public void removeTileEntity(Location loc) {
         Chunk c = loc.getChunk();
-        Data d = dataMap.get(key(c));
+        ChunkData d = dataMap.get(key(c));
         if (d != null) {
-            d.tileEntities.remove(blockLoc(loc));
-            Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc);
+            d.tileEntities.remove(BlockLocation.fromLocation(loc));
+            if (cfg.debugMode) {
+                Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc);
+            }
         } else {
             Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc);
         }
@@ -213,11 +219,55 @@ public class ChunkSnapshotManager {
         //created to use in a debug command maybe
     }
 
-    public static Location blockLoc(Location fullLoc) {
-        Location blockLoc = fullLoc.toBlockLocation();
-        blockLoc.setYaw(0);
-        blockLoc.setPitch(0);
-        return blockLoc;
-    }
+    private static class BlockLocation {
+        private final Location location;
+        private final int hashCode;
 
+        private BlockLocation(Location location) {
+            this.location = location.toBlockLocation().setRotation(0, 0).add(0.5, 0.5, 0.5);
+            hashCode = calculateHashCode();
+        }
+
+        static BlockLocation fromLocation(Location loc) {
+            return new BlockLocation(loc);
+        }
+
+        static BlockLocation fromValues(World world, double x, double y, double z) {
+            return new BlockLocation(new Location(world, x, y, z));
+        }
+
+        static Location toLocation(BlockLocation blockLocation) {
+            return blockLocation.location.clone();
+        }
+
+        static Set<Location> toLocations(Set<BlockLocation> blockLocations) {
+            Set<Location> locations = new HashSet<>();
+            for (BlockLocation bl : blockLocations) {
+                locations.add(toLocation(bl));
+            }
+            return locations;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof BlockLocation)) return false;
+            Location other = ((BlockLocation) o).location;
+
+            return (this.location.getX() == other.getX()) && (this.location.getY() == other.getY()) && (this.location.getZ() == other.getZ()) && (this.location.getWorld().equals(other.getWorld()));
+        }
+
+        private int calculateHashCode() {
+            int result = 17;
+            result = 31 * result + location.getBlockX();
+            result = 31 * result + location.getBlockY();
+            result = 31 * result + location.getBlockZ();
+            return  31 * result + location.getWorld().getUID().hashCode();
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+    }
 }
