@@ -56,8 +56,8 @@ public class UpdateChecker {
     private static final int INVALID_VERSION_FORMAT = -2; private static final int CURRENT_IS_OLDER = -1; private static final int VERSIONS_ARE_EQUAL = 0; private static final int CURRENT_IS_NEWER = 1;
 
     private static int checkIfLaterThan(String currentVersion, String fetchedVersion) {
-        String[] currentParts = currentVersion.replace("v", "").split("\\.");
-        String[] fetchedParts = fetchedVersion.replace("v", "").split("\\.");
+        String[] currentParts = currentVersion.replace("v", "").split("[.-]");
+        String[] fetchedParts = fetchedVersion.replace("v", "").split("[.-]");
 
         if (currentParts.length < 3 || fetchedParts.length < 3) {
             return INVALID_VERSION_FORMAT;
