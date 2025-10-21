@@ -251,7 +251,7 @@ public class Engine {
                 p.sendBlockUpdate(location, tileData);
             }
             else {
-                Logger.warning("Tried to show tile entity at " + location + " to "+p.getName()+" but it was not a TileState! Block type: " + block.getType()+". Removing from the list of tile entities.");
+                //Logger.warning("Tried to show tile entity at " + location + " to "+p.getName()+" but it was not a TileState! Block type: " + block.getType()+". Removing from the list of tile entities.");
                 canSeeTileEntity.remove(location);
                 plugin.getChunkSnapshotManager().removeTileEntity(location);
             }
