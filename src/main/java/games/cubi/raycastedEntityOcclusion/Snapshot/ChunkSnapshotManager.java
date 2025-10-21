@@ -79,7 +79,7 @@ public class ChunkSnapshotManager {
 
     public void snapshotChunk(Chunk c) {
         //if (cfg.debugMode) {
-        //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
+            //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
         //}
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
