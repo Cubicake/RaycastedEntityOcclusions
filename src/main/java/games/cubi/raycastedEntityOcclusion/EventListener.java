@@ -14,7 +14,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
-import java.util.Collections;
 import java.util.UUID;
 
 import static games.cubi.raycastedEntityOcclusion.UpdateChecker.checkForUpdates;
@@ -51,19 +50,20 @@ public class EventListener implements Listener {
         manager.onChunkUnload(e.getChunk());
     }
 
+    public static final int BREAK = 1; public static final int PLACE = 2;
     @EventHandler
     public void onPlace(BlockPlaceEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType());
+        manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType(), PLACE);
     }
 
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
+        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR, BREAK);
     }
 
     @EventHandler
     public void onBurn(BlockBurnEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
+        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR, BREAK);
     }
     // These events do not cover all cases, but I can't be bothered to figure out a better solution rn. Frequent snapshot refreshes is the solution. If anyone has a solution please let me know.
 
