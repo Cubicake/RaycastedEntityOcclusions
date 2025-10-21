@@ -224,7 +224,9 @@ public class ChunkSnapshotManager {
         private final int hashCode;
 
         private BlockLocation(Location location) {
-            this.location = location.toBlockLocation().setRotation(0, 0).add(0.5, 0.5, 0.5);
+            this.location = location.toCenterLocation();
+            this.location.setPitch(0);
+            this.location.setYaw(0);
             hashCode = calculateHashCode();
         }
 
