@@ -5,6 +5,7 @@ import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
+import games.cubi.raycastedAntiESP.utils.Enums;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.Bukkit;
@@ -15,6 +16,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -68,17 +70,22 @@ public class EventListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onPlace(BlockPlaceEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType());
+        manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType(), Enums.BlockChangeType.BROKEN);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBreak(BlockBreakEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
+        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR, Enums.BlockChangeType.BROKEN);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBurn(BlockBurnEvent e) {
-        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR);
+        manager.onBlockChange(e.getBlock().getLocation(), Material.AIR, Enums.BlockChangeType.BROKEN);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onExplode(BlockExplodeEvent e) {
+        manager.onBlockChange(e.getBlock().getLocation(), e.getBlock().getType(), Enums.BlockChangeType.BROKEN);
     }
     // These events do not cover all cases, but I can't be bothered to figure out a better solution rn. Frequent snapshot refreshes is the solution. If anyone has a solution please let me know.
 

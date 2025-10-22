@@ -5,6 +5,7 @@ import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 
 import games.cubi.raycastedAntiESP.utils.BlockLocation;
+import games.cubi.raycastedAntiESP.utils.Enums;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -88,7 +89,7 @@ public class ChunkSnapshotManager {
     }
 
     // Used by EventListener to update the delta map when a block is placed or broken
-    public void onBlockChange(Location loc, Material m) {
+    public void onBlockChange(Location loc, Material m, Enums.BlockChangeType type) {
         Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m, 9);
         ChunkData d = dataMap.get(key(loc.getChunk()));
         if (d == null) {
@@ -103,10 +104,11 @@ public class ChunkSnapshotManager {
             loc = loc.clone().add(0.5, 0.5, 0.5);
             if (data instanceof TileState) {
                 Logger.info("ChunkSnapshotManager: Tile entity at " + loc, 8);
-                d.tileEntities.add(location);
-            }
-            else {
-                d.tileEntities.remove(location);
+                if (type == Enums.BlockChangeType.PLACED) {
+                    d.tileEntities.add(location);
+                } else if (type == Enums.BlockChangeType.BROKEN) {
+                    d.tileEntities.remove(location);
+                }
             }
         }
         else {Logger.error("Data map value empty, ignoring block update!", 2);}
