@@ -22,7 +22,7 @@ public class UpdateChecker {
         CompletableFuture<String> future = new CompletableFuture<>();
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
-            final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version?featured=true";
+            final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version?version_type=release";
 
             try (final InputStreamReader reader = new InputStreamReader(new URI(url).toURL().openConnection().getInputStream())) {
                 final JsonArray array = new JsonArray();
