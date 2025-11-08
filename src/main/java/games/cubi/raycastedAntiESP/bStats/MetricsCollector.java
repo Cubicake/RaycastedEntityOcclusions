@@ -1,7 +1,7 @@
-package games.cubi.raycastedEntityOcclusion.bStats;
+package games.cubi.raycastedAntiESP.bStats;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
-import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.ConfigManager;
+import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 

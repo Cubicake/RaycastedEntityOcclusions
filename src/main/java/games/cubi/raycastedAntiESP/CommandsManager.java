@@ -1,4 +1,4 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;

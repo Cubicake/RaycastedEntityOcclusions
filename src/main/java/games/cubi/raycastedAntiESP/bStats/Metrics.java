@@ -1,4 +1,4 @@
-package games.cubi.raycastedEntityOcclusion.bStats;
+package games.cubi.raycastedAntiESP.bStats;
 /*
  * This Metrics class was auto-generated and can be copied into your project if you are
  * not using a build tool like Gradle or Maven for dependency management.

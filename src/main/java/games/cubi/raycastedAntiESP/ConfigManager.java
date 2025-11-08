@@ -1,4 +1,4 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;

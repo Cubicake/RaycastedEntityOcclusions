@@ -1,10 +1,10 @@
-package games.cubi.raycastedEntityOcclusion.Raycast;
+package games.cubi.raycastedAntiESP.Raycast;
 
 
-import games.cubi.raycastedEntityOcclusion.Logger;
-import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
-import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.ConfigManager;
+import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;

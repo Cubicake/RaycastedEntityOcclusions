@@ -1,10 +1,10 @@
-package games.cubi.raycastedEntityOcclusion.Snapshot;
+package games.cubi.raycastedAntiESP.Snapshot;
 
-import games.cubi.raycastedEntityOcclusion.ConfigManager;
-import games.cubi.raycastedEntityOcclusion.EventListener;
-import games.cubi.raycastedEntityOcclusion.Logger;
-import games.cubi.raycastedEntityOcclusion.Raycast.Engine;
-import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.ConfigManager;
+import games.cubi.raycastedAntiESP.EventListener;
+import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.Raycast.Engine;
+import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 
 import org.bukkit.Material;
 import org.bukkit.World;

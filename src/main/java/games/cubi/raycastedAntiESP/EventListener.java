@@ -1,7 +1,7 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
-import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
-import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.Packets.PacketProcessor;
+import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -16,7 +16,7 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.UUID;
 
-import static games.cubi.raycastedEntityOcclusion.UpdateChecker.checkForUpdates;
+import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
     private final ChunkSnapshotManager manager;

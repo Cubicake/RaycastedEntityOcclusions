@@ -1,4 +1,4 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;

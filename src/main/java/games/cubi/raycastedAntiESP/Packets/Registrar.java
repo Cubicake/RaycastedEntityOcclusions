@@ -1,8 +1,8 @@
-package games.cubi.raycastedEntityOcclusion.Packets;
+package games.cubi.raycastedAntiESP.Packets;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
-import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 
 public class Registrar {
 

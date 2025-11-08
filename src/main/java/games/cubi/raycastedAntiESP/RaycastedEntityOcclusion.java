@@ -1,12 +1,12 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import games.cubi.raycastedEntityOcclusion.Packets.PacketProcessor;
-import games.cubi.raycastedEntityOcclusion.Packets.Registrar;
-import games.cubi.raycastedEntityOcclusion.Raycast.Engine;
-import games.cubi.raycastedEntityOcclusion.Raycast.MovementTracker;
-import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.Packets.PacketProcessor;
+import games.cubi.raycastedAntiESP.Packets.Registrar;
+import games.cubi.raycastedAntiESP.Raycast.Engine;
+import games.cubi.raycastedAntiESP.Raycast.MovementTracker;
+import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -15,7 +15,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import games.cubi.raycastedEntityOcclusion.bStats.MetricsCollector;
+import games.cubi.raycastedAntiESP.bStats.MetricsCollector;
 
 public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecutor {
     private ConfigManager cfg;

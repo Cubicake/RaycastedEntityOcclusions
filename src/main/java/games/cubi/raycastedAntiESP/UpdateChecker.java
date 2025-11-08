@@ -1,4 +1,4 @@
-package games.cubi.raycastedEntityOcclusion;
+package games.cubi.raycastedAntiESP;
 
 
 import com.google.gson.JsonArray;

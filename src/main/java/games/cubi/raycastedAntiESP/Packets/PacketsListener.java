@@ -1,9 +1,9 @@
-package games.cubi.raycastedEntityOcclusion.Packets;
+package games.cubi.raycastedAntiESP.Packets;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
-import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 
 public class PacketsListener implements PacketListener {
     private RaycastedEntityOcclusion plugin;
