@@ -12,10 +12,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 public class CommandsManager {
-    private final RaycastedEntityOcclusion plugin;
+    private final RaycastedAntiESP plugin;
     private final ConfigManager cfg;
 
-    public CommandsManager(RaycastedEntityOcclusion plugin, ConfigManager cfg) {
+    public CommandsManager(RaycastedAntiESP plugin, ConfigManager cfg) {
         this.plugin = plugin;
         this.cfg = cfg;
     }

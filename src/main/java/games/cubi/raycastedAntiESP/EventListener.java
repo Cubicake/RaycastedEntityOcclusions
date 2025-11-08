@@ -22,9 +22,9 @@ public class EventListener implements Listener {
     private final ChunkSnapshotManager manager;
     private final ConfigManager config;
     private PacketProcessor packetProcessor;
-    private final RaycastedEntityOcclusion plugin;
+    private final RaycastedAntiESP plugin;
 
-    public EventListener(RaycastedEntityOcclusion plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
+    public EventListener(RaycastedAntiESP plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
         this.manager = mgr;
         this.config = cfg;
         this.plugin = plugin;

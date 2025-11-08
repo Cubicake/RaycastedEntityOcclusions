@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.bStats;
 
 import games.cubi.raycastedAntiESP.ConfigManager;
-import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 
@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MetricsCollector {
-    private final RaycastedEntityOcclusion plugin;
+    private final RaycastedAntiESP plugin;
     private final Metrics metrics;
     private final ConfigManager config;
 
     private List<Integer> playersOnline = new ArrayList<>();
     private List<Integer> entities = new ArrayList<>();
 
-    public MetricsCollector(RaycastedEntityOcclusion plugin, ConfigManager config) {
+    public MetricsCollector(RaycastedAntiESP plugin, ConfigManager config) {
         this.plugin = plugin;
         int pluginId = 24553;
         metrics = new Metrics(plugin, pluginId);

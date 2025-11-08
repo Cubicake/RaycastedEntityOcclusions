@@ -4,7 +4,7 @@ package games.cubi.raycastedAntiESP.raycast;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.ConfigManager;
-import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -72,7 +72,7 @@ public class Engine {
         }
     }
 
-    public static void runEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedEntityOcclusion plugin) {
+    public static void runEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedAntiESP plugin) {
         // ----- PHASE 1: SYNC GATHER -----
 
         if (!syncRecheck.isEmpty()) {
@@ -160,7 +160,7 @@ public class Engine {
 
     private final static ConcurrentLinkedQueue<TileResult> results = new ConcurrentLinkedQueue<>();
 
-    public static void runTileEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedEntityOcclusion plugin) {
+    public static void runTileEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedAntiESP plugin) {
         if (cfg.checkTileEntities) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
@@ -235,14 +235,14 @@ public class Engine {
         }
     }
 
-    public static void hideTileEntity(Player p, Location location, RaycastedEntityOcclusion plugin) {
+    public static void hideTileEntity(Player p, Location location, RaycastedAntiESP plugin) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (p.hasPermission("raycastedentityocclusions.bypass")) return;
             if (location.getBlockY() < 0) p.sendBlockChange(location, DEEPSLATE);
             else p.sendBlockChange(location, STONE);
         });
     }
-    public static void showTileEntity(Player p, Location location, RaycastedEntityOcclusion plugin) {
+    public static void showTileEntity(Player p, Location location, RaycastedAntiESP plugin) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Block block = location.getBlock();
             BlockState data = block.getState();
@@ -259,7 +259,7 @@ public class Engine {
 
 
     }
-    public static void syncToggleTileEntity(Player p, Location loc, boolean show, RaycastedEntityOcclusion plugin) {
+    public static void syncToggleTileEntity(Player p, Location loc, boolean show, RaycastedAntiESP plugin) {
         if (show) {
             showTileEntity(p, loc, plugin);
         } else {

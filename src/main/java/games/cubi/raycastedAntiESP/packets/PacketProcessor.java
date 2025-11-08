@@ -4,7 +4,7 @@ import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
-import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class PacketProcessor {
-    private final RaycastedEntityOcclusion plugin;
+    private final RaycastedAntiESP plugin;
     private final UUID key;
 
-    public PacketProcessor(RaycastedEntityOcclusion plugin) {
+    public PacketProcessor(RaycastedAntiESP plugin) {
         this.plugin = plugin;
         key = UUID.randomUUID();
     }

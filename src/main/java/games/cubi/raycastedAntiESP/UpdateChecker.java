@@ -17,15 +17,15 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class UpdateChecker {
-    private final RaycastedEntityOcclusion plugin;
+    private final RaycastedAntiESP plugin;
 
-    public UpdateChecker(RaycastedEntityOcclusion plugin) {
+    public UpdateChecker(RaycastedAntiESP plugin) {
         this.plugin = plugin;
         checkForUpdates(plugin, Bukkit.getConsoleSender());
     }
 
 
-    public static CompletableFuture<String> fetchFeaturedVersion(RaycastedEntityOcclusion plugin) {
+    public static CompletableFuture<String> fetchFeaturedVersion(RaycastedAntiESP plugin) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -76,7 +76,7 @@ public class UpdateChecker {
         return majorVersionDifference;
     }
 
-    public static void checkForUpdates(RaycastedEntityOcclusion plugin, CommandSender audience) {
+    public static void checkForUpdates(RaycastedAntiESP plugin, CommandSender audience) {
         fetchFeaturedVersion(plugin).thenAccept(version -> {
             // This runs synchronously when the version is fetched
             Bukkit.getScheduler().runTask(plugin, () -> {

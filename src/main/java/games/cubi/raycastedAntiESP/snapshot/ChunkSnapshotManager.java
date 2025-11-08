@@ -4,7 +4,7 @@ import games.cubi.raycastedAntiESP.ConfigManager;
 import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.raycast.Engine;
-import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -40,7 +40,7 @@ public class ChunkSnapshotManager {
     private static final ConcurrentHashMap<String, ChunkData> dataMap = new ConcurrentHashMap<>();
     private final ConfigManager cfg;
 
-    public ChunkSnapshotManager(RaycastedEntityOcclusion plugin) {
+    public ChunkSnapshotManager(RaycastedAntiESP plugin) {
         cfg = plugin.getConfigManager();
         //get loaded chunks and add them to dataMap
         for (World w : plugin.getServer().getWorlds()) {

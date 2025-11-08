@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.raycast;
 
 import games.cubi.raycastedAntiESP.ConfigManager;
-import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
+import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class MovementTracker {
     private final Map<Player, Deque<Location>> history = new ConcurrentHashMap<>();
 
-    public MovementTracker(RaycastedEntityOcclusion plugin, ConfigManager config) {
+    public MovementTracker(RaycastedAntiESP plugin, ConfigManager config) {
         new BukkitRunnable() {
             @Override
             public void run() {

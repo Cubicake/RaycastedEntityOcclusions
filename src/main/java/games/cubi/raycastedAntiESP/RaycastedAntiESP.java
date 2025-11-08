@@ -17,7 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import games.cubi.raycastedAntiESP.bStats.MetricsCollector;
 
-public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecutor {
+public class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private ConfigManager cfg;
     private ChunkSnapshotManager snapMgr;
     private MovementTracker tracker;
@@ -72,8 +72,8 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
             @Override
             public void run() {
                 tick++;
-                Engine.runEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
-                Engine.runTileEngine(cfg, snapMgr, tracker, RaycastedEntityOcclusion.this);
+                Engine.runEngine(cfg, snapMgr, tracker, RaycastedAntiESP.this);
+                Engine.runTileEngine(cfg, snapMgr, tracker, RaycastedAntiESP.this);
             }
         }.runTaskTimer(this, 0L, 1L);
 
@@ -82,7 +82,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
             public void run() {
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
                     cfg.setPacketEventsPresent(true);
-                    packetProcessor = new PacketProcessor(RaycastedEntityOcclusion.this);
+                    packetProcessor = new PacketProcessor(RaycastedAntiESP.this);
                     Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.");
                 }
             }
