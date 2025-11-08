@@ -1,9 +1,9 @@
-package games.cubi.raycastedAntiESP.Snapshot;
+package games.cubi.raycastedAntiESP.snapshot;
 
 import games.cubi.raycastedAntiESP.ConfigManager;
 import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.Raycast.Engine;
+import games.cubi.raycastedAntiESP.raycast.Engine;
 import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
 
 import org.bukkit.Material;

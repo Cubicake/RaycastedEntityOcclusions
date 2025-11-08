@@ -2,11 +2,11 @@ package games.cubi.raycastedAntiESP;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import games.cubi.raycastedAntiESP.Packets.PacketProcessor;
-import games.cubi.raycastedAntiESP.Packets.Registrar;
-import games.cubi.raycastedAntiESP.Raycast.Engine;
-import games.cubi.raycastedAntiESP.Raycast.MovementTracker;
-import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.packets.PacketProcessor;
+import games.cubi.raycastedAntiESP.packets.Registrar;
+import games.cubi.raycastedAntiESP.raycast.Engine;
+import games.cubi.raycastedAntiESP.raycast.MovementTracker;
+import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;

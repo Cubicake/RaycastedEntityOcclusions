@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP;
 
-import games.cubi.raycastedAntiESP.Packets.PacketProcessor;
-import games.cubi.raycastedAntiESP.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.packets.PacketProcessor;
+import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;

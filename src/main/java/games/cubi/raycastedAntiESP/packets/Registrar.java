@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Packets;
+package games.cubi.raycastedAntiESP.packets;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;

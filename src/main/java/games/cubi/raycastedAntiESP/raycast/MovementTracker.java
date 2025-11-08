@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.Raycast;
+package games.cubi.raycastedAntiESP.raycast;
 
 import games.cubi.raycastedAntiESP.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedEntityOcclusion;
