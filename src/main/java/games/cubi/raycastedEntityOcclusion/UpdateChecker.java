@@ -30,13 +30,12 @@ public class UpdateChecker {
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 
-            final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version?featured=true";
+            final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version";
             try (final InputStreamReader reader = new InputStreamReader(new URL(url).openConnection().getInputStream())) {
                 final JsonArray array = new JsonArray();
                 array.add(new BufferedReader(reader).readLine());
                 StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < array.size(); i++) {
-
                     sb.append(array.get(i).getAsString());
                 }
                 String apiData = sb.toString();

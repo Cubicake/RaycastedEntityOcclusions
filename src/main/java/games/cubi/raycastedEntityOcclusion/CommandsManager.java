@@ -11,8 +11,6 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
-
-
 public class CommandsManager {
     private final RaycastedEntityOcclusion plugin;
     private final ConfigManager cfg;
