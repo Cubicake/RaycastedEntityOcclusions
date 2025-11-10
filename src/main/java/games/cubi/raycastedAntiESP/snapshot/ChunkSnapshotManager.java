@@ -186,7 +186,7 @@ public class ChunkSnapshotManager {
     }
 
     //get TileEntity Locations in chunk
-    public Set<Location> getTileEntitiesInChunk(World world, int x, int z) {
+    public Set<BlockLocation> getTileEntitiesInChunk(World world, int x, int z) {
         ChunkData d = dataMap.get(key(world, x, z));
         if (d == null) {
             return Collections.emptySet();
