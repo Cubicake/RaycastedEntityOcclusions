@@ -23,7 +23,7 @@ public class PacketsListener implements PacketListener {
 
     private void initializePacketProcessor() {
         if (packetProcessor == null) {
-            packetProcessor = plugin.getPacketProcessor();
+            packetProcessor = RaycastedAntiESP.getPacketProcessor();
         }
     }
 

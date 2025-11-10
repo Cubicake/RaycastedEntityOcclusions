@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'games.cubi'
-version = '1.6.3-backport'
+version = '2.0.0-alpha-1'
 
 repositories {
     mavenCentral()
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.8.0")
 }
 

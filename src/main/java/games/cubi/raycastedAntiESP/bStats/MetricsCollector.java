@@ -1,9 +1,7 @@
 package games.cubi.raycastedAntiESP.bStats;
 
-import games.cubi.raycastedAntiESP.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +18,12 @@ public class MetricsCollector {
         this.plugin = plugin;
         int pluginId = 24553;
         metrics = new Metrics(plugin, pluginId);
-        this.config = config;
+        this.config = config;/*
         registerCustomMetrics();
-
-        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes
+            TODO: Re-enable metrics
+        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
     }
-
+/*
     public void registerCustomMetrics() {
         metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", () -> String.valueOf(config.maxOccludingCount)));
 
@@ -154,4 +152,5 @@ public class MetricsCollector {
             return "5000+";
         }
     }
+ */
 }

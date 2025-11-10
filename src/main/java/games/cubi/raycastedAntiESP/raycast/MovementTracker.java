@@ -1,11 +1,10 @@
 package games.cubi.raycastedAntiESP.raycast;
 
-import games.cubi.raycastedAntiESP.ConfigManager;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -13,23 +12,23 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MovementTracker {
-    private final Map<Player, Deque<Location>> history = new ConcurrentHashMap<>();
+    private final Map<Player, Deque<Location>> history = new ConcurrentHashMap<>(); //TODO: Queue makes more sense than deque, also this should be moved elsewhere
 
     public MovementTracker(RaycastedAntiESP plugin, ConfigManager config) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (config.engineMode == 2) {
-                    for (Player p : Bukkit.getOnlinePlayers()) {
-                        history.computeIfAbsent(p, k -> new ArrayDeque<>(5));
-                        Deque<Location> dq = history.get(p);
-                        if (dq.size() >= 5) dq.removeFirst();
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, updateLocationHistory(config), 1L, 1L);
+    }
 
-                        dq.addLast(p.getEyeLocation());
-                    }
-                }
-            }
-        }.runTaskTimer(plugin, 1L, 1L);
+    private Runnable updateLocationHistory(ConfigManager config) {
+        if (config.getEngineMode() != 2) return () -> {};
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            history.computeIfAbsent(p, k -> new ArrayDeque<>(5));
+            Deque<Location> dq = history.get(p);
+
+            if (dq.size() >= 5) dq.removeFirst();
+
+            dq.addLast(p.getEyeLocation());
+        }
+        return () -> {};
     }
 
     /**

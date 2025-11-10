@@ -11,6 +11,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
+import games.cubi.raycastedAntiESP.config.ConfigManager;
+
 public class CommandsManager {
     private final RaycastedAntiESP plugin;
     private final ConfigManager cfg;
@@ -22,8 +24,8 @@ public class CommandsManager {
 
     public LiteralCommandNode<CommandSourceStack> registerCommand() {
         //run help command if no context provided
-        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedentityocclusions")
-                .requires(sender -> sender.getSender().hasPermission("raycastedentityocclusions.command"))
+        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedantiesp")
+                .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
                 .executes(context -> {
                     helpCommand(context);
                     return Command.SINGLE_SUCCESS;
@@ -33,19 +35,19 @@ public class CommandsManager {
                 .then(Commands.literal("reload")
                     .executes(context -> {
                     cfg.load();
-                    context.getSource().getSender().sendMessage("[EntityOcclusions] Config reloaded.");
+                    context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
                     return Command.SINGLE_SUCCESS;
                 }))
                 .then(Commands.literal("config-values")
                     .executes(context -> {
                         CommandSender sender = context.getSource().getSender();
                         //dynamic config values
-                        sender.sendMessage("[EntityOcclusions] Config values: ");
+                        sender.sendMessage("[RaycastedAntiESP] Config values: ");
 
-                        ConfigurationSection root = cfg.cfg.getConfigurationSection("");
+                        ConfigurationSection root = cfg.getConfigFile().getConfigurationSection("");
                         for (String path : root.getKeys(true)) {
-                            Object val = cfg.cfg.get(path);
-
+                            Object val = cfg.getConfigFile().get(path);
+                            if (val instanceof ConfigurationSection) continue;
                             sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
                         }
                         return Command.SINGLE_SUCCESS;
@@ -54,7 +56,7 @@ public class CommandsManager {
                 .then(Commands.literal("set")
                         .executes(context -> {
                             CommandSender sender = context.getSource().getSender();
-                            sender.sendRichMessage("<red>Usage: /raycastedentityocclusions set <key> <value>");;
+                            sender.sendRichMessage("<red>Usage: /raycastedantiesp set <key> <value>");;
                             return 0;
                         })
                         .then(Commands.argument("key", StringArgumentType.string())
@@ -98,11 +100,11 @@ public class CommandsManager {
 
     public int helpCommand(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        sender.sendRichMessage("<white>RaycastedEntityOcclusions <yellow>v" + plugin.getDescription().getVersion());
+        sender.sendRichMessage("<white>RaycastedAntiESP <yellow>v" + plugin.getDescription().getVersion());
         sender.sendRichMessage("<white>Commands:");
-        sender.sendRichMessage("<green>/raycastedentityocclusions reload <gray>- Reloads the config");
-        sender.sendRichMessage("<green>/raycastedentityocclusions config-values <gray>- Shows all config values");
-        sender.sendRichMessage("<green>/raycastedentityocclusions set <key> <value> <gray>- Sets a config value");
+        sender.sendRichMessage("<green>/raycastedantiesp reload <gray>- Reloads the config");
+        sender.sendRichMessage("<green>/raycastedantiesp config-values <gray>- Shows all config values");
+        sender.sendRichMessage("<green>/raycastedantiesp set <key> <value> <gray>- Sets a config value");
         return Command.SINGLE_SUCCESS;
     }
 

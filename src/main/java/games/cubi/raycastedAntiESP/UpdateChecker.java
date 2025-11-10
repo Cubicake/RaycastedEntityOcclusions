@@ -12,40 +12,33 @@ import org.bukkit.entity.Player;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.net.URI;
 import java.util.concurrent.CompletableFuture;
 
 
 public class UpdateChecker {
-    private final RaycastedAntiESP plugin;
-
-    public UpdateChecker(RaycastedAntiESP plugin) {
-        this.plugin = plugin;
-        checkForUpdates(plugin, Bukkit.getConsoleSender());
-    }
-
-
-    public static CompletableFuture<String> fetchFeaturedVersion(RaycastedAntiESP plugin) {
+    private static CompletableFuture<String> fetchFeaturedVersion(RaycastedAntiESP plugin) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-
             final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version";
-            try (final InputStreamReader reader = new InputStreamReader(new URL(url).openConnection().getInputStream())) {
+
+            try (final InputStreamReader reader = new InputStreamReader(new URI(url).toURL().openConnection().getInputStream())) {
                 final JsonArray array = new JsonArray();
                 array.add(new BufferedReader(reader).readLine());
-                StringBuilder sb = new StringBuilder();
+                StringBuilder stringBuilder = new StringBuilder();
                 for (int i = 0; i < array.size(); i++) {
-                    sb.append(array.get(i).getAsString());
+                    stringBuilder.append(array.get(i).getAsString());
                 }
-                String apiData = sb.toString();
+                String apiData = stringBuilder.toString();
                 JsonArray jsonArray = JsonParser.parseString(apiData).getAsJsonArray();
                 JsonObject firstObject = jsonArray.get(0).getAsJsonObject();
                 String versionNumber = firstObject.get("version_number").getAsString();
 
                 future.complete(versionNumber);
 
-            } catch (IOException e) {
+            } catch (IOException | URISyntaxException e) {
                 future.completeExceptionally(new IllegalStateException("Unable to fetch latest version", e));
             }
         });
@@ -100,10 +93,7 @@ public class UpdateChecker {
                 }
             });
         }).exceptionally(ex -> {
-            // Handle error (e.g., log the exception)
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                Logger.warning("Failed to fetch version: " + ex.getMessage());
-            });
+            Logger.error(ex);
             return null;
         });
     }

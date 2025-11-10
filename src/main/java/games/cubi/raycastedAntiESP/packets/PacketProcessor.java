@@ -12,12 +12,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class PacketProcessor {
-    private final RaycastedAntiESP plugin;
-    private final UUID key;
+    private final UUID key = new UUID(0, 0); // Plugins can flag their packets with this UUID;
 
     public PacketProcessor(RaycastedAntiESP plugin) {
-        this.plugin = plugin;
-        key = UUID.randomUUID();
     }
 
     public void processPlayerInfoRemovePacket(PacketSendEvent event) {

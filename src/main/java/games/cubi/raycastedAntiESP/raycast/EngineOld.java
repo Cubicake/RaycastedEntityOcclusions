@@ -1,10 +1,15 @@
 package games.cubi.raycastedAntiESP.raycast;
 
-
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedAntiESP.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
+
+public class EngineOld {}
+/*
+import games.cubi.raycastedEntityOcclusion.Logger;
+import games.cubi.raycastedEntityOcclusion.Snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedEntityOcclusion.ConfigManager;
+import games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -27,7 +32,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Engine {
+public class EngineOld {
 
     public static ConcurrentHashMap<Location, Set<Player>> canSeeTileEntity = new ConcurrentHashMap<>();
     public static Set<Chunk> syncRecheck = ConcurrentHashMap.newKeySet();
@@ -65,6 +70,12 @@ public class Engine {
         final Location loc;
         final boolean visible;
 
+        TileResult(Player p, Location location, boolean v) {
+            player = p;
+            loc = location;
+            visible = v;
+        }
+    }
         TileResult(Player p, Location location, boolean v) {
             player = p;
             loc = location;
@@ -161,6 +172,9 @@ public class Engine {
     private final static ConcurrentLinkedQueue<TileResult> results = new ConcurrentLinkedQueue<>();
 
     public static void runTileEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedAntiESP plugin) {
+    private static ConcurrentLinkedQueue<TileResult> results = new ConcurrentLinkedQueue<>();
+
+    public static void runTileEngine(ConfigManager cfg, ChunkSnapshotManager snapMgr, MovementTracker tracker, RaycastedEntityOcclusion plugin) {
         if (cfg.checkTileEntities) {
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
@@ -236,6 +250,7 @@ public class Engine {
     }
 
     public static void hideTileEntity(Player p, Location location, RaycastedAntiESP plugin) {
+    public static void hideTileEntity(Player p, Location location, RaycastedEntityOcclusion plugin) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (p.hasPermission("raycastedentityocclusions.bypass")) return;
             if (location.getBlockY() < 0) p.sendBlockChange(location, DEEPSLATE);
@@ -243,6 +258,7 @@ public class Engine {
         });
     }
     public static void showTileEntity(Player p, Location location, RaycastedAntiESP plugin) {
+    public static void showTileEntity(Player p, Location location, RaycastedEntityOcclusion plugin) {
         Bukkit.getScheduler().runTask(plugin, () -> {
             Block block = location.getBlock();
             BlockState data = block.getState();
@@ -255,15 +271,20 @@ public class Engine {
                 canSeeTileEntity.remove(location);
                 plugin.getChunkSnapshotManager().removeTileEntity(location);
             }
+            else throw new RuntimeException("Attempting to show a block which isn't a tile entity");
         });
 
 
     }
     public static void syncToggleTileEntity(Player p, Location loc, boolean show, RaycastedAntiESP plugin) {
+    public static void syncToggleTileEntity(Player p, Location loc, boolean show, RaycastedEntityOcclusion plugin) {
         if (show) {
             showTileEntity(p, loc, plugin);
         } else {
             hideTileEntity(p, loc, plugin);
         }
     }
+<<<<<<<< HEAD:src/main/java/games/cubi/raycastedAntiESP/raycast/Engine.java
 }
+========
+}*/
