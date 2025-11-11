@@ -81,7 +81,10 @@ public class ChunkSnapshotManager {
         //if (cfg.debugMode) {
             //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
         //}
-        dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
+        //run an async task copilot
+        Bukkit.getScheduler().runTaskAsynchronously(RaycastedEntityOcclusion.getInstance(), () -> {
+            dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
+        });
     }
     public void snapshotChunk(String key) {
         snapshotChunk(getKeyChunk(key));

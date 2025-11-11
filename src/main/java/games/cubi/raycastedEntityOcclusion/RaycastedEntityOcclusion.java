@@ -24,6 +24,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     private CommandsManager commands;
     private boolean packetEventsPresent = false;
     private PacketProcessor packetProcessor = null;
+    private static RaycastedEntityOcclusion instance;
 
     public int tick = 0;
 
@@ -42,6 +43,7 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
 
     @Override
     public void onEnable() {
+        instance = this;
         cfg = new ConfigManager(this);
         snapMgr = new ChunkSnapshotManager(this);
         tracker = new MovementTracker(this, cfg);
@@ -104,5 +106,8 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
     }
     public PacketProcessor getPacketProcessor() {
         return packetProcessor;
+    }
+    public static RaycastedEntityOcclusion getInstance() {
+        return instance;
     }
 }

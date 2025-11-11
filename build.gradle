@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'games.cubi'
-version = '1.6.3-backport'
+version = '1.6.4'
 
 repositories {
     mavenCentral()
