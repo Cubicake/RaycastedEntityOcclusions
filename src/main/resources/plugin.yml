@@ -1,7 +1,7 @@
 name: RaycastedEntityOcclusions
 version: ${version}
 main: games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion
-api-version: '1.21'
+api-version: '1.20.6'
 prefix: REO
 authors: [ _Cubicake ]
 load: STARTUP
