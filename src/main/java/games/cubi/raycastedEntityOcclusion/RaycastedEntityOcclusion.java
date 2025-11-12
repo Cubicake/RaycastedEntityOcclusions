@@ -51,18 +51,11 @@ public class RaycastedEntityOcclusion extends JavaPlugin implements CommandExecu
         new UpdateChecker(this);
         getServer().getPluginManager().registerEvents(new EventListener(this, snapMgr, cfg), this);
         //Brigadier API
-        LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();
 
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            commands.registrar().register(buildCommand);
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commandRegistrar -> {
+            commandRegistrar.registrar().register(commands.registerCommand("raycastedentityocclusions"));
             //alias "reo"
-            commands.registrar().register(Commands.literal("reo")
-                    .requires(sender -> sender.getSender().hasPermission("raycastedentityocclusions.command"))
-                    .executes(context -> {
-                        new CommandsManager(this, cfg).helpCommand(context);
-                        return Command.SINGLE_SUCCESS;
-                    })
-                    .redirect(buildCommand).build());
+            commandRegistrar.registrar().register(commands.registerCommand("reo"));
         });
 
         //bStats

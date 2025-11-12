@@ -20,9 +20,9 @@ public class CommandsManager {
         this.cfg = cfg;
     }
 
-    public LiteralCommandNode<CommandSourceStack> registerCommand() {
+    public LiteralCommandNode<CommandSourceStack> registerCommand(String commandName) {
         //run help command if no context provided
-        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedentityocclusions")
+        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal(commandName)
                 .requires(sender -> sender.getSender().hasPermission("raycastedentityocclusions.command"))
                 .executes(context -> {
                     helpCommand(context);
