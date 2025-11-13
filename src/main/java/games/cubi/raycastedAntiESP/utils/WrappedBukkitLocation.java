@@ -17,6 +17,13 @@ public class WrappedBukkitLocation extends Location implements Locatable{
         super(world, x, y, z, yaw, pitch);
     }
 
+    public static WrappedBukkitLocation wrap(Location location) {
+        if (location instanceof WrappedBukkitLocation location1) {
+            return location1;
+        }
+        return new WrappedBukkitLocation(location.getWorld(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    }
+
     @Override
     public Location toBukkitLocation() {
         return this;

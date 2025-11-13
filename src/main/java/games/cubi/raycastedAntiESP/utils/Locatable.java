@@ -40,7 +40,7 @@ public interface Locatable extends Position {
     }
 
     static Locatable convertLocatable(Locatable from, LocatableType to) {
-        Locatable returnObject;
+        Locatable returnObject = null;
         switch (to) {
             case Quantised -> {
                 //returnObject = new QuantisedLocation()
@@ -56,6 +56,6 @@ public interface Locatable extends Position {
     }
 
     static Locatable convertLocatable(Location from, LocatableType to) {
-        convertLocatable()
+        return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to);
     }
 }
