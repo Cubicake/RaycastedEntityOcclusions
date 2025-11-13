@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public final class LocationPair {
     private final QuantisedLocation loc1;
-    private final QuantisedLocation loc2;      // canonical ordering: loc1 ≤ loc2 by hash
+    private final QuantisedLocation loc2; // canonical ordering: loc1 ≤ loc2 by hash
 
     private LocationPair(QuantisedLocation p, QuantisedLocation e) {
         this.loc1 = p;

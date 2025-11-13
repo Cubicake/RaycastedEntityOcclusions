@@ -28,8 +28,8 @@ public class RaycastUtil {
     public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
 
         //These locations do not need to be cloned because .toLocation creates a new location object. We can mutate it freely
-        Location currentA = locationPair.first().toLocation();
-        Location currentB = locationPair.second().toLocation();
+        Location currentA = locationPair.first().toBukkitLocation();
+        Location currentB = locationPair.second().toBukkitLocation();
 
         double total = currentA.distance(currentB);
         double traveledA = 0;

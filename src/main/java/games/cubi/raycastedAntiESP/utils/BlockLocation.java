@@ -1,13 +1,15 @@
 package games.cubi.raycastedAntiESP.utils;
 
+import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class BlockLocation {
+public class BlockLocation implements Locatable{
     private final UUID world;
     private final int x;
     private final int y;
@@ -27,18 +29,6 @@ public class BlockLocation {
         this.z = (int) Math.floor(loc.getZ());
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public int getZ() {
-        return z;
-    }
-
     public Location toCentredLocation() {
         return new Location(Bukkit.getWorld(world), x + 0.5, y + 0.5, z + 0.5);
     }
@@ -55,5 +45,61 @@ public class BlockLocation {
         return Objects.hash(world, x, y, z);
     }
 
+    @Override
+    public UUID world() {
+        return world;
+    }
 
+/**
+ * @return Centred Bukkit Location
+ */
+    @Override
+    public Location toBukkitLocation() {
+        return toCentredLocation();
+    }
+
+    @Override
+    public LocatableType getType() {
+        return LocatableType.Block;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public int blockX() {
+        return x;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public int blockY() {
+        return y;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public int blockZ() {
+        return z;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public double x() {
+        return x;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public double y() {
+        return y;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public double z() {
+        return z;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public boolean isBlock() {
+        return true;
+    }
+
+    @Override @SuppressWarnings("UnstableApiUsage")
+    public boolean isFine() {
+        return false;
+    }
 }
