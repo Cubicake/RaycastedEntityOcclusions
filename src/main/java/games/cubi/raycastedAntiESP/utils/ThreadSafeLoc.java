@@ -8,8 +8,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThreadSafeLoc //TBH I still don't even know if this is needed
-{
+public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if this is needed */ {
     private final UUID world;
     private final Vector vector1;
     private final Vector vector2;
@@ -119,6 +118,62 @@ public class ThreadSafeLoc //TBH I still don't even know if this is needed
     @Override
     public int hashCode() {
         return Objects.hash(world, getPointedVector());
+    }
+
+    @Override
+    public Location toBukkitLocation() {
+        throw new RuntimeException("Unimplemented");
+        //TODO: Implement
+    }
+
+    @Override
+    public LocatableType getType() {
+        return LocatableType.ThreadSafe;
+    }
+
+    @Override
+    public UUID world() {
+        return readWorld();
+    }
+
+    @Override
+    public int blockX() {
+        return (int) Math.floor(readX());
+    }
+
+    @Override
+    public int blockY() {
+        return (int) Math.floor(readY());
+    }
+
+    @Override
+    public int blockZ() {
+        return (int) Math.floor(readZ());
+    }
+
+    @Override
+    public double x() {
+        return readX();
+    }
+
+    @Override
+    public double y() {
+        return readY();
+    }
+
+    @Override
+    public double z() {
+        return readZ();
+    }
+
+    @Override
+    public boolean isBlock() {
+        return false;
+    }
+
+    @Override
+    public boolean isFine() {
+        return true;
     }
 }
 
