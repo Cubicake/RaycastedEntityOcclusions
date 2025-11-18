@@ -4,7 +4,6 @@ import games.cubi.raycastedAntiESP.data.DataHolder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -25,9 +24,6 @@ public class PlayerData {
 
     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
     private final ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> entityVisibility = new ConcurrentHashMap<>();
-
-    // Location, time in millis TODO: Is it necessary to store the time as a long? Do we even need a recheck interval at all?
-    private final ConcurrentHashMap<BlockLocation, Long> seenTileEntities = new ConcurrentHashMap<>();
 
     public PlayerData(UUID playerUUID, boolean hasBypassPermission) {
         this.playerUUID = playerUUID;
@@ -65,36 +61,20 @@ public class PlayerData {
         //Default to true as entities are visible unless explicitly hidden
     }
 
+    public Set<UUID> getEntitiesNeedingRecheck(int recheckTicks) {
+        int currentTime = DataHolder.getTick();
+        Set<UUID> recheckList = new HashSet<>();
+
+        for (Map.Entry<UUID, EntityVisibilityAndLastCheckTime> values : entityVisibility.entrySet()) {
+            if ((values.getValue().visible) && (currentTime - values.getValue().lastChecked < recheckTicks)) continue;
+            recheckList.add(values.getKey());
+        }
+
+        return recheckList;
+    }
+
     public void removeEntity(UUID entityUUID) {
         entityVisibility.remove(entityUUID);
-    }
-
-    public Map<BlockLocation, Long> getSeenTileEntitiesMap() {
-        return new HashMap<>(seenTileEntities);
-    }
-
-    public void addSeenTileEntity(BlockLocation tileEntityLocation) {
-        seenTileEntities.put(tileEntityLocation, System.currentTimeMillis());
-    }
-
-    public void addSeenTileEntity(Location tileEntityLocation) {
-        seenTileEntities.put(new BlockLocation(tileEntityLocation), System.currentTimeMillis());
-    }
-
-    public void removeSeenTileEntity(BlockLocation tileEntityLocation) {
-        seenTileEntities.remove(tileEntityLocation); // This method should never actually be called, but it's here for completeness
-    }
-
-    public void removeSeenTileEntity(Location tileEntityLocation) {
-        seenTileEntities.remove(new BlockLocation(tileEntityLocation)); // This method should never actually be called, but it's here for completeness
-    }
-
-    public boolean hasSeenTileEntity(BlockLocation tileEntityLocation) {
-        return seenTileEntities.containsKey(tileEntityLocation);
-    }
-
-    public boolean hasSeenTileEntity(Location tileEntityLocation) {
-        return seenTileEntities.containsKey(new BlockLocation(tileEntityLocation));
     }
 
     public boolean hasBypassPermission() {
