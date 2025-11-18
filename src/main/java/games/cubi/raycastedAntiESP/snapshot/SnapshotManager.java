@@ -3,6 +3,9 @@ package games.cubi.raycastedAntiESP.snapshot;
 public class SnapshotManager {
     private static SnapshotManager instance;
 
+    private BlockSnapshotManager blockSnapshotManager;
+    private EntitySnapshotManager entitySnapshotManager;
+
     private SnapshotManager() {}
 
     public static SnapshotManager get() {
@@ -12,6 +15,12 @@ public class SnapshotManager {
         return instance;
     }
 
-    public void getBlockSnapshotManager() {}
+    public BlockSnapshotManager getBlockSnapshotManager() {
+        return blockSnapshotManager;
+    }
+
+    public EntitySnapshotManager getEntitySnapshotManager() {
+        return entitySnapshotManager;
+    }
 
 }
