@@ -109,7 +109,7 @@ public class Logger {
     private static final String logName = System.currentTimeMillis()+""; // Unique and new logs will have larger numbers
     private static final ReentrantLock flushLock = new ReentrantLock();
 
-    private static void logToFile(String line) {
+    private static void logToFile(String line) { //todo broken
         if (line == null) return;
         logBuffer.get().offer(line);
     }
