@@ -127,7 +127,7 @@ public class EventListener implements Listener {
 
         event.setCancelled(true);
         DataHolder.entityVisibility().hideEntity(entityUUID, player);
-        DataHolder.players().getPlayerData(playerUUID).addEntity(entityUUID);
+        DataHolder.players().getPlayerData(playerUUID).addEntity(entityUUID); //TODO: filter out players
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
