@@ -1,7 +1,9 @@
 package games.cubi.raycastedAntiESP.raycast;
 
+import games.cubi.raycastedAntiESP.snapshot.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.utils.LocationPair;
+import games.cubi.raycastedAntiESP.utils.WrappedBukkitLocation;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -25,7 +27,7 @@ public class RaycastUtil {
         }
     }
 
-    public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
+    public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, BlockSnapshotManager snap) {
 
         //These locations do not need to be cloned because .toLocation creates a new location object. We can mutate it freely
         Location currentA = locationPair.first().toBukkitLocation();
@@ -44,7 +46,7 @@ public class RaycastUtil {
             /* --- step from A ---> B --- */
             currentA.add(dirA);
             traveledA += 1;
-            Material matA = snap.getMaterialAt(currentA);
+            Material matA = snap.getMaterialAt(WrappedBukkitLocation.wrap(currentA));
             if (matA != null && matA.isOccluding()) {
                 maxOccluding--;
                 if (debug) currentA.getWorld().spawnParticle(Particle.DUST, currentA, 1, dustRed);
@@ -57,7 +59,7 @@ public class RaycastUtil {
             if (traveledA + traveledB >= total) break; // already overlapped
             currentB.add(dirB);
             traveledB += 1;
-            Material matB = snap.getMaterialAt(currentB);
+            Material matB = snap.getMaterialAt(WrappedBukkitLocation.wrap(currentB)); //todo dont do this many pointless wraps
             if (matB != null && matB.isOccluding()) {
                 maxOccluding--;
                 if (debug) currentB.getWorld().spawnParticle(Particle.DUST, currentB, 1, dustRed);
@@ -69,14 +71,8 @@ public class RaycastUtil {
         return true;
     }
 
-
-    public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, ChunkSnapshotManager snap) {
-        Particle.DustOptions dustRed = null;
-        Particle.DustOptions dustGreen = null;
-        if (debug) {
-            dustRed = new Particle.DustOptions(org.bukkit.Color.RED, 1f);
-            dustGreen = new Particle.DustOptions(org.bukkit.Color.GREEN, 1f);
-        }
+//True: Has line-of-sight
+    public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, BlockSnapshotManager snap) {
         double total = start.distance(end);
         double traveled = 0;
         Location curr = start.clone();
@@ -84,7 +80,7 @@ public class RaycastUtil {
         while (traveled < total) {
             curr.add(dir);
             traveled += 1;
-            Material mat = snap.getMaterialAt(curr);
+            Material mat = snap.getMaterialAt(WrappedBukkitLocation.wrap(curr));
             if (mat == null) {
                 continue;
             }
