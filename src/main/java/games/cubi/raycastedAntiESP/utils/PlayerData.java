@@ -4,6 +4,7 @@ import games.cubi.raycastedAntiESP.data.DataHolder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -25,6 +26,8 @@ public class PlayerData {
     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
     private final ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> entityVisibility = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> playerVisibility = new ConcurrentHashMap<>();
+
     public PlayerData(UUID playerUUID, boolean hasBypassPermission) {
         this.playerUUID = playerUUID;
         this.hasBypassPermission = hasBypassPermission;
@@ -39,33 +42,30 @@ public class PlayerData {
         return playerUUID;
     }
 
-    /**
-     * Adds the provided set of entity UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
-     * **/
-    public void addEntities(Set<UUID> entityUUIDs) {
+    private void addEntitiesGeneric(Set<UUID> entityUUIDs, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         for (UUID entityUUID : entityUUIDs) {
-            entityVisibility.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false));
+            generic.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false));
         }
     }
 
-    public void addEntity(UUID entityUUID) {
-        entityVisibility.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false)); // Default to hidden if not already present
+    private void addEntityGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+        generic.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false)); // Default to hidden if not already present
     }
 
-    public void setEntityVisibility(UUID entityUUID, boolean visible) {
-        entityVisibility.put(entityUUID, new EntityVisibilityAndLastCheckTime(visible)); // This can be used for both adding new entries and updating visibility
+    private void setEntityVisibilityGeneric(UUID entityUUID, boolean visible, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+        generic.put(entityUUID, new EntityVisibilityAndLastCheckTime(visible)); // This can be used for both adding new entries and updating visibility
     }
 
-    public boolean isEntityVisible(UUID entityUUID) {
-        return entityVisibility.getOrDefault(entityUUID, new EntityVisibilityAndLastCheckTime(true)).visible;
+    private boolean isEntityVisibleGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+        return generic.getOrDefault(entityUUID, new EntityVisibilityAndLastCheckTime(true)).visible;
         //Default to true as entities are visible unless explicitly hidden
     }
 
-    public Set<UUID> getEntitiesNeedingRecheck(int recheckTicks) {
+    private Set<UUID> getEntitiesNeedingRecheckGeneric(int recheckTicks, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         int currentTime = DataHolder.getTick();
         Set<UUID> recheckList = new HashSet<>();
 
-        for (Map.Entry<UUID, EntityVisibilityAndLastCheckTime> values : entityVisibility.entrySet()) {
+        for (Map.Entry<UUID, EntityVisibilityAndLastCheckTime> values : generic.entrySet()) {
             if ((values.getValue().visible) && (currentTime - values.getValue().lastChecked < recheckTicks)) continue;
             recheckList.add(values.getKey());
         }
@@ -73,8 +73,64 @@ public class PlayerData {
         return recheckList;
     }
 
+    private void removeEntityGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+        generic.remove(entityUUID);
+    }
+
+    /**
+     * Adds the provided set of entity UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
+     * **/
+    public void addEntities(Set<UUID> entityUUIDs) {
+        addEntitiesGeneric(entityUUIDs, entityVisibility);
+    }
+
+    public void addEntity(UUID entityUUID) {
+        addEntityGeneric(entityUUID, entityVisibility);
+    }
+
+    public void setEntityVisibility(UUID entityUUID, boolean visible) {
+        setEntityVisibilityGeneric(entityUUID, visible, entityVisibility);
+    }
+
+    public boolean isEntityVisible(UUID entityUUID) {
+        return isEntityVisibleGeneric(entityUUID, entityVisibility);
+        //Default to true as entities are visible unless explicitly hidden
+    }
+
+    public Set<UUID> getEntitiesNeedingRecheck(int recheckTicks) {
+        return getEntitiesNeedingRecheckGeneric(recheckTicks, entityVisibility);
+    }
+
     public void removeEntity(UUID entityUUID) {
-        entityVisibility.remove(entityUUID);
+        removeEntityGeneric(entityUUID, entityVisibility);
+    }
+
+    /**
+     * Adds the provided set of player UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
+     * **/
+    public void addPlayers(Set<UUID> entityUUIDs) {
+        addEntitiesGeneric(entityUUIDs, playerVisibility);
+    }
+
+    public void addPlayer(UUID entityUUID) {
+        addEntityGeneric(entityUUID, playerVisibility);
+    }
+
+    public void setPlayerVisibility(UUID entityUUID, boolean visible) {
+        setEntityVisibilityGeneric(entityUUID, visible, playerVisibility);
+    }
+
+    public boolean isPlayerVisible(UUID entityUUID) {
+        return isEntityVisibleGeneric(entityUUID, playerVisibility);
+        //Default to true as entities are visible unless explicitly hidden
+    }
+
+    public Set<UUID> getPlayersNeedingRecheck(int recheckTicks) {
+        return getEntitiesNeedingRecheckGeneric(recheckTicks, playerVisibility);
+    }
+
+    public void removePlayer(UUID entityUUID) {
+        removeEntityGeneric(entityUUID, playerVisibility);
     }
 
     public boolean hasBypassPermission() {
