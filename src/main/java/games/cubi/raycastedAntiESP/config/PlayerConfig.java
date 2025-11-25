@@ -3,7 +3,7 @@ package games.cubi.raycastedAntiESP.config;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class PlayerConfig extends RaycastConfig {
-    public static final String PATH = "player";
+    public static final String PATH = "checks.player";
     private final boolean onlyCullWhileSneaking;
 
     public PlayerConfig(byte engineMode, byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled, boolean onlyCullWhileSneaking) {

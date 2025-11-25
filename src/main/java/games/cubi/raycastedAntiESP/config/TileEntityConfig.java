@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TileEntityConfig extends RaycastConfig {
-    private static final String PATH = "tile-entity";
+    private static final String PATH = "checks.tile-entity";
     private final List<Material> exemptedBlocks; // This list is immutable
 
     public TileEntityConfig(byte engineMode, byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled, List<Material> exemptedBlocks) {

@@ -3,7 +3,7 @@ package games.cubi.raycastedAntiESP.config;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class EntityConfig extends RaycastConfig {
-    public static final String PATH = "entity";
+    public static final String PATH = "checks.entity";
 
     public EntityConfig(byte engineMode, byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled) {
         super(engineMode, maxOccludingCount, alwaysShowRadius, raycastRadius, visibleRecheckInterval, enabled);
