@@ -76,10 +76,10 @@ public class Engine {
         // ----- PHASE 1: SYNC GATHER -----
 
         if (!syncRecheck.isEmpty()) {
-            Logger.warning(syncRecheck.size() + " chunks failed to snapshot asynchronously, rechecking them now.");
+            Logger.warning(syncRecheck.size() + " chunks failed to snapshot asynchronously, rechecking them now. This message may also have been triggered if a player teleported into unloaded chunks, in which case it's safe to ignore.");
             for (Chunk c : syncRecheck) {
                 if (c.isLoaded()) {
-                    plugin.getChunkSnapshotManager().snapshotChunk(c);
+                    plugin.getChunkSnapshotManager().snapshotChunkSync(c);
                     syncRecheck.remove(c);
                     Logger.info("Successfully rechecked chunk " + c.getX() + ", " + c.getZ() + " in world " + c.getWorld().getName());
                 }

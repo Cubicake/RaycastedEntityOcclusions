@@ -77,6 +77,13 @@ public class ChunkSnapshotManager {
         removeChunkSnapshot(c);
     }
 
+    public void snapshotChunkSync(Chunk c) {
+        if ((dataMap.get(key(c)).lastRefresh + 100) < System.currentTimeMillis() - cfg.snapshotRefreshInterval * 1000L) {
+            return;
+        }
+        dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
+    }
+
     public void snapshotChunk(Chunk c) {
         //if (cfg.debugMode) {
             //Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ());
@@ -174,7 +181,7 @@ public class ChunkSnapshotManager {
         ChunkData d = dataMap.get(key(chunk));
         if (d == null) {
             Chunk c = loc.getChunk();
-            Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
+            //Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
             Engine.syncRecheck.add(chunk);
             return loc.getBlock().getType();
         }
