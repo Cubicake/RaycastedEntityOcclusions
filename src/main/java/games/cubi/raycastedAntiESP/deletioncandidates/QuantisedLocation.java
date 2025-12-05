@@ -1,16 +1,15 @@
-package games.cubi.raycastedAntiESP.utils;
+package games.cubi.raycastedAntiESP.deletioncandidates;
 
-import io.papermc.paper.math.BlockPosition;
+import games.cubi.raycastedAntiESP.locatables.Locatable;
+import games.cubi.raycastedAntiESP.locatables.ThreadSafeLoc;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class QuantisedLocation implements Locatable {
+public class QuantisedLocation {/*
     // One decimal place quantisation. This means that the coordinates are rounded to the nearest 0.1 block, and since integers are used this works up to 200m blocks away (integer limit/10)
     // Note that the last digit of the integer is the tenths place, so 123456789 represents 12345678.9 in real coordinates.
     private final int rawX;
@@ -39,7 +38,6 @@ public class QuantisedLocation implements Locatable {
         this.world = location.getWorld().getUID();
     }
 
-    @Override
     public Location toBukkitLocation() {
         return new Location(Bukkit.getWorld(world), (rawX / 10.0)+0.05, (rawY / 10.0)+0.05, (rawZ / 10.0)+0.05);
     }
@@ -80,7 +78,6 @@ public class QuantisedLocation implements Locatable {
         return (rawZ / 10.0) + 0.05;
     }
 
-    @Override
     public UUID world() {
         return world;
     }
@@ -140,5 +137,5 @@ public class QuantisedLocation implements Locatable {
     @Override @SuppressWarnings("UnstableApiUsage")
     public boolean isFine() {
         return false;
-    }
+    }*/
 }

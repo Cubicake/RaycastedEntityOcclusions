@@ -1,6 +1,7 @@
-package games.cubi.raycastedAntiESP.utils;
+package games.cubi.raycastedAntiESP.locatables;
 
 import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.deletioncandidates.QuantisedLocation;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -110,14 +111,12 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ThreadSafeLoc other)) return false;
-        return world.equals(other.world) && this.getPointedVector().equals(other.getPointedVector());
+        return isEqualTo(this, o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(world, getPointedVector());
+        return makeHash(this);
     }
 
     @Override

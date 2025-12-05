@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.utils;
+package games.cubi.raycastedAntiESP.locatables;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-public class WrappedBukkitLocation extends Location implements Locatable{
+public class WrappedBukkitLocation extends Location implements Locatable {
     public WrappedBukkitLocation(World world, double x, double y, double z) {
         super(world, x, y, z);
     }
@@ -52,5 +52,15 @@ public class WrappedBukkitLocation extends Location implements Locatable{
     @Override
     public @NotNull FinePosition offset(double x, double y, double z) {
         return super.offset(x,y,z);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return isEqualTo(this, o);
+    }
+
+    @Override
+    public int hashCode() {
+        return makeHash(this);
     }
 }

@@ -1,8 +1,10 @@
 package games.cubi.raycastedAntiESP.utils;
 
+import games.cubi.raycastedAntiESP.deletioncandidates.QuantisedLocation;
+
 import java.util.Objects;
 
-public final class LocationPair {
+public final class LocationPair {/*
     private final QuantisedLocation loc1;
     private final QuantisedLocation loc2; // canonical ordering: loc1 ≤ loc2 by hash
 
@@ -39,6 +41,6 @@ public final class LocationPair {
     @Override
     public int hashCode() {
         return Objects.hash(loc1, loc2);
-    }
+    }*/
 }
 

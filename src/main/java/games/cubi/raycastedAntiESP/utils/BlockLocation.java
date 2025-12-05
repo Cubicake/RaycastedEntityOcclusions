@@ -1,15 +1,15 @@
 package games.cubi.raycastedAntiESP.utils;
 
+import games.cubi.raycastedAntiESP.locatables.Locatable;
 import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 import java.util.UUID;
 
-public class BlockLocation implements Locatable{
+public class BlockLocation implements BlockPosition {
     private final UUID world;
     private final int x;
     private final int y;
@@ -45,7 +45,6 @@ public class BlockLocation implements Locatable{
         return Objects.hash(world, x, y, z);
     }
 
-    @Override
     public UUID world() {
         return world;
     }
@@ -53,14 +52,12 @@ public class BlockLocation implements Locatable{
 /**
  * @return Centred Bukkit Location
  */
-    @Override
     public Location toBukkitLocation() {
         return toCentredLocation();
     }
 
-    @Override
-    public LocatableType getType() {
-        return LocatableType.Block;
+    public Locatable.LocatableType getType() {
+        return Locatable.LocatableType.Block;
     }
 
     @Override @SuppressWarnings("UnstableApiUsage")
@@ -91,15 +88,5 @@ public class BlockLocation implements Locatable{
     @Override @SuppressWarnings("UnstableApiUsage")
     public double z() {
         return z;
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    public boolean isBlock() {
-        return true;
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    public boolean isFine() {
-        return false;
     }
 }
