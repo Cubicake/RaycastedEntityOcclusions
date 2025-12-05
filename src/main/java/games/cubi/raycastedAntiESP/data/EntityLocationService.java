@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.data;
 
 import games.cubi.raycastedAntiESP.utils.EntityLocationPair;
-import games.cubi.raycastedAntiESP.utils.ThreadSafeLoc;
+import games.cubi.raycastedAntiESP.locatables.ThreadSafeLoc;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -10,7 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class EntityLocationService {
+public class EntityLocationService { //todo is this an impl of entitysnapshotmanager?
     private static EntityLocationService instance;
 
     private EntityLocationService() {}
