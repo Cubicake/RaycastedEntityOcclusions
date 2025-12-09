@@ -1,15 +1,15 @@
 package games.cubi.raycastedAntiESP.locatables;
 
+import com.google.common.base.Preconditions;
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.deletioncandidates.QuantisedLocation;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.util.Vector;
 
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if this is needed */ {
+public class ThreadSafeLocation implements Locatable /*TBH I still don't even know if this is needed */ {
     private final UUID world;
     private final Vector vector1;
     private final Vector vector2;
@@ -17,7 +17,7 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
     private final AtomicBoolean writeLock = new AtomicBoolean(false);
 
 
-    public ThreadSafeLoc(Vector vec, UUID world) {
+    public ThreadSafeLocation(Vector vec, UUID world) {
         writeLock.set(true);
         this.world = world;
         vector1 = vec.clone(); //clone to ensure a new vector
@@ -25,17 +25,33 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
         vector2 = vector1.clone();
     }
 
-    public ThreadSafeLoc(Location loc) {
+    public ThreadSafeLocation(World world, double x, double y, double z) {
+        writeLock.set(true);
+        this.world = world.getUID();
+        vector1 = new Vector(x, y, z);
+        writeLock.set(false);
+        vector2 = vector1.clone();
+    }
+
+    public ThreadSafeLocation(UUID world, double x, double y, double z) {
+        writeLock.set(true);
+        this.world = world;
+        vector1 = new Vector(x, y, z);
+        writeLock.set(false);
+        vector2 = vector1.clone();
+    }
+
+    public ThreadSafeLocation(Location loc) {
         this(loc.toVector(), loc.getWorld().getUID());
     }
 
-    public ThreadSafeLoc(Location loc, double height) {
+    public ThreadSafeLocation(Location loc, double height) {
         this(loc.add(0, height/2, 0).toVector(), loc.getWorld().getUID());
     }
 
-    public ThreadSafeLoc(QuantisedLocation loc) {
+    /*public ThreadSafeLocation(QuantisedLocation loc) {
         this(new Vector(loc.realX(), loc.realY(), loc.realZ()), loc.world());
-    }
+    }*/
 
     /**This returns the actual vector, so make sure it is cloned before use*/
     private Vector getPointedVector() {
@@ -75,7 +91,7 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
             }
         }
         else return false;
@@ -91,11 +107,43 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLoc lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
             }
         }
         else return false;
     }
+
+    /**
+     * Runs a write operation on vector1 in a safe double-buffer swap.
+     * The lambda must mutate only vector1.
+     * The method handles pointer flips and sync to vector2.
+     */
+    private void withWriteLock(Runnable body) {
+        while (!writeLock.compareAndSet(false, true)) {
+            Thread.onSpinWait();
+        }
+        try {
+            Preconditions.checkArgument(pointer == 1);
+            // Switch clients to vector2
+            pointer = 2;
+
+            // Perform mutation on vector1
+            body.run();
+
+            // Switch clients back to vector1
+            pointer = 1;
+
+            // Sync vector2 with updated vector1
+            overwriteVector(vector2, vector1);
+
+        } finally {
+            if (!writeLock.compareAndSet(true, false)) {
+                Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
+            }
+        }
+    }
+
+
 
     /**
      * Overwrites the first object with the x,y,z values of the second object to avoid creating new vector objects
@@ -128,6 +176,46 @@ public class ThreadSafeLoc implements Locatable /*TBH I still don't even know if
     @Override
     public LocatableType getType() {
         return LocatableType.ThreadSafe;
+    }
+
+    @Override
+    public double length() {
+        return getPointedVector().length();
+    }
+
+    /**
+     * @return Normalised internal vectors, may busy-wait if write access is locked
+     */
+    @Override
+    public Locatable normalize() {
+        withWriteLock(vector1::normalize);
+        return this;
+    }
+
+    @Override
+    public Locatable add(Locatable locatable) {
+        withWriteLock(() -> {
+            vector1.setX(vector1.getX() + locatable.x());
+            vector1.setY(vector1.getY() +  locatable.y());
+            vector1.setZ(vector1.getZ() + locatable.z());
+        });
+        return this;
+    }
+
+    @Override
+    public Locatable subtract(Locatable locatable) {
+        withWriteLock(() -> {
+            vector1.setX(vector1.getX() - locatable.x());
+            vector1.setY(vector1.getY() -  locatable.y());
+            vector1.setZ(vector1.getZ() - locatable.z());
+        });
+        return this;
+    }
+
+    @Override
+    public Locatable scalarMultiply(double factor) {
+        withWriteLock(() -> vector1.multiply(factor));
+        return this;
     }
 
     @Override
