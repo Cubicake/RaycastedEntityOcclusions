@@ -1,6 +1,5 @@
-package games.cubi.raycastedAntiESP.utils;
+package games.cubi.raycastedAntiESP.locatables.block;
 
-import games.cubi.raycastedAntiESP.locatables.Locatable;
 import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,8 +8,8 @@ import org.bukkit.World;
 import java.util.Objects;
 import java.util.UUID;
 
-public class BlockLocation implements BlockPosition {
-    private final UUID world;
+public class BlockLocation implements AbstractBlockLocation {
+    protected final UUID world;
     private final int x;
     private final int y;
     private final int z;
@@ -29,35 +28,18 @@ public class BlockLocation implements BlockPosition {
         this.z = (int) Math.floor(loc.getZ());
     }
 
-    public Location toCentredLocation() {
-        return new Location(Bukkit.getWorld(world), x + 0.5, y + 0.5, z + 0.5);
-    }
-
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BlockLocation other)) return false;
-        return x == other.x && y == other.y && z == other.z && world.equals(other.world);
+        return isEqual(this, o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(world, x, y, z);
+        return hash(this);
     }
 
     public UUID world() {
         return world;
-    }
-
-/**
- * @return Centred Bukkit Location
- */
-    public Location toBukkitLocation() {
-        return toCentredLocation();
-    }
-
-    public Locatable.LocatableType getType() {
-        return Locatable.LocatableType.Block;
     }
 
     @Override @SuppressWarnings("UnstableApiUsage")
