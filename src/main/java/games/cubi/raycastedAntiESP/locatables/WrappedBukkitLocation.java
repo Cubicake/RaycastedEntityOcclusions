@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP.locatables;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
@@ -13,15 +14,15 @@ public class WrappedBukkitLocation extends Location implements Locatable {
         super(world, x, y, z);
     }
 
-    public WrappedBukkitLocation(World world, double x, double y, double z, float yaw, float pitch) {
-        super(world, x, y, z, yaw, pitch);
+    public WrappedBukkitLocation(UUID world, double x, double y, double z) {
+        super(Bukkit.getWorld(world), x, y, z);
     }
 
     public static WrappedBukkitLocation wrap(Location location) {
         if (location instanceof WrappedBukkitLocation location1) {
             return location1;
         }
-        return new WrappedBukkitLocation(location.getWorld(), location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+        return new WrappedBukkitLocation(location.getWorld(), location.getX(), location.getY(), location.getZ());
     }
 
     @Override
@@ -32,6 +33,33 @@ public class WrappedBukkitLocation extends Location implements Locatable {
     @Override
     public LocatableType getType() {
         return LocatableType.Bukkit;
+    }
+
+    @Override
+    public Locatable normalize() {
+        double length = length();
+
+        set(x() / length, y() / length, z()/length);
+
+        return this;
+    }
+
+    @Override
+    public Locatable add(Locatable locatable) {
+        add(locatable.x(), locatable.y(), locatable.z());
+        return this;
+    }
+
+    @Override
+    public Locatable subtract(Locatable locatable) {
+        subtract(locatable.x(), locatable.y(), locatable.z());
+        return this;
+    }
+
+    @Override
+    public Locatable scalarMultiply(double factor) {
+        set(x() * factor, y() * factor, z() * factor);
+        return this;
     }
 
     @Override
@@ -62,5 +90,10 @@ public class WrappedBukkitLocation extends Location implements Locatable {
     @Override
     public int hashCode() {
         return makeHash(this);
+    }
+
+    @Override
+    public WrappedBukkitLocation clone() {
+        return new WrappedBukkitLocation(this.getWorld(), this.getX(), this.getY(), this.getZ());
     }
 }
