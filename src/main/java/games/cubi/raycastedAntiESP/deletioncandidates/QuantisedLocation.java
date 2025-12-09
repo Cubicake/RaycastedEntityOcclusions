@@ -1,14 +1,5 @@
 package games.cubi.raycastedAntiESP.deletioncandidates;
 
-import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.locatables.ThreadSafeLoc;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.util.Vector;
-
-import java.util.Objects;
-import java.util.UUID;
-
 public class QuantisedLocation {/*
     // One decimal place quantisation. This means that the coordinates are rounded to the nearest 0.1 block, and since integers are used this works up to 200m blocks away (integer limit/10)
     // Note that the last digit of the integer is the tenths place, so 123456789 represents 12345678.9 in real coordinates.
@@ -42,8 +33,8 @@ public class QuantisedLocation {/*
         return new Location(Bukkit.getWorld(world), (rawX / 10.0)+0.05, (rawY / 10.0)+0.05, (rawZ / 10.0)+0.05);
     }
 
-    public ThreadSafeLoc toThreadSafeLoc() {
-        return new ThreadSafeLoc(this);
+    public ThreadSafeLocation toThreadSafeLoc() {
+        return new ThreadSafeLocation(this);
     }
 
     public Vector toNewVector() {
