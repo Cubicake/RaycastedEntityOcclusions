@@ -5,12 +5,11 @@ import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-// This extends position but is not directly the position interface as it is marked unstable, so this way if the interface changes, only Locatable needs to be updated
+// This extends position but is not directly the position interface as it is marked unstable, so this way if the interface changes, only Locatable needs to be updated. Also adds some vector methods
 public interface Locatable extends Position {
 
     @Override @SuppressWarnings("UnstableApiUsage")
@@ -32,33 +31,40 @@ public interface Locatable extends Position {
 
     LocatableType getType();
 
+    double length();
+
+    Locatable normalize();
+
+    Locatable add(Locatable locatable);
+
+    Locatable subtract(Locatable locatable);
+
+    Locatable scalarMultiply(double factor);
+
     UUID world();
 
     enum LocatableType {
-        Quantised,
         ThreadSafe,
-        Block,
         Bukkit,
     }
 
-    static Locatable convertLocatable(Locatable from, LocatableType to) {
+    static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {
         Locatable returnObject = null;
         switch (to) {
-            case Quantised -> {
-                //returnObject = new QuantisedLocation() TODO Complete
-            }
             case ThreadSafe -> {
-            }
-            case Block -> {
+                if ((from instanceof ThreadSafeLocation) && !clone) return from;
+                return new ThreadSafeLocation(from.world(), from.x(), from.y(), from.z());
             }
             case Bukkit -> {
+                if ((from instanceof Location) && !clone) return from;
+                return new WrappedBukkitLocation(from.world(), from.x(), from.y(), from.z());
             }
         }
         return returnObject;
     }
 
-    static Locatable convertLocatable(Location from, LocatableType to) {
-        return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to);
+    static Locatable convertLocatable(Location from, LocatableType to, boolean clone) {
+        return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to, clone);
     }
 
     default boolean isEqualTo(Locatable thisOne, Object thatOne) {
