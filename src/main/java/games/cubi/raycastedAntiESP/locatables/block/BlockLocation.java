@@ -30,12 +30,12 @@ public class BlockLocation implements AbstractBlockLocation {
 
     @Override
     public boolean equals(Object o) {
-        return isEqual(this, o);
+        return isEqual(o);
     }
 
     @Override
     public int hashCode() {
-        return hash(this);
+        return hash();
     }
 
     public UUID world() {

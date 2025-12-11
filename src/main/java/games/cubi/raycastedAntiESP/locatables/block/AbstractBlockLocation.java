@@ -17,18 +17,18 @@ public interface AbstractBlockLocation extends BlockPosition {
         return toCentredLocation();
     }
 
-    default boolean isEqual(AbstractBlockLocation thisOne, Object o) {
+    default boolean isEqual(Object o) {
         if (this == o) return true;
         if (!(o instanceof AbstractBlockLocation other)) return false;
-        return thisOne.x() == other.x() && thisOne.y() == other.y() && thisOne.z() == other.z() && world().equals(other.world());
+        return this.blockX() == other.blockX() && this.blockY() == other.blockY() && this.blockZ() == other.blockZ() && world().equals(other.world());
     }
 
-    default int hash(AbstractBlockLocation thisOne) {
+    default int hash() {
         int result = 17;
-        result = 31 * result + (thisOne.world() != null ? thisOne.world().hashCode() : 0);
-        result = 31 * result + thisOne.blockX();
-        result = 31 * result + thisOne.blockY();
-        result = 31 * result + thisOne.blockZ();
+        result = 31 * result + (this.world() != null ? this.world().hashCode() : 0);
+        result = 31 * result + this.blockX();
+        result = 31 * result + this.blockY();
+        result = 31 * result + this.blockZ();
         return result;
     }
 }
