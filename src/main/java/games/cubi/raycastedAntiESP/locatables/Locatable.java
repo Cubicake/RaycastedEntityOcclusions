@@ -9,29 +9,27 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-// This extends position but is not directly the position interface as it is marked unstable, so this way if the interface changes, only Locatable needs to be updated. Also adds some vector methods
+// A vector-like interface representing a location in a 3D space within a specific world.
 public interface Locatable extends Position {
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default @NotNull FinePosition offset(double x, double y, double z) {
-        throw new RuntimeException("Offset not implemented");
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default @NotNull FinePosition offset(int x, int y, int z) {
-        throw new RuntimeException("Offset not implemented");
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default @NotNull BlockPosition toBlock() {
-        throw new RuntimeException("not implemented");
-    }
 
     Location toBukkitLocation();
 
     LocatableType getType();
 
     double length();
+
+    double lengthSquared();
+
+    default double distance(Locatable locatable) {
+        return Math.sqrt(distanceSquared(locatable));
+    }
+
+    default double distanceSquared(Locatable locatable) {
+        double dx = x() - locatable.x();
+        double dy = y() - locatable.y();
+        double dz = z() - locatable.z();
+        return dx * dx + dy * dy + dz * dz;
+    }
 
     Locatable normalize();
 
@@ -46,6 +44,7 @@ public interface Locatable extends Position {
     enum LocatableType {
         ThreadSafe,
         Bukkit,
+        MutableBlockVector,
     }
 
     static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {

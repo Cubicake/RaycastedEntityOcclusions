@@ -2,6 +2,11 @@ package games.cubi.raycastedAntiESP.locatables;
 
 import com.google.common.base.Preconditions;
 import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import io.papermc.paper.math.BlockPosition;
+import io.papermc.paper.math.FinePosition;
+import io.papermc.paper.math.Position;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
@@ -183,6 +188,11 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
         return getPointedVector().length();
     }
 
+    @Override
+    public double lengthSquared() {
+        return getPointedVector().lengthSquared();
+    }
+
     /**
      * @return Normalised internal vectors, may busy-wait if write access is locked
      */
@@ -261,6 +271,21 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
     @Override
     public boolean isFine() {
         return true;
+    }
+
+    @Override
+    public Position offset(int x, int y, int z) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
+    public FinePosition offset(double x, double y, double z) {
+        throw new RuntimeException("Unimplemented");
+    }
+
+    @Override
+    public BlockPosition toBlock() {
+        return new BlockLocation(Bukkit.getWorld(world), blockX(), blockY(), blockZ());
     }
 }
 

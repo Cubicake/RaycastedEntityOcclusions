@@ -1,14 +1,14 @@
 package games.cubi.raycastedAntiESP.raycast;
 
+import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
 import games.cubi.raycastedAntiESP.snapshot.BlockSnapshotManager;
-import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
+import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.utils.LocationPair;
-import games.cubi.raycastedAntiESP.utils.WrappedBukkitLocation;
-import org.bukkit.Color;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import games.cubi.raycastedAntiESP.locatables.WrappedBukkitLocation;
+import org.bukkit.*;
 import org.bukkit.util.Vector;
+
+import javax.swing.*;
 
 public class RaycastUtil {
     static Particle.DustOptions dustRed = null;
@@ -30,8 +30,8 @@ public class RaycastUtil {
     public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, BlockSnapshotManager snap) {
 
         //These locations do not need to be cloned because .toLocation creates a new location object. We can mutate it freely
-        Location currentA = locationPair.first().toBukkitLocation();
-        Location currentB = locationPair.second().toBukkitLocation();
+        Location currentA = null;//locationPair.first().toBukkitLocation();
+        Location currentB = null;//locationPair.second().toBukkitLocation();
 
         double total = currentA.distance(currentB);
         double traveledA = 0;
@@ -46,7 +46,7 @@ public class RaycastUtil {
             /* --- step from A ---> B --- */
             currentA.add(dirA);
             traveledA += 1;
-            Material matA = snap.getMaterialAt(WrappedBukkitLocation.wrap(currentA));
+            /*Material matA = snap.getMaterialAt(WrappedBukkitLocation.wrap(currentA));
             if (matA != null && matA.isOccluding()) {
                 maxOccluding--;
                 if (debug) currentA.getWorld().spawnParticle(Particle.DUST, currentA, 1, dustRed);
@@ -56,7 +56,7 @@ public class RaycastUtil {
             if (maxOccluding < 1) return false;
 
             /* --- step from B ---> A --- */
-            if (traveledA + traveledB >= total) break; // already overlapped
+            /*if (traveledA + traveledB >= total) break; // already overlapped
             currentB.add(dirB);
             traveledB += 1;
             Material matB = snap.getMaterialAt(WrappedBukkitLocation.wrap(currentB)); //todo dont do this many pointless wraps
@@ -66,34 +66,46 @@ public class RaycastUtil {
             } else if (debug) {
                 currentB.getWorld().spawnParticle(Particle.DUST, currentB, 1, dustBlue);
             }
-            if (maxOccluding < 1) return false;
+            if (maxOccluding < 1) return false;*/
         }
         return true;
     }
 
 //True: Has line-of-sight
-    public static boolean raycast(Location start, Location end, int maxOccluding, boolean debug, BlockSnapshotManager snap) {
+    public static boolean raycast(Locatable start, Locatable end, int maxOccluding, boolean debug, BlockSnapshotManager snap, int stepSize) {
+        if (!start.world().equals(end.world())) return false;
+
+        World world = null;
+        WrappedBukkitLocation currentLocation = null;
+
+        if (debug) {
+            initDebugParticles();
+            world = Bukkit.getWorld(start.world());
+            currentLocation = (WrappedBukkitLocation) Locatable.convertLocatable(start, Locatable.LocatableType.Bukkit, true);
+        }
+
         double total = start.distance(end);
         double traveled = 0;
-        Location curr = start.clone();
-        Vector dir = end.toVector().subtract(start.toVector()).normalize();
+        Locatable dir = end.subtract(start).normalize().scalarMultiply(stepSize);
+
+        MutableBlockVector current = new MutableBlockVector(start.world(), start.x(),start.y(),start.z());
+
         while (traveled < total) {
-            curr.add(dir);
-            traveled += 1;
-            Material mat = snap.getMaterialAt(WrappedBukkitLocation.wrap(curr));
-            if (mat == null) {
-                continue;
-            }
+            current.add(dir);
+            if (debug) currentLocation.add(dir);
+            traveled += stepSize;
+            Material mat = snap.getMaterialAt(current); //This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
+
+            if (mat == null) continue;
+
             if (mat.isOccluding()) {
                 maxOccluding--;
-                if (debug) {
-                    start.getWorld().spawnParticle(Particle.DUST, curr, 1, dustRed);
-                }
+                if (debug) world.spawnParticle(Particle.DUST, currentLocation, 1, dustRed);
                 if (maxOccluding < 1) return false;
+                continue;
             }
-            else if (debug) {
-                start.getWorld().spawnParticle(Particle.DUST, curr, 1, dustGreen);
-            }
+
+            if (debug) world.spawnParticle(Particle.DUST, currentLocation, 1, dustGreen);
         }
         return true;
     }
