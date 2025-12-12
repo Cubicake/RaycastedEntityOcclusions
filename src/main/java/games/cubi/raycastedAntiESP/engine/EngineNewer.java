@@ -71,7 +71,7 @@ public class EngineNewer {
         for (PlayerData playerData : playerDataList) {
             if (playerData.hasBypassPermission()) continue;
 
-            Locatable playerLocation = SnapshotManager.get().getEntitySnapshotManager().getLocation(playerData.getPlayerUUID());
+            Locatable playerLocation = SnapshotManager.getEntitySnapshotManager().getLocation(playerData.getPlayerUUID());
             if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"));
 
             if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig);
