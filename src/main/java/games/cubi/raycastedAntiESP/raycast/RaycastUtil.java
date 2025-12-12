@@ -1,14 +1,20 @@
 package games.cubi.raycastedAntiESP.raycast;
 
+import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
 import games.cubi.raycastedAntiESP.snapshot.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.utils.LocationPair;
 import games.cubi.raycastedAntiESP.locatables.WrappedBukkitLocation;
-import org.bukkit.*;
+
+import org.bukkit.Location;
+import org.bukkit.Particle;
+import org.bukkit.World;
+import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Material;
 import org.bukkit.util.Vector;
 
-import javax.swing.*;
 
 public class RaycastUtil {
     static Particle.DustOptions dustRed = null;
@@ -72,8 +78,12 @@ public class RaycastUtil {
     }
 
 //True: Has line-of-sight
-    public static boolean raycast(Locatable start, Locatable end, int maxOccluding, boolean debug, BlockSnapshotManager snap, int stepSize) {
+    public static boolean raycast(Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, BlockSnapshotManager snap, int stepSize) {
         if (!start.world().equals(end.world())) return false;
+
+        double total = start.distance(end); //benchmarking shows that calling distance() is faster than distanceSquared() then checking distanceSquared < stepSize*stepSize every time despite the latter replacing a square root with multiplication
+        if (total <= alwaysShowRadius) return true;
+        if (total > maxRaycastRadius) return false;
 
         World world = null;
         WrappedBukkitLocation currentLocation = null;
@@ -82,18 +92,19 @@ public class RaycastUtil {
             initDebugParticles();
             world = Bukkit.getWorld(start.world());
             currentLocation = (WrappedBukkitLocation) Locatable.convertLocatable(start, Locatable.LocatableType.Bukkit, true);
+            if (world == null) {
+                Logger.errorAndReturn(new RuntimeException("RaycastUtil.raycast: world is null for UUID " + start.world()));
+                debug = false; //code will exit before this point, this is to shut up the warnings
+            }
         }
 
-        double total = start.distance(end);
-        double traveled = 0;
         Locatable dir = end.subtract(start).normalize().scalarMultiply(stepSize);
 
         MutableBlockVector current = new MutableBlockVector(start.world(), start.x(),start.y(),start.z());
 
-        while (traveled < total) {
+        for (double traveled = 0; traveled < total; traveled += stepSize) { //benchmarking shows that for loop is marginally faster than while loop initially (after running for a while they are equal
             current.add(dir);
             if (debug) currentLocation.add(dir);
-            traveled += stepSize;
             Material mat = snap.getMaterialAt(current); //This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
 
             if (mat == null) continue;
