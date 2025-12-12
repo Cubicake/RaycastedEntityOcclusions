@@ -76,7 +76,7 @@ public class EngineNewer {
 
             if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig);
             if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig);
-            if (tileEntityConfig.isEnabled()) {checkTileEntities(playerData, playerLocation, tileEntityConfig, tileEntityRadius);}
+            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, tileEntityRadius);
         }
     }
 
