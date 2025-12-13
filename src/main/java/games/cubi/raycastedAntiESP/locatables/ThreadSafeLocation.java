@@ -122,6 +122,8 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
      * Runs a write operation on vector1 in a safe double-buffer swap.
      * The lambda must mutate only vector1.
      * The method handles pointer flips and sync to vector2.
+     *
+     * In other words, this method can be used so that writing code to ThreadSafeLocations is as easy as writing to a normal Vector.
      */
     private void withWriteLock(Runnable body) {
         while (!writeLock.compareAndSet(false, true)) {
@@ -129,13 +131,13 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
         }
         try {
             Preconditions.checkArgument(pointer == 1);
-            // Switch clients to vector2
+            // Switch reads to vector2
             pointer = 2;
 
             // Perform mutation on vector1
             body.run();
 
-            // Switch clients back to vector1
+            // Switch reads back to vector1
             pointer = 1;
 
             // Sync vector2 with updated vector1
@@ -164,12 +166,12 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
 
     @Override
     public boolean equals(Object o) {
-        return isEqualTo(this, o);
+        return isEqualTo(o);
     }
 
     @Override
     public int hashCode() {
-        return makeHash(this);
+        return makeHash();
     }
 
     @Override

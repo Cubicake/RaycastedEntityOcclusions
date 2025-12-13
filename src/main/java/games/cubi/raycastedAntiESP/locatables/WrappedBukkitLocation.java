@@ -84,12 +84,12 @@ public class WrappedBukkitLocation extends Location implements Locatable {
 
     @Override
     public boolean equals(Object o) {
-        return isEqualTo(this, o);
+        return isEqualTo(o);
     }
 
     @Override
     public int hashCode() {
-        return makeHash(this);
+        return makeHash();
     }
 
     @Override
