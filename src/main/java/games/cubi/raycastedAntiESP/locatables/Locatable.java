@@ -1,6 +1,8 @@
 package games.cubi.raycastedAntiESP.locatables;
 
 
+import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
@@ -16,9 +18,13 @@ public interface Locatable extends Position {
 
     LocatableType getType();
 
-    double length();
+    default double length() {
+        return Math.sqrt(lengthSquared());
+    }
 
-    double lengthSquared();
+    default double lengthSquared() {
+        return x() * x() +  y() * y() + z() * z();
+    }
 
     default double distance(Locatable locatable) {
         return Math.sqrt(distanceSquared(locatable));
@@ -45,10 +51,10 @@ public interface Locatable extends Position {
         ThreadSafe,
         Bukkit,
         MutableBlockVector,
+        Plain,
     }
 
     static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {
-        Locatable returnObject = null;
         switch (to) {
             case ThreadSafe -> {
                 if ((from instanceof ThreadSafeLocation) && !clone) return from;
@@ -58,39 +64,83 @@ public interface Locatable extends Position {
                 if ((from instanceof Location) && !clone) return from;
                 return new WrappedBukkitLocation(from.world(), from.x(), from.y(), from.z());
             }
+            case MutableBlockVector -> {
+                if ((from instanceof MutableBlockVector) && !clone) return from;
+                return new MutableBlockVector(from.world(), from.x(), from.y(), from.z());
+            }
+            case Plain -> {
+                if ((from instanceof LocatableImpl) && !clone) return from;
+                return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
+            }
+            default -> {
+                Logger.error(new RuntimeException("Locatable.convertLocatable: Unhandled LocatableType " + to));
+                return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
+            }
         }
-        return returnObject;
     }
 
     static Locatable convertLocatable(Location from, LocatableType to, boolean clone) {
         return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to, clone);
     }
 
-    default boolean isEqualTo(Locatable thisOne, Object thatOne) {
-        if (thisOne == thatOne) return true;
+    default boolean isEqualTo(Object thatOne) {
+        if (this == thatOne) return true;
         if (!(thatOne instanceof Locatable that)) return false;
-        if (!(thisOne.world().equals(that.world()))) return false;
+        if (!(this.world().equals(that.world()))) return false;
 
-        if (Double.doubleToLongBits(thisOne.x()) != Double.doubleToLongBits(that.x())) {
+        if (Double.doubleToLongBits(this.x()) != Double.doubleToLongBits(that.x())) {
             return false;
         }
-        if (Double.doubleToLongBits(thisOne.y()) != Double.doubleToLongBits(that.y())) {
+        if (Double.doubleToLongBits(this.y()) != Double.doubleToLongBits(that.y())) {
             return false;
         }
-        if (Double.doubleToLongBits(thisOne.z()) != Double.doubleToLongBits(that.z())) {
+        if (Double.doubleToLongBits(this.z()) != Double.doubleToLongBits(that.z())) {
             return false;
         }
 
         return true;
     }
 
-    default int makeHash(Locatable thisOne) {
+    default int makeHash() {
         int hash = 3;
 
-        hash = 19 * hash + thisOne.world().hashCode();
-        hash = 19 * hash + (int) (Double.doubleToLongBits(thisOne.x()) ^ (Double.doubleToLongBits(thisOne.x()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(thisOne.y()) ^ (Double.doubleToLongBits(thisOne.y()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(thisOne.z()) ^ (Double.doubleToLongBits(thisOne.z()) >>> 32));
+        hash = 19 * hash + this.world().hashCode();
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.x()) ^ (Double.doubleToLongBits(this.x()) >>> 32));
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.y()) ^ (Double.doubleToLongBits(this.y()) >>> 32));
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.z()) ^ (Double.doubleToLongBits(this.z()) >>> 32));
         return hash;
+    }
+
+    static Locatable copyOf(Locatable locatable) {
+        return convertLocatable(locatable, locatable.getType(), true);
+    }
+
+    static Locatable copyOf(Location location) {
+        return convertLocatable(location, LocatableType.Bukkit, true);
+    }
+
+    static Locatable create(UUID world, double x, double y, double z, LocatableType type) {
+        switch (type) {
+            case ThreadSafe -> {
+                return new ThreadSafeLocation(world, x, y, z);
+            }
+            case Bukkit -> {
+                return new WrappedBukkitLocation(world, x, y, z);
+            }
+            case MutableBlockVector -> {
+                return new MutableBlockVector(world, x, y, z);
+            }
+            case Plain -> {
+                return new LocatableImpl(world, x, y, z);
+            }
+            default -> {
+                Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type));
+                return new LocatableImpl(world, x, y, z);
+            }
+        }
+    }
+
+    static Locatable create(UUID world, double x, double y, double z) {
+        return create(world, x, y, z, LocatableType.Plain);
     }
 }
