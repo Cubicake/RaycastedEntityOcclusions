@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.data;
 
+import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
 import games.cubi.raycastedAntiESP.utils.EntityLocationPair;
-import games.cubi.raycastedAntiESP.locatables.ThreadSafeLoc;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -29,15 +29,15 @@ public class EntityLocationService { //todo is this an impl of entitysnapshotman
         entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
     }
 
-    private volatile ConcurrentHashMap<UUID, ThreadSafeLoc> entityLocationMap = new ConcurrentHashMap<>();
+    private volatile ConcurrentHashMap<UUID, ThreadSafeLocation> entityLocationMap = new ConcurrentHashMap<>();
 
-    public void updateEntireEntityLocationMap(HashMap<UUID, ThreadSafeLoc> newLocations) {
+    public void updateEntireEntityLocationMap(HashMap<UUID, ThreadSafeLocation> newLocations) {
         entityLocationMap = new ConcurrentHashMap<>(newLocations);
     }
 
     private void setOrUpdateEntityLocation(UUID entityUUID, Vector location, UUID world) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return new ThreadSafeLoc(location, world);
+            if (oldLoc == null) return new ThreadSafeLocation(location, world);
             while (!oldLoc.update(location)) {
                 Thread.onSpinWait(); //doesn't actually sleep the thread, just indicates that this thread should be deprioritized. Once the write lock is released it should write nearly immediately
             }
@@ -58,11 +58,11 @@ public class EntityLocationService { //todo is this an impl of entitysnapshotman
         }
     }
 
-    public ThreadSafeLoc getEntityLocation(UUID entityUUID) {
+    public ThreadSafeLocation getEntityLocation(UUID entityUUID) {
         return entityLocationMap.get(entityUUID);
     }
 
-    public HashMap<UUID, ThreadSafeLoc> getCopyOfEntityLocationMap() {
+    public HashMap<UUID, ThreadSafeLocation> getCopyOfEntityLocationMap() {
         return new HashMap<>(entityLocationMap);
     }
 

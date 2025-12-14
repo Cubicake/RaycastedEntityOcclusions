@@ -4,7 +4,7 @@ import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import games.cubi.raycastedAntiESP.utils.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 
 import org.bukkit.Material;
 import org.bukkit.World;

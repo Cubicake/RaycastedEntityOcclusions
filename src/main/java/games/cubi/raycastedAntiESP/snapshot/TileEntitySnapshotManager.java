@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.snapshot;
 
-import games.cubi.raycastedAntiESP.utils.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 
 import java.util.Set;
