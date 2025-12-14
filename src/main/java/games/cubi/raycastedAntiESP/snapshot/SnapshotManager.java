@@ -1,26 +1,32 @@
 package games.cubi.raycastedAntiESP.snapshot;
 
-public class SnapshotManager {
-    private static SnapshotManager instance;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.EntityVisibilityChanger;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.PlayerVisibilityChanger;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.TileEntityVisibilityChanger;
+import org.jspecify.annotations.Nullable;
 
-    private BlockSnapshotManager blockSnapshotManager;
-    private EntitySnapshotManager entitySnapshotManager;
+public class SnapshotManager {
+    private static BlockSnapshotManager blockSnapshotManager;
+    private static EntitySnapshotManager entitySnapshotManager;
+    private static TileEntitySnapshotManager tileEntitySnapshotManager;
 
     private SnapshotManager() {}
 
-    public static SnapshotManager get() {
-        if (instance == null) {
-            instance = new SnapshotManager();
-        }
-        return instance;
+    public static void initialise(BlockSnapshotManager blockSnapshotManager1, EntitySnapshotManager entitySnapshotManager1, TileEntitySnapshotManager tileEntitySnapshotManager1) {
+        changeManagers(blockSnapshotManager1, entitySnapshotManager1, tileEntitySnapshotManager1);
     }
 
-    public BlockSnapshotManager getBlockSnapshotManager() {
+    public static BlockSnapshotManager getBlockSnapshotManager() {
         return blockSnapshotManager;
     }
 
-    public EntitySnapshotManager getEntitySnapshotManager() {
+    public static EntitySnapshotManager getEntitySnapshotManager() {
         return entitySnapshotManager;
     }
 
+    public static void changeManagers(BlockSnapshotManager blockSnapshotManager1, EntitySnapshotManager entitySnapshotManager1, TileEntitySnapshotManager tileEntitySnapshotManager1) {
+        blockSnapshotManager = blockSnapshotManager1;
+        entitySnapshotManager = entitySnapshotManager1;
+        tileEntitySnapshotManager = tileEntitySnapshotManager1;
+    }
 }
