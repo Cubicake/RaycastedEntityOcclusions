@@ -248,7 +248,7 @@ public class Engine {
             BlockState data = block.getState();
             if (data instanceof TileState tileData) {
                 p.sendBlockChange(location, block.getBlockData());
-                p.sendBlockUpdate(location, tileData);
+                //p.sendBlockUpdate(location, tileData);
             }
             else {
                 //Logger.warning("Tried to show tile entity at " + location + " to "+p.getName()+" but it was not a TileState! Block type: " + block.getType()+". Removing from the list of tile entities.");
