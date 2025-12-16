@@ -24,6 +24,10 @@ public class SnapshotManager {
         return entitySnapshotManager;
     }
 
+    public static TileEntitySnapshotManager getTileEntitySnapshotManager() {
+        return tileEntitySnapshotManager;
+    }
+
     public static void changeManagers(BlockSnapshotManager blockSnapshotManager1, EntitySnapshotManager entitySnapshotManager1, TileEntitySnapshotManager tileEntitySnapshotManager1) {
         blockSnapshotManager = blockSnapshotManager1;
         entitySnapshotManager = entitySnapshotManager1;
