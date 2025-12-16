@@ -18,4 +18,17 @@ public interface PlayerVisibilityChanger {
      * @param otherPlayer
      */
     void hidePlayerFromPlayer(UUID player, UUID otherPlayer);
+
+    /**
+     * First UUID is player receiving visibility change, second is the player which will become hidden
+     * @param player
+     * @param otherPlayer
+     */
+    default void setPlayerVisibilityForPlayer(UUID player, UUID otherPlayer, boolean visible) {
+        if (visible) {
+            showPlayerToPlayer(player, otherPlayer);
+        } else {
+            hidePlayerFromPlayer(player, otherPlayer);
+        }
+    }
 }
