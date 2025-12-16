@@ -86,30 +86,27 @@ public class RaycastUtil {
         if (total > maxRaycastRadius) return false;
 
         World world = null;
-        WrappedBukkitLocation currentLocation = null;
+        Location currentLocation = null;
 
         if (debug) {
             initDebugParticles();
             world = Bukkit.getWorld(start.world());
-            currentLocation = (WrappedBukkitLocation) Locatable.convertLocatable(start, Locatable.LocatableType.Bukkit, true);
+            currentLocation = new Location(world, start.x(), start.y(), start.z());
             if (world == null) {
                 Logger.errorAndReturn(new RuntimeException("RaycastUtil.raycast: world is null for UUID " + start.world()));
                 debug = false; //code will exit before this point, this is to shut up the warnings
             }
         }
 
-        Locatable dir = end.subtract(start).normalize().scalarMultiply(stepSize);
+        Locatable dir = Locatable.convertLocatable(end, Locatable.LocatableType.Plain, false).subtract(start).normalize().scalarMultiply(stepSize); // Locatable may be instance of immutable BlockLocation, so convert to Plain first
 
         MutableBlockVector current = new MutableBlockVector(start.world(), start.x(),start.y(),start.z());
 
         for (double traveled = 0; traveled < total; traveled += stepSize) { //benchmarking shows that for loop is marginally faster than while loop initially (after running for a while they are equal
             current.add(dir);
-            if (debug) currentLocation.add(dir);
-            Material mat = snap.getMaterialAt(current); //This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
+            if (debug) currentLocation.set(current.x(), current.y(), current.z());
 
-            if (mat == null) continue;
-
-            if (mat.isOccluding()) {
+            if (snap.isBlockOccluding(current)) {//This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
                 maxOccluding--;
                 if (debug) world.spawnParticle(Particle.DUST, currentLocation, 1, dustRed);
                 if (maxOccluding < 1) return false;
