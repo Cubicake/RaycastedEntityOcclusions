@@ -32,13 +32,6 @@ public class LocatableImpl implements Locatable {
     }
 
     @Override
-    public Locatable normalize() {
-        double length = length();
-        scalarMultiply(1.0 / length);
-        return this;
-    }
-
-    @Override
     public Locatable add(Locatable locatable) {
         this.x += locatable.x();
         this.y += locatable.y();
