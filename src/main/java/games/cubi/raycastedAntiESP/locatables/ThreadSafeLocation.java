@@ -287,7 +287,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
 
     @Override
     public BlockPosition toBlock() {
-        return new BlockLocation(Bukkit.getWorld(world), blockX(), blockY(), blockZ());
+        return new BlockLocation(world, blockX(), blockY(), blockZ());
     }
 }
 
