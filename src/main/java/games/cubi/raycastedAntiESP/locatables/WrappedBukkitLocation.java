@@ -36,15 +36,6 @@ public class WrappedBukkitLocation extends Location implements Locatable {
     }
 
     @Override
-    public Locatable normalize() {
-        double length = length();
-
-        set(x() / length, y() / length, z()/length);
-
-        return this;
-    }
-
-    @Override
     public Locatable add(Locatable locatable) {
         add(locatable.x(), locatable.y(), locatable.z());
         return this;
