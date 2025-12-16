@@ -8,7 +8,7 @@ import org.bukkit.World;
 
 import java.util.UUID;
 
-public class MutableBlockVector implements AbstractBlockLocation, Locatable {
+public class MutableBlockVector implements AbstractBlockLocation {
     private final UUID world;
     private double mutableX;
     private double mutableY;
@@ -48,15 +48,6 @@ public class MutableBlockVector implements AbstractBlockLocation, Locatable {
     @Override
     public double lengthSquared() {
         return mutableX*mutableX + mutableY*mutableY + mutableZ*mutableZ;
-    }
-
-    @Override
-    public Locatable normalize() {
-        double length = length();
-        this.mutableX /= length;
-        this.mutableY /= length;
-        this.mutableZ /= length;
-        return this;
     }
 
     @Override

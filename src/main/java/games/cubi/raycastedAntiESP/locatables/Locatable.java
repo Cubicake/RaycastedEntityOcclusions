@@ -2,7 +2,7 @@ package games.cubi.raycastedAntiESP.locatables;
 
 
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
+import games.cubi.raycastedAntiESP.locatables.block.*;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
@@ -37,7 +37,10 @@ public interface Locatable extends Position {
         return dx * dx + dy * dy + dz * dz;
     }
 
-    Locatable normalize();
+    default Locatable normalize() {
+        double length = length();
+        return scalarMultiply(1.0 / length);
+    }
 
     Locatable add(Locatable locatable);
 
@@ -51,6 +54,7 @@ public interface Locatable extends Position {
         ThreadSafe,
         Bukkit,
         MutableBlockVector,
+        ImmutableBlockLocation,
         Plain,
     }
 
@@ -67,6 +71,10 @@ public interface Locatable extends Position {
             case MutableBlockVector -> {
                 if ((from instanceof MutableBlockVector) && !clone) return from;
                 return new MutableBlockVector(from.world(), from.x(), from.y(), from.z());
+            }
+            case ImmutableBlockLocation -> {
+                if ((from instanceof BlockLocation) && !clone) return from;
+                return new BlockLocation(from.world(), from.x(), from.y(), from.z());
             }
             case Plain -> {
                 if ((from instanceof LocatableImpl) && !clone) return from;

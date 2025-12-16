@@ -1,12 +1,13 @@
 package games.cubi.raycastedAntiESP.locatables.block;
 
+import games.cubi.raycastedAntiESP.locatables.Locatable;
 import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.UUID;
 
-public interface AbstractBlockLocation extends BlockPosition {
+public interface AbstractBlockLocation extends BlockPosition, Locatable {
     UUID world();
 
     default Location toCentredLocation() {

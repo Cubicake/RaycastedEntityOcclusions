@@ -1,5 +1,7 @@
 package games.cubi.raycastedAntiESP.locatables.block;
 
+import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.raycastedAntiESP.locatables.Locatable;
 import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -21,6 +23,13 @@ public class BlockLocation implements AbstractBlockLocation {
         this.z = (int) Math.floor(z);
     }
 
+    public BlockLocation(UUID world, double x, double y, double z) {
+        this.world = world;
+        this.x = (int) Math.floor(x);
+        this.y = (int) Math.floor(y);
+        this.z = (int) Math.floor(z);
+    }
+
     public BlockLocation(Location loc) {
         this.world = loc.getWorld().getUID();
         this.x = (int) Math.floor(loc.getX());
@@ -36,6 +45,29 @@ public class BlockLocation implements AbstractBlockLocation {
     @Override
     public int hashCode() {
         return hash();
+    }
+
+    @Override
+    public LocatableType getType() {
+        return LocatableType.ImmutableBlockLocation;
+    }
+
+    @Override
+    public Locatable add(Locatable locatable) {
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        return null;
+    }
+
+    @Override
+    public Locatable subtract(Locatable locatable) {
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        return null;
+    }
+
+    @Override
+    public Locatable scalarMultiply(double factor) {
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        return null;
     }
 
     public UUID world() {
