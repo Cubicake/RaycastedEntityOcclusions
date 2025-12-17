@@ -2,17 +2,15 @@ package games.cubi.raycastedAntiESP.raycast;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
-import games.cubi.raycastedAntiESP.snapshot.BlockSnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.utils.LocationPair;
-import games.cubi.raycastedAntiESP.locatables.WrappedBukkitLocation;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
-import org.bukkit.Material;
 import org.bukkit.util.Vector;
 
 
