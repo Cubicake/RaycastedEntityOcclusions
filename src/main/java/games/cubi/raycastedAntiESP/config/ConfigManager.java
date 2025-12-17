@@ -25,7 +25,7 @@ public class ConfigManager {
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true, List.of(Material.BEACON));
     private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
-    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(3, 3, 3, false, false, false);
+    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(5, 5, 5, false, false, false);
 
     private int maxEngineMode;
 
@@ -34,7 +34,7 @@ public class ConfigManager {
         load();
     }
 
-    public static ConfigManager initiateConfigManager(RaycastedAntiESP plugin) {
+    public static ConfigManager initialiseConfigManager(RaycastedAntiESP plugin) {
         if (instance == null) {
             if (isNotOnMainThread()) return null;
             instance = new ConfigManager(plugin);
