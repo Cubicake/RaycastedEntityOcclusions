@@ -48,6 +48,11 @@ public class BlockLocation implements AbstractBlockLocation {
     }
 
     @Override
+    public String toString() {
+        return toStringForm();
+    }
+
+    @Override
     public LocatableType getType() {
         return LocatableType.ImmutableBlockLocation;
     }

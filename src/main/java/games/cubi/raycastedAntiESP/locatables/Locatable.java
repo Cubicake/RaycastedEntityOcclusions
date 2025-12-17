@@ -16,8 +16,6 @@ public interface Locatable extends Position {
 
     Location toBukkitLocation();
 
-    LocatableType getType();
-
     default double length() {
         return Math.sqrt(lengthSquared());
     }
@@ -49,6 +47,18 @@ public interface Locatable extends Position {
     Locatable scalarMultiply(double factor);
 
     UUID world();
+
+    LocatableType getType();
+
+    default String toStringForm() {
+        return getType()+
+                "{" +
+                "world=" + world() +
+                ", x=" + x() +
+                ", y=" + y() +
+                ", z=" + z() +
+                '}';
+    }
 
     enum LocatableType {
         ThreadSafe,

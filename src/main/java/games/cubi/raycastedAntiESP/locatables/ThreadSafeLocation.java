@@ -175,6 +175,11 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
     }
 
     @Override
+    public String toString() {
+        return toStringForm();
+    }
+
+    @Override
     public Location toBukkitLocation() {
         throw new RuntimeException("Unimplemented");
         //TODO: Implement

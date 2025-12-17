@@ -124,4 +124,9 @@ public class LocatableImpl implements Locatable {
     public int hashCode() {
         return makeHash();
     }
+
+    @Override
+    public String toString() {
+        return toStringForm();
+    }
 }

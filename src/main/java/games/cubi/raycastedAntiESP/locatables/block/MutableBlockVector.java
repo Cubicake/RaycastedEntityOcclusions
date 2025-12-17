@@ -107,6 +107,11 @@ public class MutableBlockVector implements AbstractBlockLocation {
         return hash();
     }
 
+    @Override
+    public String toString() {
+        return toStringForm();
+    }
+
     @Override @SuppressWarnings("UnstableApiUsage")
     public int blockX() {
         return (int) Math.floor(mutableX);
