@@ -17,4 +17,5 @@ public interface TileEntitySnapshotManager {
      */
     int getTicksSincePlayerSawTileEntity(UUID player, Locatable tileEntity);
     Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z);
+    SnapshotManager.TileEntitySnapshotManagerType getType();
 }
