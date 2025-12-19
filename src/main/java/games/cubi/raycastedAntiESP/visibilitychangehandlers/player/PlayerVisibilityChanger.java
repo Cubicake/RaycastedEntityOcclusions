@@ -1,4 +1,6 @@
-package games.cubi.raycastedAntiESP.visibilitychangehandlers;
+package games.cubi.raycastedAntiESP.visibilitychangehandlers.player;
+
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 
 import java.util.UUID;
 
@@ -31,4 +33,6 @@ public interface PlayerVisibilityChanger {
             hidePlayerFromPlayer(player, otherPlayer);
         }
     }
+
+    VisibilityChangeHandlers.PlayerVisibilityChangerType getType();
 }

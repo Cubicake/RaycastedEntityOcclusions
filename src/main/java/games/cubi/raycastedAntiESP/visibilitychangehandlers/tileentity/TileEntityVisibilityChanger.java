@@ -1,6 +1,7 @@
-package games.cubi.raycastedAntiESP.visibilitychangehandlers;
+package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public interface TileEntityVisibilityChanger {
             hideTileEntityFromPlayer(player, tileEntity);
         }
     }
+
+    VisibilityChangeHandlers.TileEntityVisibilityChangerType getType();
 }

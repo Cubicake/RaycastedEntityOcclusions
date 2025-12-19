@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
+@Deprecated(forRemoval = true)
 public class EntityVisibilityChangeCache {
     private static EntityVisibilityChangeCache instance;
 
