@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP.deletioncandidates;
 
+@Deprecated(forRemoval = true)
 public class QuantisedLocation {/*
     // One decimal place quantisation. This means that the coordinates are rounded to the nearest 0.1 block, and since integers are used this works up to 200m blocks away (integer limit/10)
     // Note that the last digit of the integer is the tenths place, so 123456789 represents 12345678.9 in real coordinates.

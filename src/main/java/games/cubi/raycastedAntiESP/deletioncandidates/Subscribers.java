@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP.deletioncandidates;
 
 import java.util.*;
 
+@Deprecated(forRemoval = true)
 public class Subscribers {
     //First UUID are the players, second uuid are the entities tied to their subscription
     private final HashMap<UUID, Set<UUID>> subscribers = new HashMap<>();
