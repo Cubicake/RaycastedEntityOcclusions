@@ -4,17 +4,12 @@ public class DataHolder {
 
     private static int tick = 0;
 
-    private static final EntityVisibilityChangeCache entityVisibilityChangeCache;
     private static final PlayerRegistry playerRegistry;
 
     static {
-        entityVisibilityChangeCache = EntityVisibilityChangeCache.getInstance();
         playerRegistry = PlayerRegistry.getInstance();
     }
 
-    public static EntityVisibilityChangeCache entityVisibility() {
-        return entityVisibilityChangeCache;
-    }
     public static PlayerRegistry players() {
         return playerRegistry;
     }
