@@ -56,7 +56,7 @@ public class BukkitEVC implements EntityVisibilityChanger{
      * Only call from main thread!
      */
     public void processCaches() {
-        Map<UUID, Set<UUID>> showCache = flushGeneric(entitiesToShowCacheAtomicReference());
+        Map<UUID, Set<UUID>> showCache = flushShowCache();
         for (var entry : showCache.entrySet()) {
             UUID playerUUID = entry.getKey();
             Player player = Bukkit.getPlayer(playerUUID);
@@ -69,7 +69,7 @@ public class BukkitEVC implements EntityVisibilityChanger{
             }
         }
 
-        Map<UUID, Set<UUID>> hideCache = flushGeneric(entitiesToHideCacheAtomicReference());
+        Map<UUID, Set<UUID>> hideCache = flushHideCache();
         for (var entry : hideCache.entrySet()) {
             UUID playerUUID = entry.getKey();
             Player player = Bukkit.getPlayer(playerUUID);

@@ -35,17 +35,25 @@ public interface EntityVisibilityChanger {
         return entitiesToHideCacheAtomicReference().get();
     }
 
-    default void addGeneric(UUID key, UUID value, ConcurrentHashMap<UUID, Set<UUID>> map) {
+    private void addGeneric(UUID key, UUID value, ConcurrentHashMap<UUID, Set<UUID>> map) {
         map.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet())
                 .add(value);
     }
 
-    default Set<UUID> getGeneric(UUID key, ConcurrentHashMap<UUID, Set<UUID>> map) {
+    private Set<UUID> getGeneric(UUID key, ConcurrentHashMap<UUID, Set<UUID>> map) {
         return map.getOrDefault(key, Set.of());
     }
 
-    default Map<UUID, Set<UUID>> flushGeneric(AtomicReference<ConcurrentHashMap<UUID, Set<UUID>>> reference) {
+    private Map<UUID, Set<UUID>> flushGeneric(AtomicReference<ConcurrentHashMap<UUID, Set<UUID>>> reference) {
         return reference.getAndSet(new ConcurrentHashMap<>());
+    }
+
+    default Map<UUID, Set<UUID>> flushShowCache() {
+        return flushGeneric(entitiesToShowCacheAtomicReference());
+    }
+
+    default Map<UUID, Set<UUID>> flushHideCache() {
+        return flushGeneric(entitiesToHideCacheAtomicReference());
     }
 
     default void addEntityToShowCache(UUID player, UUID entity) {
