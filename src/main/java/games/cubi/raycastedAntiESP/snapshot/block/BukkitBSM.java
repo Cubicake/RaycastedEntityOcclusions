@@ -1,11 +1,13 @@
-package games.cubi.raycastedAntiESP.snapshot;
+package games.cubi.raycastedAntiESP.snapshot.block;
 
 import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
+import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -21,7 +23,7 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ChunkSnapshotManager {
+public class BukkitBSM implements BlockSnapshotManager {
     private static class ChunkData {
         public final ChunkSnapshot snapshot;
         public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
@@ -40,7 +42,7 @@ public class ChunkSnapshotManager {
     private final ConfigManager cfg;
     private final RaycastedAntiESP plugin;
 
-    public ChunkSnapshotManager(RaycastedAntiESP plugin, ConfigManager config) {
+    public BukkitBSM(RaycastedAntiESP plugin, ConfigManager config) {
         cfg = config;
         this.plugin = plugin;
         //get loaded chunks and add them to dataMap
@@ -139,10 +141,20 @@ public class ChunkSnapshotManager {
     }
 
     public String key(Chunk c) {
-        return c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ();
+        return c.getWorld().getUID() + ":" + c.getX() + ":" + c.getZ();
     }
     public String key(World world, int x, int z) {
-        return world.getName() + ":" + x + ":" + z;
+        return world.getUID() + ":" + x + ":" + z;
+    }
+    public String key(AbstractBlockLocation location) {
+        //make a string builder, UUID is location.world()
+        StringBuilder sb = new StringBuilder();
+        sb.append(location.world().toString());
+        sb.append(":");
+        sb.append(location.blockX() >> 4);
+        sb.append(":");
+        sb.append(location.blockZ() >> 4);
+        return sb.toString();
     }
     public int getKeyX(String key) {
         String[] parts = key.split(":");
@@ -154,35 +166,45 @@ public class ChunkSnapshotManager {
     }
     public World getKeyWorld(String key) {
         String[] parts = key.split(":");
-        return Bukkit.getWorld(parts[0]);
+        return Bukkit.getWorld(java.util.UUID.fromString(parts[0]));
     }
     public Chunk getKeyChunk(String key) {
         return getKeyWorld(key).getChunkAt(getKeyX(key), getKeyZ(key));
     }
 
-    public Material getMaterialAt(Location loc) {
-        Chunk chunk = loc.getChunk();
-        ChunkData d = dataMap.get(key(chunk));
-        if (d == null) {
-            Chunk c = loc.getChunk();
-            Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)", 3);
+    public Material getMaterialAt(AbstractBlockLocation loc) {
+        ChunkData chunkData = dataMap.get(key(loc));
+        if (chunkData == null) {
+            Logger.error("ChunkSnapshotManager: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5);
             //EngineOld.syncRecheck.add(chunk); TODO reenable
-            return loc.getBlock().getType();
-        }
-        double yLevel = loc.getY();
-        if (yLevel < d.minHeight || yLevel > d.maxHeight) {
             return null;
         }
-        Material dm = d.delta.get(new BlockLocation(loc));
+        double yLevel = loc.y();
+        if (yLevel < chunkData.minHeight || yLevel > chunkData.maxHeight) {
+            return null;
+        }
+        Material dm = chunkData.delta.get(loc);
         if (dm != null) {
             Logger.info("Using delta", 9);
             return dm;
         }
-        int x = loc.getBlockX() & 0xF;
-        int y = loc.getBlockY();
-        int z = loc.getBlockZ() & 0xF;
+        int x = loc.blockX() & 0xF;
+        int y = loc.blockY();
+        int z = loc.blockZ() & 0xF;
 
-        return d.snapshot.getBlockType(x, y, z);
+        return chunkData.snapshot.getBlockType(x, y, z);
+    }
+
+    public boolean isBlockOccluding(AbstractBlockLocation locatable) {
+        Material m = getMaterialAt(locatable);
+        if (m == null) {
+            return false;
+        }
+        return m.isOccluding();
+    }
+
+    public SnapshotManager.BlockSnapshotManagerType getType() {
+        return SnapshotManager.BlockSnapshotManagerType.BUKKIT;
     }
 
     //get TileEntity Locations in chunk
