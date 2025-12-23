@@ -1,6 +1,7 @@
-package games.cubi.raycastedAntiESP.data;
+package games.cubi.raycastedAntiESP.snapshot.entity;
 
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.EntityLocationPair;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -10,20 +11,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class EntityLocationService { //todo is this an impl of entitysnapshotmanager?
-    private static EntityLocationService instance;
-
-    private EntityLocationService() {}
-
-    public static EntityLocationService getInstance() {
-        if (instance == null) {
-            instance = new EntityLocationService();
-        }
-        return instance;
-    }
+public class BukkitESM implements EntitySnapshotManager { //todo is this an impl of entitysnapshotmanager?
 
     /**UUID -> Entity UUID, QuantisedLocation -> Entity Location*/
     private final ConcurrentLinkedQueue<EntityLocationPair> entityLocProcessingQueue = new ConcurrentLinkedQueue<>();
+
+    public BukkitESM() {
+    }
 
     public void queueEntityLocationUpdate(UUID entityUUID, Location location) {
         entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
@@ -58,8 +52,12 @@ public class EntityLocationService { //todo is this an impl of entitysnapshotman
         }
     }
 
-    public ThreadSafeLocation getEntityLocation(UUID entityUUID) {
+    public ThreadSafeLocation getLocation(UUID entityUUID) {
         return entityLocationMap.get(entityUUID);
+    }
+
+    public SnapshotManager.EntitySnapshotManagerType getType() {
+        return SnapshotManager.EntitySnapshotManagerType.BUKKIT;
     }
 
     public HashMap<UUID, ThreadSafeLocation> getCopyOfEntityLocationMap() {
