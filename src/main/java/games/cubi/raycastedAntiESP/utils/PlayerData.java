@@ -1,7 +1,6 @@
 package games.cubi.raycastedAntiESP.utils;
 
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
@@ -9,11 +8,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PlayerData {
 
-    private record EntityVisibilityAndLastCheckTime(boolean visible, int lastChecked) {
+    private record EntityVisibilityAndLastCheckTime(boolean visible, int lastChecked) { //todo: This will result in a lot of object churn, consider using mutable objects if profiling shows this to be an issue
         public EntityVisibilityAndLastCheckTime(boolean visible) {
             this(visible, DataHolder.getTick());
         }
@@ -42,26 +40,26 @@ public class PlayerData {
         return playerUUID;
     }
 
-    private void addEntitiesGeneric(Set<UUID> entityUUIDs, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+    private void addMultipleGeneric(Set<UUID> entityUUIDs, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         for (UUID entityUUID : entityUUIDs) {
             generic.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false));
         }
     }
 
-    private void addEntityGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+    private void addGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         generic.putIfAbsent(entityUUID, new EntityVisibilityAndLastCheckTime(false)); // Default to hidden if not already present
     }
 
-    private void setEntityVisibilityGeneric(UUID entityUUID, boolean visible, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+    private void setVisibilityGeneric(UUID entityUUID, boolean visible, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         generic.put(entityUUID, new EntityVisibilityAndLastCheckTime(visible)); // This can be used for both adding new entries and updating visibility
     }
 
-    private boolean isEntityVisibleGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+    private boolean isVisibleGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         return generic.getOrDefault(entityUUID, new EntityVisibilityAndLastCheckTime(true)).visible;
         //Default to true as entities are visible unless explicitly hidden
     }
 
-    private Set<UUID> getEntitiesNeedingRecheckGeneric(int recheckTicks, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+    private Set<UUID> getNeedingRecheckGeneric(int recheckTicks, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
         int currentTime = DataHolder.getTick();
         Set<UUID> recheckList = new HashSet<>();
 
@@ -81,24 +79,65 @@ public class PlayerData {
      * Adds the provided set of entity UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
      * **/
     public void addEntities(Set<UUID> entityUUIDs) {
-        addEntitiesGeneric(entityUUIDs, entityVisibility);
+        addMultipleGeneric(entityUUIDs, entityVisibility);
     }
 
     public void addEntity(UUID entityUUID) {
-        addEntityGeneric(entityUUID, entityVisibility);
+        addGeneric(entityUUID, entityVisibility);
     }
 
     public void setEntityVisibility(UUID entityUUID, boolean visible) {
-        setEntityVisibilityGeneric(entityUUID, visible, entityVisibility);
+        setVisibilityGeneric(entityUUID, visible, entityVisibility);
+    }
+
+    /**
+     * Atomically sets the visibility of an entity if it differs from the current value.
+     * Updates the timestamp even if the visibility remains the same.
+     * @param entityUUID The UUID of the entity
+     * @param newVisibility The new visibility state
+     * @return true if the visibility was changed, false if it was already set to newVisibility
+     */
+    private boolean compareAndSetGenericVisibility(UUID entityUUID, boolean newVisibility, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
+        final boolean[] changed = {false};
+        generic.compute(entityUUID, (key, current) -> {
+
+            if ((current == null) || (current.visible != newVisibility)) {
+                changed[0] = true;
+            }
+
+            return new EntityVisibilityAndLastCheckTime(newVisibility);
+        });
+
+        return changed[0];
+    }
+    /**
+     * Atomically sets the visibility of an entity if it differs from the current value.
+     * Updates the timestamp even if the visibility remains the same.
+     * @param entityUUID The UUID of the entity
+     * @param newVisibility The new visibility state
+     * @return true if the visibility was changed, false if it was already set to newVisibility
+     */
+    public boolean compareAndSetEntityVisibility(UUID entityUUID, boolean newVisibility) {
+        return compareAndSetGenericVisibility(entityUUID, newVisibility, entityVisibility);
+    }
+    /**
+     * Atomically sets the visibility of an entity if it differs from the current value.
+     * Updates the timestamp even if the visibility remains the same.
+     * @param otherPlayerUUID The UUID of the entity
+     * @param newVisibility The new visibility state
+     * @return true if the visibility was changed, false if it was already set to newVisibility
+     */
+    public boolean compareAndSetPlayerVisibility(UUID otherPlayerUUID, boolean newVisibility) {
+        return compareAndSetGenericVisibility(otherPlayerUUID, newVisibility, playerVisibility);
     }
 
     public boolean isEntityVisible(UUID entityUUID) {
-        return isEntityVisibleGeneric(entityUUID, entityVisibility);
+        return isVisibleGeneric(entityUUID, entityVisibility);
         //Default to true as entities are visible unless explicitly hidden
     }
 
     public Set<UUID> getEntitiesNeedingRecheck(int recheckTicks) {
-        return getEntitiesNeedingRecheckGeneric(recheckTicks, entityVisibility);
+        return getNeedingRecheckGeneric(recheckTicks, entityVisibility);
     }
 
     public void removeEntity(UUID entityUUID) {
@@ -109,24 +148,24 @@ public class PlayerData {
      * Adds the provided set of player UUIDs to the entity visibility map with a default visibility of false (not visible). If an entity UUID already exists in the map, it will not be modified.
      * **/
     public void addPlayers(Set<UUID> entityUUIDs) {
-        addEntitiesGeneric(entityUUIDs, playerVisibility);
+        addMultipleGeneric(entityUUIDs, playerVisibility);
     }
 
     public void addPlayer(UUID entityUUID) {
-        addEntityGeneric(entityUUID, playerVisibility);
+        addGeneric(entityUUID, playerVisibility);
     }
 
     public void setPlayerVisibility(UUID entityUUID, boolean visible) {
-        setEntityVisibilityGeneric(entityUUID, visible, playerVisibility);
+        setVisibilityGeneric(entityUUID, visible, playerVisibility);
     }
 
     public boolean isPlayerVisible(UUID entityUUID) {
-        return isEntityVisibleGeneric(entityUUID, playerVisibility);
+        return isVisibleGeneric(entityUUID, playerVisibility);
         //Default to true as entities are visible unless explicitly hidden
     }
 
     public Set<UUID> getPlayersNeedingRecheck(int recheckTicks) {
-        return getEntitiesNeedingRecheckGeneric(recheckTicks, playerVisibility);
+        return getNeedingRecheckGeneric(recheckTicks, playerVisibility);
     }
 
     public void removePlayer(UUID entityUUID) {
