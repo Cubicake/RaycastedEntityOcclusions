@@ -14,14 +14,11 @@ public class DataHolder {
         return playerRegistry;
     }
 
-    /**
-     * This counter increments twice per server tick, so a normal server will experience 40 TPS
-     * **/
     public static int getTick() {
         return tick;
     }
     /**
-     * This method should ONLY be called on the tick start and stop events
+     * This method should ONLY be called on the tick start event
      * **/
     public static void incrementTick() {
         tick++;
