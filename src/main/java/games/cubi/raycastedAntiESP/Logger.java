@@ -96,12 +96,16 @@ public class Logger {
         switch (severity) {
             case INFO:
                 RaycastedAntiESP.logger().info(message);
+                break;
             case WARN:
                 RaycastedAntiESP.logger().warning(message);
+                break;
             case ERROR:
                 RaycastedAntiESP.logger().severe(message);
+                break;
             default:
                 RaycastedAntiESP.logger().severe(message + "| Additionally, severity " + severity + " is not supported by the logger.");
+                break;
         }
     }
 
