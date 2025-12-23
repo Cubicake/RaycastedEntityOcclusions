@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import games.cubi.raycastedAntiESP.engine.Engine;
 import games.cubi.raycastedAntiESP.packets.PacketEventsStatus;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
@@ -9,6 +10,9 @@ import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
+import games.cubi.raycastedAntiESP.utils.PlayerData;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.Bukkit;
@@ -47,7 +51,7 @@ public class EventListener implements Listener {
             } else {
                 packetProcessor = null;
             }
-        }, 1L);
+        }, 2L);
     }
 
     public static EventListener getInstance(RaycastedAntiESP plugin, ConfigManager cfg) {
@@ -116,42 +120,64 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
+        if (VisibilityChangeHandlers.entityVisibilityChangeHandlerType() == VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getEntity().processCache();
+
+        if (VisibilityChangeHandlers.playerVisibilityChangeHandlerType() == VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getPlayer().processCache();
+
+        if (VisibilityChangeHandlers.tileEntityVisibilityChangeHandlerType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().processCache();
+
         DataHolder.incrementTick();
-        //TODO: connect this to new engine
+
+        Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().distributeTick());
+        RaycastedAntiESP.getEngine().distributeTick();
     }
 
     @EventHandler(priority = EventPriority.MONITOR) //Runs last
     public void serverTickStopEvent(ServerTickEndEvent event) {
-        DataHolder.incrementTick();
+        if (VisibilityChangeHandlers.entityVisibilityChangeHandlerType() == VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getEntity().processCache();
+
+        if (VisibilityChangeHandlers.playerVisibilityChangeHandlerType() == VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getPlayer().processCache();
+
+        if (VisibilityChangeHandlers.tileEntityVisibilityChangeHandlerType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().processCache();
+
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
-        BukkitESM bukkitESM = bukkitEntitySnapshotManager();
-        if (bukkitESM == null) return;
+        if (!(SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT)) {
+            return;
+        }
+        BukkitESM bukkitESM = (BukkitESM) SnapshotManager.getEntitySnapshotManager();
         bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo().add(0, event.getEntity().getHeight() / 2, 0));
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerTrackEntity(PlayerTrackEntityEvent event) {
+        //todo: This is probably specific to bukkit, add a check for that once other implementations exist
         UUID entityUUID = event.getEntity().getUniqueId();
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
 
-        if (DataHolder.entityVisibility().entityVisibilityShouldChange(entityUUID, playerUUID)) return; // The player is meant to see the entity, do nothing
+        PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
+
+        if (playerData == null || playerData.isEntityVisible(entityUUID)) return; // The player is meant to see the entity, do nothing
 
         event.setCancelled(true);
-        DataHolder.entityVisibility().hideEntity(entityUUID, player);
-        DataHolder.players().getPlayerData(playerUUID).addEntity(entityUUID); //TODO: filter out players
+        if (event.getEntity() instanceof Player) {
+            VisibilityChangeHandlers.getPlayer().hidePlayerFromPlayer(playerUUID, entityUUID);
+        } else {
+            VisibilityChangeHandlers.getEntity().hideEntityFromPlayer(playerUUID, entityUUID);
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerUntrackEntity(PlayerTrackEntityEvent event) {
+        //todo: Same as above, probs specific to Bukkit
         UUID entityUUID = event.getEntity().getUniqueId();
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-
-        if (DataHolder.entityVisibility().entityVisibilityShouldChange(entityUUID, playerUUID)) return; // State change was triggered by us, do nothing
+        PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
+        if ((playerData == null) || (!playerData.isEntityVisible(entityUUID))) return; // State change was triggered by us, do nothing
 
         DataHolder.players().getPlayerData(playerUUID).removeEntity(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
     }
