@@ -34,5 +34,7 @@ public interface PlayerVisibilityChanger {
         }
     }
 
+    void processCache();
+
     VisibilityChangeHandlers.PlayerVisibilityChangerType getType();
 }

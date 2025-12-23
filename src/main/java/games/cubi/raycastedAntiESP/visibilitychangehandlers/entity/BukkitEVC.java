@@ -21,4 +21,9 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
     public VisibilityChangeHandlers.EntityVisibilityChangerType getType() {
         return VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT;
     }
+
+    @Override
+    public void processCache() {
+        processCaches();
+    }
 }

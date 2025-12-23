@@ -17,6 +17,11 @@ public class BukkitPVC extends BukkitAbstractVisibilityChanger implements Player
     }
 
     @Override
+    public void processCache() {
+        processCaches();
+    }
+
+    @Override
     public VisibilityChangeHandlers.PlayerVisibilityChangerType getType() {
         return VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT;
     }
