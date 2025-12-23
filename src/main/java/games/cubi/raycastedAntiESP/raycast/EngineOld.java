@@ -1,9 +1,5 @@
 package games.cubi.raycastedAntiESP.raycast;
 
-import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
-import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-
 public class EngineOld {}
 /*
 import games.cubi.raycastedEntityOcclusion.Logger;
