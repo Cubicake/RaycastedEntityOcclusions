@@ -17,4 +17,6 @@ public interface TileEntityVisibilityChanger {
     }
 
     VisibilityChangeHandlers.TileEntityVisibilityChangerType getType();
+
+    void processCache();
 }
