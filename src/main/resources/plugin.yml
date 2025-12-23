@@ -1,19 +1,19 @@
-name: RaycastedAntiESP
+name: RaycastedEntityOcclusions
 version: ${version}
-main: games.cubi.raycastedAntiESP.RaycastedAntiESP
-api-version: '1.21'
-prefix: RaycastedAntiESP
+main: games.cubi.raycastedEntityOcclusion.RaycastedEntityOcclusion
+api-version: '1.20.6'
+prefix: REO
 authors: [ _Cubicake ]
 load: STARTUP
 website: https://cubi.games
 permissions:
-    raycastedantiesp.command:
-        description: Permission to use the /RaycastedAntiESP command
+    raycastedentityocclusions.command:
+        description: Permission to use the RaycastedEntityOcclusions command
         default: op
-    raycastedantiesp.bypass:
-        description: Permission to bypass all checks. A restart is needed to apply this permission.
+    raycastedentityocclusions.bypass:
+        description: Permission to bypass all checks
         default: false
-    raycastedantiesp.updatecheck:
+    raycastedentityocclusions.updatecheck:
         description: Permission to check for plugin updates
         default: op
     raycastedentityocclusions.receivelogmessages:
