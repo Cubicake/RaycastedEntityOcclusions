@@ -3,12 +3,19 @@ package games.cubi.raycastedAntiESP;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedAntiESP.engine.Engine;
+import games.cubi.raycastedAntiESP.packets.PacketEventsStatus;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.packets.Registrar;
 import games.cubi.raycastedAntiESP.raycast.MovementTracker;
-import games.cubi.raycastedAntiESP.snapshot.ChunkSnapshotManager;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
-import games.cubi.raycastedAntiESP.data.DataHolder;
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
+import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
+import games.cubi.raycastedAntiESP.snapshot.tileentity.BukkitTSM;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.player.BukkitPVC;
+import games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity.BukkitTVC;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -21,12 +28,11 @@ import games.cubi.raycastedAntiESP.bStats.MetricsCollector;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager cfg;
-    private static ChunkSnapshotManager snapMgr;
     private static MovementTracker tracker;
     private static CommandsManager commands;
-    private static Engine engine;
     private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
+    private static Engine engine;
     private static RaycastedAntiESP instance;
     private static java.util.logging.Logger logger;
 
@@ -49,12 +55,12 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     @Override
     public void onEnable() {
         instance = this;
-        cfg = ConfigManager.initiateConfigManager(this);
-        snapMgr = new ChunkSnapshotManager(this, cfg);
+        cfg = ConfigManager.initialiseConfigManager(this);
         tracker = new MovementTracker(this, cfg);
         commands = new CommandsManager(this, cfg);
+        engine = new Engine(this, cfg);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
-        getServer().getPluginManager().registerEvents(EventListener.getInstance(this, snapMgr, cfg), this);
+        getServer().getPluginManager().registerEvents(EventListener.getInstance(this, cfg), this);
         //Brigadier API
         LiteralCommandNode<CommandSourceStack> buildCommand = commands.registerCommand();
 
@@ -69,6 +75,9 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
                     })
                     .redirect(buildCommand).build());
         });
+
+        SnapshotManager.initialise(new BukkitBSM(this, cfg), new BukkitESM(), new BukkitTSM());
+        VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
 
         //bStats
         new MetricsCollector(this, cfg);
@@ -88,10 +97,11 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
             @Override
             public void run() {
                 if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-                    DataHolder.setPacketEventsPresent();
+                    PacketEventsStatus.init(true);
                     packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
                     Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.", 3);
                 }
+                else PacketEventsStatus.init(false);
             }
         }.runTaskLater(this, 1L);
     }
@@ -104,9 +114,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     public static ConfigManager getConfigManager() {
         return cfg;
-    }
-    public static ChunkSnapshotManager getChunkSnapshotManager() {
-        return snapMgr;
     }
     public static MovementTracker getMovementTracker() {
         return tracker;
