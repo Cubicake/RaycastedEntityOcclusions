@@ -91,7 +91,7 @@ public class RaycastUtil {
             world = Bukkit.getWorld(start.world());
             currentLocation = new Location(world, start.x(), start.y(), start.z());
             if (world == null) {
-                Logger.errorAndReturn(new RuntimeException("RaycastUtil.raycast: world is null for UUID " + start.world()));
+                Logger.errorAndReturn(new RuntimeException("RaycastUtil.raycast: world is null for UUID " + start.world()), 2);
                 debug = false; //code will exit before this point, this is to shut up the warnings
             }
         }

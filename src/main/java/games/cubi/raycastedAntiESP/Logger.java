@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP;
 
 import games.cubi.raycastedAntiESP.config.DebugConfig;
 import games.cubi.raycastedAntiESP.utils.CheckPreviousLogForError;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.io.BufferedWriter;
@@ -47,8 +48,12 @@ public class Logger {
         throw earlyReturn;
     }
 
-    public static void error(Throwable throwable) {
+    public static void error(Throwable throwable, @Range(from = 1, to = 10) int level) {
         error(processThrowable(throwable), 1);
+    }
+
+    public static void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level) {
+        error(processThrowable(throwable, message), level);
     }
 
     /**
@@ -57,17 +62,26 @@ public class Logger {
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
 
-    public static void errorAndReturn(Throwable throwable) {
-        error(processThrowable(throwable), 1);
+    public static void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
+        error(processThrowable(throwable), level);
         throw earlyReturn;
     }
 
     private static String processThrowable(Throwable throwable) {
+        return processThrowable(throwable, null);
+    }
+
+    private static String processThrowable(Throwable throwable, @Nullable String errorMessage) {
         StackTraceElement[] thrown = throwable.getStackTrace();
-        StringBuilder message = new StringBuilder(throwable.getMessage() != null ? throwable.getMessage() : "No error message set");
+        StringBuilder message = new StringBuilder();
+        if (errorMessage != null) {
+            message.append(errorMessage);
+        } else {
+            message.append(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred but no error message was set |");
+        }
         for (int i = 0; i < Math.min(3, thrown.length); i++) {
             StackTraceElement element = thrown[i];
-            message.append(" at ").append(element.toString());
+            message.append("\n at ").append(element.toString());
 
         }
         return message.toString();
@@ -139,7 +153,7 @@ public class Logger {
                     w.newLine(); // ensure each entry is on its own line
                 }
             } catch (IOException e) {
-                errorAndReturn(e);
+                error("An error occured while attempting to flush logs", e, 2);
             }
         } finally {
             flushLock.unlock();

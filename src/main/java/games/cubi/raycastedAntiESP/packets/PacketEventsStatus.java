@@ -12,12 +12,12 @@ public final class PacketEventsStatus {
 
     public static void init(boolean packetEventsPresent) {
         if (instance != null) {
-            Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"));
+            Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1);
             return;
         }
         synchronized (PacketEventsStatus.class) {
             if (instance != null) {
-                Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"));
+                Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1);
                 return;
             }
             instance = new PacketEventsStatus(packetEventsPresent);
@@ -27,7 +27,7 @@ public final class PacketEventsStatus {
     public static PacketEventsStatus get() {
         PacketEventsStatus result = instance;
         if (result == null) {
-            Logger.errorAndReturn(new RuntimeException("PacketEvents status not initialised"));
+            Logger.errorAndReturn(new RuntimeException("PacketEvents status not initialised"), 1);
             return null;
         }
         return result;

@@ -91,7 +91,7 @@ public interface Locatable extends Position {
                 return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
             default -> {
-                Logger.error(new RuntimeException("Locatable.convertLocatable: Unhandled LocatableType " + to));
+                Logger.error(new RuntimeException("Locatable.convertLocatable: Unhandled LocatableType conversion to: " + to), 2);
                 return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
         }
@@ -152,7 +152,7 @@ public interface Locatable extends Position {
                 return new LocatableImpl(world, x, y, z);
             }
             default -> {
-                Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type));
+                Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type),2);
                 return new LocatableImpl(world, x, y, z);
             }
         }

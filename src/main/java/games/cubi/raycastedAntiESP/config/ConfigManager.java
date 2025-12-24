@@ -42,7 +42,7 @@ public class ConfigManager {
         return instance;
     }
     public static ConfigManager get() {
-        if (instance == null) Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."));
+        if (instance == null) Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."), 2);
         return instance;
     }
 
@@ -147,7 +147,7 @@ public class ConfigManager {
         if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
             return false;
         }
-        Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."));
+        Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."), 2);
         return true;
     }
 

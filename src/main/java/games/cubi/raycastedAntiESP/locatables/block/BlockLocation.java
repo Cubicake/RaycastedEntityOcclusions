@@ -59,19 +59,19 @@ public class BlockLocation implements AbstractBlockLocation {
 
     @Override
     public Locatable add(Locatable locatable) {
-        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"), 2);
         return null;
     }
 
     @Override
     public Locatable subtract(Locatable locatable) {
-        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"), 2);
         return null;
     }
 
     @Override
     public Locatable scalarMultiply(double factor) {
-        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"));
+        Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"), 2);
         return null;
     }
 

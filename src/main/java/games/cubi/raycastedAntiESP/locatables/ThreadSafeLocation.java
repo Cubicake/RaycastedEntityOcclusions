@@ -96,7 +96,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
             }
         }
         else return false;
@@ -112,7 +112,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
                 return true;
             } finally {
                 boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
+                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
             }
         }
         else return false;
@@ -145,7 +145,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
 
         } finally {
             if (!writeLock.compareAndSet(true, false)) {
-                Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"));
+                Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
             }
         }
     }
