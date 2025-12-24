@@ -76,16 +76,16 @@ public class UpdateChecker {
                 int versionCheck = checkIfLaterThan(plugin.getDescription().getVersion(), version);
 
                 if (versionCheck == VERSIONS_ARE_EQUAL) {
-                    audience.sendRichMessage("<green>You are using the latest version of Raycasted Entity Occlusions.");
+                    audience.sendRichMessage("<green>You are using the latest version of Raycasted Anti-ESP.");
                 }
 
                 if (versionCheck == CURRENT_IS_OLDER) {
-                    audience.sendRichMessage("<red>You are not using the latest version of Raycasted Entity Occlusions. Please update to <green>v" + version+".");
+                    audience.sendRichMessage("<red>You are not using the latest version of Raycasted Anti-ESP. Please update to <green>v" + version+".");
                     if (audience instanceof Player) audience.sendRichMessage("\n" + "<hover:show_text:'https://modrinth.com/project/bCjNZu0C/versions'><aqua><u><click:open_url:'https://modrinth.com/project/bCjNZu0C/versions'>Click here to download it.</click></u></aqua></hover>");
                 }
 
                 if (versionCheck == CURRENT_IS_NEWER) {
-                    audience.sendRichMessage("<yellow>You are using a development build of Raycasted Entity Occlusions. The latest stable version is <green>v" + version + "<yellow>.");
+                    audience.sendRichMessage("<yellow>You are using a development build of Raycasted Anti-ESP. The latest stable version is <green>v" + version + "<yellow>.");
                 }
 
                 if (versionCheck == INVALID_VERSION_FORMAT) {
