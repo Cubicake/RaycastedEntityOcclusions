@@ -93,7 +93,7 @@ public class UpdateChecker {
                 }
             });
         }).exceptionally(ex -> {
-            Logger.error("An error occured while checking for plugin updates", ex, 4);
+            Logger.error("An error occurred while checking for plugin updates", ex, 4);
             return null;
         });
     }
