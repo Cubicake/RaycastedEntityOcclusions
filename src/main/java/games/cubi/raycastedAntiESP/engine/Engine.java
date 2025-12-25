@@ -49,7 +49,6 @@ public class Engine {
 
     //run async
     public void distributeTick() {
-        Logger.info("tick",1);
         Collection<PlayerData> allPlayers = DataHolder.players().getAllPlayerData();
         int threads = 1; //TODO Don't hardcode
         if (threads < 1) threads = 1;
@@ -88,7 +87,7 @@ public class Engine {
             if (playerData.hasBypassPermission()) continue;
 
             Locatable playerLocation = entitySnapshotManager.getLocation(playerData.getPlayerUUID());
-            if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"));
+            if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"), 3);
 
             if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, entitySnapshotManager, blockSnapshotManager);
             if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, entitySnapshotManager, blockSnapshotManager);
