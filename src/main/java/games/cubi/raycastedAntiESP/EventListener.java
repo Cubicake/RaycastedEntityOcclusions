@@ -16,6 +16,7 @@ import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -25,6 +26,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
@@ -115,7 +117,9 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, player);
         }
-        DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedentityocclusions.bypass"));
+        DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedantiesp.bypass"));
+
+        if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
@@ -144,11 +148,20 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
+        updateEntityLocation(event.getEntity().getUniqueId(), event.getTo().clone().add(0, event.getEntity().getHeight() / 2, 0));
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerMove(PlayerMoveEvent event) {
+        updateEntityLocation(event.getPlayer().getUniqueId(), event.getPlayer().getEyeLocation());
+    }
+
+    private void updateEntityLocation(UUID entityUUID, Location newLocation) {
         if (!(SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT)) {
             return;
         }
         BukkitESM bukkitESM = (BukkitESM) SnapshotManager.getEntitySnapshotManager();
-        bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getTo().add(0, event.getEntity().getHeight() / 2, 0));
+        bukkitESM.queueEntityLocationUpdate(entityUUID, newLocation);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
