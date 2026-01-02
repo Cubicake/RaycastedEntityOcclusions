@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class BukkitESM implements EntitySnapshotManager { //todo is this an impl of entitysnapshotmanager?
+public class BukkitESM implements EntitySnapshotManager {
 
     /**UUID -> Entity UUID, QuantisedLocation -> Entity Location*/
     private final ConcurrentLinkedQueue<EntityLocationPair> entityLocProcessingQueue = new ConcurrentLinkedQueue<>();
