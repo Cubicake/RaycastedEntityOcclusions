@@ -23,6 +23,10 @@ public class MetricsCollector {
             TODO: Re-enable metrics
         plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
     }
+
+    public void shutdown() {
+        metrics.shutdown();
+    }
 /*
     public void registerCustomMetrics() {
         metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", () -> String.valueOf(config.maxOccludingCount)));

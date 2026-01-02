@@ -33,6 +33,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
     private static Engine engine;
+    private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
     private static java.util.logging.Logger logger;
 
@@ -80,7 +81,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
 
         //bStats
-        new MetricsCollector(this, cfg);
+        metricsCollector =  new MetricsCollector(this, cfg);
 
 
         // TODO: Move this somewhere else, the main class should be cleaner
@@ -109,6 +110,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     @Override
     public void onDisable() {
         Logger.flush();
+        metricsCollector.shutdown();
     }
 
 
