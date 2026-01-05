@@ -98,7 +98,7 @@ public class Engine {
     private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, EntitySnapshotManager entitySnapshotManager, BlockSnapshotManager blockSnapshotManager) {
         EntityVisibilityChanger entityVisibilityChanger = VisibilityChangeHandlers.getEntity();
 
-        for (UUID entityUUID : player.getEntitiesNeedingRecheck(entityConfig.getVisibleRecheckInterval())) {
+        for (UUID entityUUID : player.getEntitiesNeedingRecheck(entityConfig.getVisibleRecheckInterval())) { //todo: current issue is code not entering this loop
             Locatable entityLocation = entitySnapshotManager.getLocation(entityUUID);
             boolean canSee = RaycastUtil.raycast(playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee);
