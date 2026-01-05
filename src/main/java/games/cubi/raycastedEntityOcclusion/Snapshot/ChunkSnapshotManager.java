@@ -180,10 +180,10 @@ public class ChunkSnapshotManager {
         Chunk chunk = loc.getChunk();
         ChunkData d = dataMap.get(key(chunk));
         if (d == null) {
-            Chunk c = loc.getChunk();
+            //Chunk c = loc.getChunk();
             //Logger.error("ChunkSnapshotManager: No snapshot for " + c+ " If this error persists, please report this on our discord (discord.cubi.games)");
             Engine.syncRecheck.add(chunk);
-            return loc.getBlock().getType();
+            return Material.AIR;
         }
         double yLevel = loc.getY();
         if (yLevel < d.minHeight || yLevel > d.maxHeight) {
