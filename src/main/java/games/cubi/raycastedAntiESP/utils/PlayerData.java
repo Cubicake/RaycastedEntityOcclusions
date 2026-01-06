@@ -33,7 +33,7 @@ public class PlayerData {
 
     public PlayerData(Player player) {
         this.playerUUID = player.getUniqueId();
-        this.hasBypassPermission = player.hasPermission("raycastedentityocclusions.bypass");
+        this.hasBypassPermission = player.hasPermission("raycastedantiesp.bypass");
     }
 
     public UUID getPlayerUUID() {
