@@ -114,7 +114,7 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (player.hasPermission("raycastedentityocclusions.updatecheck")) {
+        if (player.hasPermission("raycastedantiesp.updatecheck")) { //todo: centralise permission strings to prevent issues when perm names are changed
             checkForUpdates(plugin, player);
         }
         DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedantiesp.bypass"));
