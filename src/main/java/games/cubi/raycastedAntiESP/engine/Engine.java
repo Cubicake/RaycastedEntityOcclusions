@@ -100,6 +100,10 @@ public class Engine {
 
         for (UUID entityUUID : player.getEntitiesNeedingRecheck(entityConfig.getVisibleRecheckInterval())) { //todo: current issue is code not entering this loop
             Locatable entityLocation = entitySnapshotManager.getLocation(entityUUID);
+            if (entityLocation == null) {
+                return;
+                //todo: add loggers to figure out why
+            }
             boolean canSee = RaycastUtil.raycast(playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee);
         }
@@ -134,9 +138,11 @@ public class Engine {
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee);
             if (canSee) {
                 tileSnapshotManager.addOrUpdateTileEntityLastSeenMap(tileEntityLocation, player.getPlayerUUID(), DataHolder.getTick(), true);
+                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().showTileEntityToPlayer(player.getPlayerUUID(), tileEntityLocation);
             }
             else {
                 tileSnapshotManager.removeFromTileEntityLastSeenMap(tileEntityLocation);
+                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().hideTileEntityFromPlayer(player.getPlayerUUID(), tileEntityLocation);
             }
         }
     }
