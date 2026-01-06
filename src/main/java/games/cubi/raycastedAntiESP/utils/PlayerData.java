@@ -55,8 +55,9 @@ public class PlayerData {
     }
 
     private boolean isVisibleGeneric(UUID entityUUID, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
-        return generic.getOrDefault(entityUUID, new EntityVisibilityAndLastCheckTime(true)).visible;
-        //Default to true as entities are visible unless explicitly hidden
+        return generic.computeIfAbsent(entityUUID,
+                k -> new EntityVisibilityAndLastCheckTime(true))
+                .visible;        //Default to true as entities are visible unless explicitly hidden
     }
 
     private Set<UUID> getNeedingRecheckGeneric(int recheckTicks, ConcurrentHashMap<UUID, EntityVisibilityAndLastCheckTime> generic) {
