@@ -22,3 +22,8 @@ Dependencies:
 
 Known issues:
 - Due to the nature of the plugin, there will be a short delay once an entity should be visible before it appears, causing it to appear like it "popped" into view. This issue is partially resolved by turning engine-mode to 2, and is worse for players with higher ping.
+
+## Contributions
+Contributions via pull requests are welcome. Please join our [discord](https://discord,cubi,games) to discuss any contributions beforehand to make sure they will not conflict with or hinder existing plans.
+
+You must hold the rights to any code you contribute, and must agree to licence it under the same licence as the main project.
