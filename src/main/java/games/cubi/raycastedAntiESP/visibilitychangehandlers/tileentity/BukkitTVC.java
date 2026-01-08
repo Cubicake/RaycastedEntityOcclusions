@@ -6,8 +6,11 @@ import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -55,8 +58,18 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
                     Player player = Bukkit.getPlayer(playerUUID);
                     if (player == null) return;
                     Location location = blockState.getLocation();
-                    player.sendBlockChange(location, blockState.getBlockData());
-                    player.sendBlockUpdate(location, tileState);
+
+                    BlockData blockData;
+                    if (show) {
+                        blockData = tileState.getBlockData();
+                    }
+                    else {
+                        if (location.getBlockY() > 0) blockData = Material.STONE.createBlockData();
+                        else blockData = Material.DEEPSLATE.createBlockData();
+                    }
+
+                    player.sendBlockChange(location, blockData);
+                    if (show) player.sendBlockUpdate(location, tileState);
                 }
                 else {
                     //Logger.warning("Tried to show tile entity at " + location + " to "+p.getName()+" but it was not a TileState! Block type: " + block.getType()+". Removing from the list of tile entities.");
