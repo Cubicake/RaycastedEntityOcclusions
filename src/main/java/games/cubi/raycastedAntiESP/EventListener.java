@@ -25,11 +25,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
+import org.bukkit.event.world.EntitiesLoadEvent;
+import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
@@ -195,6 +198,27 @@ public class EventListener implements Listener {
         DataHolder.players().getPlayerData(playerUUID).removeEntity(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
     }
 
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntitySpawn(EntitySpawnEvent event) {
+        if (isBukkitESM()) bukkitEntitySnapshotManager().queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntitiesLoad(EntitiesLoadEvent event) {
+        if (!isBukkitESM()) return;
+        for (var entity : event.getEntities()) {
+            bukkitEntitySnapshotManager().queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntitiesUnload(EntitiesUnloadEvent event) {
+        if (!isBukkitESM()) return;
+        for (var entity : event.getEntities()) {
+            bukkitEntitySnapshotManager().removeEntityLocation(entity.getUniqueId());
+        }
+    }
+
     private @Nullable BukkitBSM bukkitBlockSnapshotManager() {
         if (!(SnapshotManager.blockSnapshotManagerType() == SnapshotManager.BlockSnapshotManagerType.BUKKIT)) {
             return null;
@@ -207,5 +231,9 @@ public class EventListener implements Listener {
             return null;
         }
         return (BukkitESM) SnapshotManager.getEntitySnapshotManager();
+    }
+
+    private boolean isBukkitESM() {
+        return SnapshotManager.blockSnapshotManagerType() == SnapshotManager.BlockSnapshotManagerType.BUKKIT;
     }
 }
