@@ -179,7 +179,7 @@ public class Engine {
             return;
         }
 
-        ((BukkitESM) SnapshotManager.getEntitySnapshotManager()).processEntityLocationQueue();
+        SnapshotManager.getEntitySnapshotManager().processEntityLocationQueue();
         asyncScheduler.runDelayed(plugin, this::processEntityMovements, 15, TimeUnit.MILLISECONDS);
     }
 
