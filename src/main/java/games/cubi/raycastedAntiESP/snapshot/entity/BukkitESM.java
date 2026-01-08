@@ -19,8 +19,14 @@ public class BukkitESM implements EntitySnapshotManager {
     public BukkitESM() {
     }
 
+    @Override
     public void queueEntityLocationUpdate(UUID entityUUID, Location location) {
         entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
+    }
+
+    @Override
+    public void removeEntityLocation(UUID entityUUID) {
+        entityLocationMap.remove(entityUUID);
     }
 
     private volatile ConcurrentHashMap<UUID, ThreadSafeLocation> entityLocationMap = new ConcurrentHashMap<>();
@@ -52,10 +58,12 @@ public class BukkitESM implements EntitySnapshotManager {
         }
     }
 
+    @Override
     public ThreadSafeLocation getLocation(UUID entityUUID) {
         return entityLocationMap.get(entityUUID);
     }
 
+    @Override
     public SnapshotManager.EntitySnapshotManagerType getType() {
         return SnapshotManager.EntitySnapshotManagerType.BUKKIT;
     }
