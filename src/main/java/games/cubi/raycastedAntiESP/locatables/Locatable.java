@@ -3,11 +3,9 @@ package games.cubi.raycastedAntiESP.locatables;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.*;
-import io.papermc.paper.math.BlockPosition;
-import io.papermc.paper.math.FinePosition;
+
 import io.papermc.paper.math.Position;
 import org.bukkit.Location;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
@@ -33,6 +31,10 @@ public interface Locatable extends Position {
         double dy = y() - locatable.y();
         double dz = z() - locatable.z();
         return dx * dx + dy * dy + dz * dz;
+    }
+
+    default Locatable clonePlainAndCentreIfBlockLocation() {
+        return convertLocatable(this, LocatableType.Plain, true);
     }
 
     default Locatable normalize() {

@@ -79,7 +79,8 @@ public class RaycastUtil {
     public static boolean raycast(Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, BlockSnapshotManager snap, int stepSize) {
         if (!start.world().equals(end.world())) return false;
 
-        double total = start.distance(end); //benchmarking shows that calling distance() is faster than distanceSquared() then checking distanceSquared < stepSize*stepSize every time despite the latter replacing a square root with multiplication
+        Locatable clonedEnd = end.clonePlainAndCentreIfBlockLocation();
+        double total = start.distance(clonedEnd); //benchmarking shows that calling distance() is faster than distanceSquared() then checking distanceSquared < stepSize*stepSize every time despite the latter replacing a square root with multiplication
         if (total <= alwaysShowRadius) return true;
         if (total > maxRaycastRadius) return false;
 
@@ -96,7 +97,7 @@ public class RaycastUtil {
             }
         }
 
-        Locatable dir = Locatable.convertLocatable(end, Locatable.LocatableType.Plain, false).subtract(start).normalize().scalarMultiply(stepSize); // Locatable may be instance of immutable BlockLocation, so convert to Plain first
+        Locatable dir = clonedEnd.subtract(start).normalize().scalarMultiply(stepSize); // Locatable may be instance of immutable BlockLocation, so convert to Plain first
 
         MutableBlockVector current = new MutableBlockVector(start.world(), start.x(),start.y(),start.z());
 
