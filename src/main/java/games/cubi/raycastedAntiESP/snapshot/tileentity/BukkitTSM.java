@@ -21,9 +21,8 @@ public class BukkitTSM extends PlayerLastSeenTracker {
         Set<PlayerLastCheckTimestamp> timestamps = getPlayerLastSeenTimestamps(tileEntity);
         for (PlayerLastCheckTimestamp playerLastCheckTimestamp : timestamps) {
             if (playerLastCheckTimestamp.getPlayer().equals(player)) {
-                if (!playerLastCheckTimestamp.hasBeenSeen()) {
-                    return -1;
-                }
+                if (!playerLastCheckTimestamp.hasBeenSeen()) return -1;
+
                 return (DataHolder.getTick() - playerLastCheckTimestamp.getTimestamp());
             }
         }
