@@ -50,7 +50,7 @@ public class Engine {
     //run async
     public void distributeTick() {
         Collection<PlayerData> allPlayers = DataHolder.players().getAllPlayerData();
-        int threads = 1; //TODO Don't hardcode
+        int threads = 50; //TODO Don't hardcode
         if (threads < 1) threads = 1;
 
         List<List<PlayerData>> batches = new ArrayList<>(threads);
@@ -74,8 +74,11 @@ public class Engine {
         int maxRadius = Bukkit.getViewDistance() * 16;
         int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), maxRadius)+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
 
-        for (List<PlayerData> batch : batches) {
+        for (int i = 0; i < batches.size(); i++) {
+            int finalI = i;
+            List<PlayerData> batch = batches.get(i);
             plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
+                Thread.currentThread().setName("RaycastedAntiESP Engine TickProcessor "+ finalI + " - Folia Async Pool");
                 processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), blockSnapshotManager, entitySnapshotManager, tileEntitySnapshotManager);
                 task.cancel();
             });
