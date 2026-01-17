@@ -38,21 +38,6 @@ public class BlockLocation implements AbstractBlockLocation {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return isEqual(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return hash();
-    }
-
-    @Override
-    public String toString() {
-        return toStringForm();
-    }
-
-    @Override
     public LocatableType getType() {
         return LocatableType.ImmutableBlockLocation;
     }
@@ -107,5 +92,20 @@ public class BlockLocation implements AbstractBlockLocation {
     @Override @SuppressWarnings("UnstableApiUsage")
     public double z() {
         return z;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return isEqual(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return hash();
+    }
+
+    @Override
+    public String toString() {
+        return toStringForm();
     }
 }
