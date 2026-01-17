@@ -5,6 +5,7 @@ import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.*;
 
 import io.papermc.paper.math.Position;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import java.util.UUID;
@@ -12,7 +13,9 @@ import java.util.UUID;
 // A vector-like interface representing a location in a 3D space within a specific world.
 public interface Locatable extends Position {
 
-    Location toBukkitLocation();
+    default Location toBukkitLocation(){
+        return new Location(Bukkit.getWorld(world()), x(), y(), z());
+    }
 
     default double length() {
         return Math.sqrt(lengthSquared());
@@ -40,6 +43,20 @@ public interface Locatable extends Position {
     default Locatable normalize() {
         double length = length();
         return scalarMultiply(1.0 / length);
+    }
+
+    default int blockX() {
+        return (int) Math.floor(x());
+    }
+
+    @Override
+    default int blockY() {
+        return (int) Math.floor(y());
+    }
+
+    @Override
+    default int blockZ() {
+        return (int) Math.floor(z());
     }
 
     Locatable add(Locatable locatable);

@@ -180,12 +180,6 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
     }
 
     @Override
-    public Location toBukkitLocation() {
-        throw new RuntimeException("Unimplemented");
-        //TODO: Implement
-    }
-
-    @Override
     public LocatableType getType() {
         return LocatableType.ThreadSafe;
     }

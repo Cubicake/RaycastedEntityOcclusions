@@ -22,11 +22,6 @@ public class LocatableImpl implements Locatable {
     }
 
     @Override
-    public Location toBukkitLocation() {
-        return new Location(Bukkit.getWorld(world), x, y, z);
-    }
-
-    @Override
     public LocatableType getType() {
         return LocatableType.Plain;
     }
@@ -58,21 +53,6 @@ public class LocatableImpl implements Locatable {
     @Override
     public UUID world() {
         return world;
-    }
-
-    @Override
-    public int blockX() {
-        return (int) Math.floor(x);
-    }
-
-    @Override
-    public int blockY() {
-        return (int) Math.floor(y);
-    }
-
-    @Override
-    public int blockZ() {
-        return (int) Math.floor(z);
     }
 
     @Override

@@ -43,6 +43,11 @@ public class BlockLocation implements AbstractBlockLocation {
     }
 
     @Override
+    public Location toBukkitLocation() {
+        return AbstractBlockLocation.super.toBukkitLocation();
+    }
+
+    @Override
     public Locatable add(Locatable locatable) {
         Logger.errorAndReturn(new RuntimeException("Attempted to mutate an immutable BlockLocation"), 2);
         return null;

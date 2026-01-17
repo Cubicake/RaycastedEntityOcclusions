@@ -59,6 +59,21 @@ public class WrappedBukkitLocation extends Location implements Locatable {
     }
 
     @Override
+    public int blockX() {
+        return super.blockX();
+    }
+
+    @Override
+    public int blockY() {
+        return super.blockY();
+    }
+
+    @Override
+    public int blockZ() {
+        return super.blockZ();
+    }
+
+    @Override
     public @NotNull BlockPosition toBlock() {
         return super.toBlock();
     }
