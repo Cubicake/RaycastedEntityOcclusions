@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import java.util.UUID;
 
 // A vector-like interface representing a location in a 3D space within a specific world.
+@SuppressWarnings("UnstableApiUsage")
 public interface Locatable extends Position {
 
     default Location toBukkitLocation(){
@@ -45,16 +46,21 @@ public interface Locatable extends Position {
         return scalarMultiply(1.0 / length);
     }
 
+    @SuppressWarnings("UnstableApiUsage") double x();
+    @SuppressWarnings("UnstableApiUsage") double y();
+    @SuppressWarnings("UnstableApiUsage") double z();
+
+    @Override @SuppressWarnings("UnstableApiUsage")
     default int blockX() {
         return (int) Math.floor(x());
     }
 
-    @Override
+    @Override @SuppressWarnings("UnstableApiUsage")
     default int blockY() {
         return (int) Math.floor(y());
     }
 
-    @Override
+    @Override @SuppressWarnings("UnstableApiUsage")
     default int blockZ() {
         return (int) Math.floor(z());
     }

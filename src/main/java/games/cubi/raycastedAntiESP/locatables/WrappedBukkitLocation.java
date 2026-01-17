@@ -8,7 +8,7 @@ import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
-
+@SuppressWarnings("UnstableApiUsage")
 public class WrappedBukkitLocation extends Location implements Locatable {
     public WrappedBukkitLocation(World world, double x, double y, double z) {
         super(world, x, y, z);

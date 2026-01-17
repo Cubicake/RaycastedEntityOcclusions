@@ -3,11 +3,9 @@ package games.cubi.raycastedAntiESP.locatables;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 
 import java.util.UUID;
-
+@SuppressWarnings("UnstableApiUsage")
 public class LocatableImpl implements Locatable {
     private double x;
     private double y;

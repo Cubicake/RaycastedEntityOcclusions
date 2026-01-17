@@ -13,6 +13,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 
+@SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
     private final RaycastedAntiESP plugin;
     private final ConfigManager cfg;

@@ -66,17 +66,17 @@ public class BlockLocation implements AbstractBlockLocation {
         return world;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockX() {
         return x;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockY() {
         return y;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockZ() {
         return z;
     }

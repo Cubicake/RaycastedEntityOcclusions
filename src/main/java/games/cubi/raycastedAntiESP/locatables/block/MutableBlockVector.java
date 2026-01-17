@@ -4,10 +4,9 @@ import games.cubi.raycastedAntiESP.locatables.Locatable;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import org.bukkit.Location;
-import org.bukkit.World;
 
 import java.util.UUID;
-
+@SuppressWarnings("UnstableApiUsage")
 public class MutableBlockVector implements AbstractBlockLocation {
     private final UUID world;
     private double mutableX;
@@ -112,32 +111,32 @@ public class MutableBlockVector implements AbstractBlockLocation {
         return toStringForm();
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockX() {
         return (int) Math.floor(mutableX);
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockY() {
         return (int) Math.floor(mutableY);
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public int blockZ() {
         return (int) Math.floor(mutableZ);
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double x() {
         return mutableX;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double y() {
         return mutableY;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double z() {
         return mutableZ;
     }

@@ -6,14 +6,13 @@ import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.util.Vector;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+@SuppressWarnings("UnstableApiUsage")
 public class ThreadSafeLocation implements Locatable /*TBH I still don't even know if this is needed */ {
     private final UUID world;
     private final Vector vector1;
