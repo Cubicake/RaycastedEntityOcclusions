@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.data;
+package games.cubi.raycastedAntiESP.deletioncandidates;
 
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
