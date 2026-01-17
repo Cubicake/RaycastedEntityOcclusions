@@ -87,7 +87,8 @@ public class Engine {
         }
 
         List<RayJob> jobs = new ArrayList<>();
-        for (Player p : Bukkit.getOnlinePlayers()) {
+        Set<Player> players = new HashSet<>(Bukkit.getOnlinePlayers());
+        for (Player p : players) {
             if (p.hasPermission("raycastedentityocclusions.bypass")) continue;
             Location eye = p.getEyeLocation().clone();
             Location predEye = null;
@@ -96,7 +97,11 @@ public class Engine {
                 predEye = tracker.getPredictedLocation(p);
             }
 
-            for (Entity e : p.getNearbyEntities(cfg.searchRadius, cfg.searchRadius, cfg.searchRadius)) {
+            Set<Entity> toProcess = new HashSet<>();
+            toProcess.addAll(p.getNearbyEntities(cfg.searchRadius, cfg.searchRadius, cfg.searchRadius));
+            toProcess.addAll(players);
+
+            for (Entity e : toProcess) {
                 if (e == p) continue;
                 // Cull-players logic
                 if (e instanceof Player pl && (!cfg.cullPlayers || (cfg.onlyCullSneakingPlayers && !pl.isSneaking()))) {
