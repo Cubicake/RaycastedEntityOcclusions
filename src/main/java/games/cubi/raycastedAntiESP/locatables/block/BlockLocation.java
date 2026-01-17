@@ -2,12 +2,9 @@ package games.cubi.raycastedAntiESP.locatables.block;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import io.papermc.paper.math.BlockPosition;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class BlockLocation implements AbstractBlockLocation {
