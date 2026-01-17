@@ -15,91 +15,85 @@ import games.cubi.raycastedAntiESP.config.ConfigManager;
 
 @SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
-    private final RaycastedAntiESP plugin;
-    private final ConfigManager cfg;
 
-    public CommandsManager(RaycastedAntiESP plugin, ConfigManager cfg) {
-        this.plugin = plugin;
-        this.cfg = cfg;
-    }
+    private CommandsManager() {}
 
-    public LiteralCommandNode<CommandSourceStack> registerCommand() {
+    public static LiteralCommandNode<CommandSourceStack> registerCommand(RaycastedAntiESP plugin, ConfigManager config) {
         //run help command if no context provided
-        LiteralCommandNode<CommandSourceStack> buildCommand = Commands.literal("raycastedantiesp")
-                .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
+        return Commands.literal("raycastedantiesp")
+            .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
+            .executes(context -> {
+                helpCommand(context, plugin);
+                return Command.SINGLE_SUCCESS;
+            })
+            .then(Commands.literal("help")
+                .executes(context -> helpCommand(context, plugin)))
+            .then(Commands.literal("reload")
                 .executes(context -> {
-                    helpCommand(context);
-                    return Command.SINGLE_SUCCESS;
-                })
-                .then(Commands.literal("help")
-                    .executes(context -> helpCommand(context)))
-                .then(Commands.literal("reload")
-                    .executes(context -> {
-                    cfg.load();
+                    config.load();
                     context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
                     return Command.SINGLE_SUCCESS;
                 }))
-                .then(Commands.literal("config-values")
-                    .executes(context -> {
-                        CommandSender sender = context.getSource().getSender();
-                        //dynamic config values
-                        sender.sendMessage("[RaycastedAntiESP] Config values: ");
+            .then(Commands.literal("config-values")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    //dynamic config values
+                    sender.sendMessage("[RaycastedAntiESP] Config values: ");
 
-                        ConfigurationSection root = cfg.getConfigFile().getConfigurationSection("");
-                        for (String path : root.getKeys(true)) {
-                            Object val = cfg.getConfigFile().get(path);
-                            if (val instanceof ConfigurationSection) continue;
-                            sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
-                        }
-                        return Command.SINGLE_SUCCESS;
-                    }))
+                    ConfigurationSection root = config.getConfigFile().getConfigurationSection("");
+                    for (String path : root.getKeys(true)) {
+                        Object val = config.getConfigFile().get(path);
+                        if (val instanceof ConfigurationSection) continue;
+                        sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }))
 
-                .then(Commands.literal("set")
+            .then(Commands.literal("set")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    sender.sendRichMessage("<red>Usage: /raycastedantiesp set <key> <value>");;
+                    return 0;
+                })
+                .then(Commands.argument("key", StringArgumentType.string())
+                    .then(Commands.argument("value", StringArgumentType.string())
                         .executes(context -> {
                             CommandSender sender = context.getSource().getSender();
-                            sender.sendRichMessage("<red>Usage: /raycastedantiesp set <key> <value>");;
+                            String key = StringArgumentType.getString(context, "key");
+                            String value = StringArgumentType.getString(context, "value");
+
+                            int result = config.setConfigValue(key, value);
+                            if (result == -1) {
+                                sender.sendRichMessage("<red>Invalid inputs");
+                            } else if (result == 0) {
+                                //Integer value out of bounds 0 - 256
+                                sender.sendRichMessage("<red>Invalid value for <white>" + key + "<red>, must be between 0 and 256");
+                            }
+                            else {
+                                sender.sendRichMessage("<white>Set <green>" + key + "<white> to <green>" + value);
+                            }
                             return 0;
                         })
-                        .then(Commands.argument("key", StringArgumentType.string())
-                                .then(Commands.argument("value", StringArgumentType.string())
-                                        .executes(context -> {
-                                            CommandSender sender = context.getSource().getSender();
-                                            String key = StringArgumentType.getString(context, "key");
-                                            String value = StringArgumentType.getString(context, "value");
-
-                                            int result = cfg.setConfigValue(key, value);
-                                            if (result == -1) {
-                                                sender.sendRichMessage("<red>Invalid inputs");
-                                            } else if (result == 0) {
-                                                //Integer value out of bounds 0 - 256
-                                                sender.sendRichMessage("<red>Invalid value for <white>" + key + "<red>, must be between 0 and 256");
-                                            }
-                                            else {
-                                                sender.sendRichMessage("<white>Set <green>" + key + "<white> to <green>" + value);
-                                            }
-                                            return 0;
-                                        })
-                                )
-                        )
+                    )
                 )
-                .then(Commands.literal("test")
-                        .executes(context -> {
-                            testCommand(context);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                )
-                .then(Commands.literal("check-for-updates")
-                        .executes(context -> {
-                            CommandSender sender = context.getSource().getSender();
-                            UpdateChecker.checkForUpdates(plugin, sender);
-                            return Command.SINGLE_SUCCESS;
-                        })
-                )
-                .build();
-        return buildCommand;
+            )
+            .then(Commands.literal("test")
+                    .executes(context -> {
+                        testCommand(context);
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .then(Commands.literal("check-for-updates")
+                    .executes(context -> {
+                        CommandSender sender = context.getSource().getSender();
+                        UpdateChecker.checkForUpdates(plugin, sender);
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .build();
     }
 
-    public int helpCommand(CommandContext<CommandSourceStack> context) {
+    public static int helpCommand(CommandContext<CommandSourceStack> context, RaycastedAntiESP plugin) {
         CommandSender sender = context.getSource().getSender();
         sender.sendRichMessage("<white>RaycastedAntiESP <yellow>v" + plugin.getDescription().getVersion());
         sender.sendRichMessage("<white>Commands:");
@@ -109,6 +103,6 @@ public class CommandsManager {
         return Command.SINGLE_SUCCESS;
     }
 
-    private void testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static void testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
     }
 }
