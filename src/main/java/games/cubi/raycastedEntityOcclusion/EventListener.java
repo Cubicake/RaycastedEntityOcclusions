@@ -81,6 +81,18 @@ public class EventListener implements Listener {
         if (event.getPlayer().hasPermission("raycastedentityocclusions.updatecheck")) {
             Player sender = event.getPlayer();
             checkForUpdates(plugin, sender);
+
+            if (config.cullPlayers) {
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (!sender.isOnline()) return;
+
+                    for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                        if (onlinePlayer.equals(sender)) continue;
+                        sender.hideEntity(plugin, onlinePlayer);
+                        onlinePlayer.hideEntity(plugin, sender);
+                    }
+                }, 10L);
+            }
         }
     }
 }
