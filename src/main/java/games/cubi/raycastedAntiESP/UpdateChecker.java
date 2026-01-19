@@ -45,7 +45,7 @@ public class UpdateChecker {
         return future;
     }
 
-    private static final int INVALID_VERSION_FORMAT = -2; private static final int CURRENT_IS_OLDER = -1; private static final int VERSIONS_ARE_EQUAL = 0; private static final int CURRENT_IS_NEWER = 1;
+    private static final int INVALID_VERSION_FORMAT = 2; private static final int CURRENT_IS_OLDER = -1; private static final int VERSIONS_ARE_EQUAL = 0; private static final int CURRENT_IS_NEWER = 1;
 
     private static int checkIfLaterThan(String currentVersion, String fetchedVersion) {
         String[] currentParts = currentVersion.replace("v", "").split("[.-]");
@@ -61,6 +61,7 @@ public class UpdateChecker {
             int minorVersionDifference = Integer.parseInt(currentParts[1]) - Integer.parseInt(fetchedParts[1]);
 
             if (minorVersionDifference == VERSIONS_ARE_EQUAL) {
+                @SuppressWarnings("RedundantLocalVariable") //Makes code more readable
                 int patchVersionDifference = Integer.parseInt(currentParts[2]) - Integer.parseInt(fetchedParts[2]);
                 return patchVersionDifference;
             }
@@ -77,20 +78,25 @@ public class UpdateChecker {
 
                 if (versionCheck == VERSIONS_ARE_EQUAL) {
                     audience.sendRichMessage("<green>You are using the latest version of Raycasted Anti-ESP.");
+                    return;
                 }
 
-                if (versionCheck == CURRENT_IS_OLDER) {
+                if (versionCheck <= CURRENT_IS_OLDER) {
                     audience.sendRichMessage("<red>You are not using the latest version of Raycasted Anti-ESP. Please update to <green>v" + version+".");
                     if (audience instanceof Player) audience.sendRichMessage("\n" + "<hover:show_text:'https://modrinth.com/project/bCjNZu0C/versions'><aqua><u><click:open_url:'https://modrinth.com/project/bCjNZu0C/versions'>Click here to download it.</click></u></aqua></hover>");
+                    return;
                 }
 
                 if (versionCheck == CURRENT_IS_NEWER) {
                     audience.sendRichMessage("<yellow>You are using a development build of Raycasted Anti-ESP. The latest stable version is <green>v" + version + "<yellow>.");
+                    return;
                 }
 
                 if (versionCheck == INVALID_VERSION_FORMAT) {
                     audience.sendRichMessage("<red>Unable to check for updates, invalid version format.");
+                    return;
                 }
+                audience.sendRichMessage("<red>An unknown error occurred while checking for updates. UpdateChecker#checkIfLaterThan returned unrecognised integer " + versionCheck + ".");
             });
         }).exceptionally(ex -> {
             Logger.error("An error occurred while checking for plugin updates", ex, 4);
