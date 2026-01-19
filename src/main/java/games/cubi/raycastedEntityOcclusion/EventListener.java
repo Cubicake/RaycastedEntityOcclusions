@@ -10,11 +10,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 
 import java.util.UUID;
+import java.util.Set;
 
 import static games.cubi.raycastedEntityOcclusion.UpdateChecker.checkForUpdates;
 
@@ -23,6 +26,8 @@ public class EventListener implements Listener {
     private final ConfigManager config;
     private PacketProcessor packetProcessor;
     private final RaycastedEntityOcclusion plugin;
+
+    private final Set<UUID> pendingPlayer = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public EventListener(RaycastedEntityOcclusion plugin, ChunkSnapshotManager mgr, ConfigManager cfg) {
         this.manager = mgr;
@@ -73,16 +78,21 @@ public class EventListener implements Listener {
         if (config.packetEventsPresent && packetProcessor != null) {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
+            pendingPlayer.remove(player);
         }
     }
 
     @EventHandler
-    public void onPlayerJoin(org.bukkit.event.player.PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         if (event.getPlayer().hasPermission("raycastedentityocclusions.updatecheck")) {
             Player sender = event.getPlayer();
             checkForUpdates(plugin, sender);
 
             if (config.cullPlayers) {
+                if (config.cullPlayersOnJoin) {
+                    pendingPlayer.add(sender.getUniqueId());
+                }
+
                 Bukkit.getScheduler().runTaskLater(plugin, () -> {
                     if (!sender.isOnline()) return;
 
@@ -91,7 +101,28 @@ public class EventListener implements Listener {
                         sender.hideEntity(plugin, onlinePlayer);
                         onlinePlayer.hideEntity(plugin, sender);
                     }
-                }, 10L);
+                }, 20L);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        if (config.cullPlayersOnJoin) {
+            Player sender = event.getPlayer();
+            UUID uuid = sender.getUniqueId();
+
+            if (pendingPlayer.contains(uuid)) {
+                pendingPlayer.remove(uuid);
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                        if (!sender.isOnline()) return;
+
+                        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                            if (onlinePlayer.equals(sender)) continue;
+                            sender.hideEntity(plugin, onlinePlayer);
+                            onlinePlayer.hideEntity(plugin, sender);
+                        }
+                    }, 10L);
             }
         }
     }
