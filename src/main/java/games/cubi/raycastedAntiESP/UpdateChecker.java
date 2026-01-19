@@ -18,13 +18,13 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class UpdateChecker {
+    private static final String VERSION_API_ENDPOINT = "https://api.modrinth.com/v2/project/bCjNZu0C/version?version_type=release&include_changelog=false";
+
     private static CompletableFuture<String> fetchFeaturedVersion(RaycastedAntiESP plugin) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            final String url = "https://api.modrinth.com/v2/project/bCjNZu0C/version?version_type=release";
-
-            try (final InputStreamReader reader = new InputStreamReader(new URI(url).toURL().openConnection().getInputStream())) {
+            try (final InputStreamReader reader = new InputStreamReader(new URI(VERSION_API_ENDPOINT).toURL().openConnection().getInputStream())) {
                 final JsonArray array = new JsonArray();
                 array.add(new BufferedReader(reader).readLine());
                 StringBuilder stringBuilder = new StringBuilder();
