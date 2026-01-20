@@ -84,46 +84,29 @@ public class EventListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if (event.getPlayer().hasPermission("raycastedentityocclusions.updatecheck")) {
-            Player sender = event.getPlayer();
+        Player sender = event.getPlayer();
+
+        if (sender.hasPermission("raycastedentityocclusions.updatecheck")) {
             checkForUpdates(plugin, sender);
+        }
 
-            if (config.cullPlayers) {
-                if (config.cullPlayersOnJoin) {
-                    pendingPlayer.add(sender.getUniqueId());
-                }
-
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    if (!sender.isOnline()) return;
-
-                    for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                        if (onlinePlayer.equals(sender)) continue;
-                        sender.hideEntity(plugin, onlinePlayer);
-                        onlinePlayer.hideEntity(plugin, sender);
-                    }
-                }, 20L);
+        if (config.cullPlayers) {
+            if (config.cullPlayersOnJoin) {
+                schedulePlayerOcclusion(sender, 10L);
+                schedulePlayerOcclusion(sender, 100L);
             }
         }
     }
 
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event) {
-        if (config.cullPlayersOnJoin) {
-            Player sender = event.getPlayer();
-            UUID uuid = sender.getUniqueId();
+    private void schedulePlayerOcclusion(Player sender, Long duration) {
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (!sender.isOnline()) return;
 
-            if (pendingPlayer.contains(uuid)) {
-                pendingPlayer.remove(uuid);
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                        if (!sender.isOnline()) return;
-
-                        for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                            if (onlinePlayer.equals(sender)) continue;
-                            sender.hideEntity(plugin, onlinePlayer);
-                            onlinePlayer.hideEntity(plugin, sender);
-                        }
-                    }, 10L);
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                if (onlinePlayer.equals(sender)) continue;
+                    sender.hideEntity(plugin, onlinePlayer);
+                    onlinePlayer.hideEntity(plugin, sender);
             }
-        }
+        }, duration);
     }
 }
