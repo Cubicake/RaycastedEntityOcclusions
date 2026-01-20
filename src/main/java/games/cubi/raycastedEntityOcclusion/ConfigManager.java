@@ -13,6 +13,7 @@ public class ConfigManager {
     public int raycastRadius;
     public int searchRadius;
     public boolean cullPlayers;
+    public boolean cullPlayersOnJoin;
     public boolean onlyCullSneakingPlayers;
     public int recheckInterval;
     public boolean checkTileEntities;
@@ -28,6 +29,7 @@ public class ConfigManager {
     public static final int RAYCAST_RADIUS_DEFAULT = 48;
     public static final int SEARCH_RADIUS_DEFAULT = 48;
     public static final boolean CULL_PLAYERS_DEFAULT = false;
+    public static final boolean CULL_PLAYERS_ON_JOIN_DEFAULT = false;
     public static final boolean ONLY_CULL_SNEAKING_PLAYERS_DEFAULT = false;
     public static final int RECHECK_INTERVAL_DEFAULT = 50;
     public static final boolean CHECK_TILE_ENTITIES_DEFAULT = true;
@@ -52,6 +54,7 @@ public class ConfigManager {
         raycastRadius = cfg.getInt("raycast-radius", RAYCAST_RADIUS_DEFAULT);
         searchRadius = cfg.getInt("search-radius", SEARCH_RADIUS_DEFAULT);
         cullPlayers = cfg.getBoolean("cull-players", CULL_PLAYERS_DEFAULT);
+        cullPlayers = cfg.getBoolean("cull-players-on-join", CULL_PLAYERS_ON_JOIN_DEFAULT);
         onlyCullSneakingPlayers = cfg.getBoolean("only-cull-sneaking-players", ONLY_CULL_SNEAKING_PLAYERS_DEFAULT);
         recheckInterval = cfg.getInt("recheck-interval", RECHECK_INTERVAL_DEFAULT);
 
@@ -67,6 +70,7 @@ public class ConfigManager {
         cfg.addDefault("raycast-radius", RAYCAST_RADIUS_DEFAULT);
         cfg.addDefault("search-radius", SEARCH_RADIUS_DEFAULT);
         cfg.addDefault("cull-players", CULL_PLAYERS_DEFAULT);
+        cfg.addDefault("cull-players-on-join", CULL_PLAYERS_ON_JOIN_DEFAULT);
         cfg.addDefault("only-cull-sneaking-players", ONLY_CULL_SNEAKING_PLAYERS_DEFAULT);
         cfg.addDefault("recheck-interval", RECHECK_INTERVAL_DEFAULT);
         cfg.addDefault("check-tile-entities", CHECK_TILE_ENTITIES_DEFAULT);
