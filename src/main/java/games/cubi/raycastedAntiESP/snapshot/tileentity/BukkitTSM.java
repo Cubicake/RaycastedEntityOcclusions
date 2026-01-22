@@ -10,7 +10,6 @@ import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.TileState;
 
 import java.util.Set;
 import java.util.UUID;
@@ -33,13 +32,13 @@ public class BukkitTSM extends PlayerLastSeenTracker {
 
     @Override
     public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z) {
-        ChunkKey key = new ChunkKey(world, x, z);
-        Set<BlockLocation> known = tileEntitiesByChunk.get(key);
-        if (known != null) {
-            return Set.copyOf(known);
+        World bukkitWorld = Bukkit.getWorld(world);
+        if (bukkitWorld == null || !bukkitWorld.isChunkLoaded(x, z)) {
+            return Set.of();
         }
-        Set<BlockLocation> fresh = snapshotChunk(world, x, z);
-        return Set.copyOf(fresh);
+        ChunkKey key = new ChunkKey(world, x, z);
+        Set<BlockLocation> cached = tileEntitiesByChunk.computeIfAbsent(key, ignored -> snapshotChunk(bukkitWorld, x, z));
+        return Set.copyOf(cached);
     }
 
     @Override
@@ -47,22 +46,16 @@ public class BukkitTSM extends PlayerLastSeenTracker {
         return SnapshotManager.TileEntitySnapshotManagerType.BUKKIT;
     }
 
-    private Set<BlockLocation> snapshotChunk(UUID worldId, int x, int z) {
-        World world = Bukkit.getWorld(worldId);
-        if (world == null || !world.isChunkLoaded(x, z)) {
-            return Set.of();
-        }
+    private Set<BlockLocation> snapshotChunk(World world, int x, int z) {
         Chunk chunk = world.getChunkAt(x, z);
         Set<BlockLocation> tileEntities = ConcurrentHashMap.newKeySet();
         for (BlockState state : chunk.getTileEntities()) {
-            if (!(state instanceof TileState)) continue;
             Material material = state.getType();
             if (ConfigManager.get().getTileEntityConfig().getExemptedBlocks().contains(material)) {
                 continue;
             }
             tileEntities.add(new BlockLocation(state.getLocation()));
         }
-        tileEntitiesByChunk.put(new ChunkKey(worldId, x, z), tileEntities);
         return tileEntities;
     }
 }
