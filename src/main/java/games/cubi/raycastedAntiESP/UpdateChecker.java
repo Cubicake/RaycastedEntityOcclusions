@@ -74,6 +74,7 @@ public class UpdateChecker {
         fetchFeaturedVersion(plugin).thenAccept(version -> {
             // This runs synchronously when the version is fetched
             Bukkit.getScheduler().runTask(plugin, () -> {
+                @SuppressWarnings("deprecation")
                 int versionCheck = checkIfLaterThan(plugin.getDescription().getVersion(), version);
 
                 if (versionCheck == VERSIONS_ARE_EQUAL) {
