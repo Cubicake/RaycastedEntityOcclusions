@@ -79,7 +79,7 @@ public class Logger {
         } else {
             message.append(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred but no error message was set |");
         }
-        for (int i = 0; i < Math.min(3, thrown.length); i++) {
+        for (int i = 0; i < Math.min(4, thrown.length); i++) {
             StackTraceElement element = thrown[i];
             message.append("\n at ").append(element.toString());
 
