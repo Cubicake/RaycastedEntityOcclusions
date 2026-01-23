@@ -37,10 +37,15 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
     private static java.util.logging.Logger logger;
+    //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
+    {
+        instance = this;
+        logger = getLogger();
+    }
 
     @Override
     public void onLoad() {
-        logger = getLogger();
+        config = ConfigManager.initialiseConfigManager(this);
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents == null) {
             Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
@@ -54,8 +59,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onEnable() {
-        instance = this;
-        config = ConfigManager.initialiseConfigManager(this);
         tracker = new MovementTracker(this, config);
         engine = new Engine(this, config);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
