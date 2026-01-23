@@ -36,7 +36,10 @@ public class ConfigManager {
 
     public static ConfigManager initialiseConfigManager(RaycastedAntiESP plugin) {
         if (instance == null) {
-            if (isNotOnMainThread()) return null;
+            if (isNotOnMainThread()) {
+                Logger.error(new RuntimeException("ConfigManager attempted to be initialised off the main thread. Please report this to the plugin developer."), 2);
+                return null;
+            }
             instance = new ConfigManager(plugin);
         }
         return instance;
