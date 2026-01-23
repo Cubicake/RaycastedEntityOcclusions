@@ -35,33 +35,27 @@ import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
     private final ConfigManager config;
-    private PacketProcessor packetProcessor;
+    private final PacketProcessor packetProcessor;
     private final RaycastedAntiESP plugin;
 
     private static EventListener instance = null;
 
-    private EventListener(RaycastedAntiESP plugin, ConfigManager cfg) {
+    private EventListener(RaycastedAntiESP plugin, ConfigManager cfg, PacketProcessor packetProcessor) {
         this.config = cfg;
         this.plugin = plugin;
-        //load packet processor after a tick in a bukkit runnable to ensure the plugin is fully loaded TODO: All schedulers should migrate to paper/folia scheduler, also this should be moved somewhere else, maybe when the config gets the update it passes it on?
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (PacketEventsStatus.get().isPacketEventsPresent()) {
-                packetProcessor = RaycastedAntiESP.getPacketProcessor();
-            } else {
-                packetProcessor = null;
-            }
-        }, 2L);
+        this.packetProcessor = packetProcessor;
     }
 
-    public static EventListener getInstance(RaycastedAntiESP plugin, ConfigManager cfg) {
+    public static EventListener getInstance(RaycastedAntiESP plugin, ConfigManager cfg, PacketProcessor packetProcessor) {
         if (instance == null) {
-            instance = new EventListener(plugin, cfg);
+            instance = new EventListener(plugin, cfg, packetProcessor);
         }
         return instance;
     }
@@ -103,7 +97,7 @@ public class EventListener implements Listener {
         if (manager == null) return;
         manager.onBlockChange(e.getBlock().getLocation(), Material.AIR, BREAK);
     }
-    // These events do not cover all cases, but I can't be bothered to figure out a better solution rn. Frequent snapshot refreshes is the solution. If anyone has a solution please let me know.
+    // These events do not cover all cases, but I can't be bothered to figure out a better solution rn. Frequent snapshot refreshes is the solution. If anyone has a solution please let me know. todo: listen to blockphysicsevent
 
 
     @EventHandler(priority = EventPriority.MONITOR)
