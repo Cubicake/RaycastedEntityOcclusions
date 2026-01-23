@@ -1,6 +1,7 @@
 package games.cubi.raycastedAntiESP.packets;
 
 import games.cubi.raycastedAntiESP.Logger;
+import org.jetbrains.annotations.NotNull;
 
 public final class PacketEventsStatus {
     private static volatile PacketEventsStatus instance;
@@ -24,13 +25,13 @@ public final class PacketEventsStatus {
         }
     }
 
+    @NotNull
     public static PacketEventsStatus get() {
-        PacketEventsStatus result = instance;
-        if (result == null) {
-            Logger.errorAndReturn(new RuntimeException("PacketEvents status not initialised"), 1);
-            return null;
+        if (instance == null) {
+            Logger.error(new RuntimeException("PacketEvents status not initialised"), 1);
+            instance = new PacketEventsStatus(false);
         }
-        return result;
+        return instance;
     }
 
     public boolean isPacketEventsPresent() {
