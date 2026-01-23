@@ -31,7 +31,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
     private static MovementTracker tracker;
-    private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
+    //private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
     private static Engine engine;
     private static MetricsCollector metricsCollector;
@@ -47,13 +47,18 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public void onLoad() {
         config = ConfigManager.initialiseConfigManager(this);
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
-        if (packetEvents == null) {
-            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
+        Logger.info("Checking for PacketEvents plugin..."+packetEvents, 1);
+        if (packetEvents != null) {
+            //packetEventsPresent = true;
+            Logger.info("PacketEvents detected.", 4);
+            new Registrar(this);
+
+            PacketEventsStatus.init(true);
+            packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
         }
         else {
-            packetEventsPresent = true;
-            getLogger().info("PacketEvents detected.");
-            new Registrar(this);
+            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
+            PacketEventsStatus.init(false);
         }
     }
 
@@ -62,7 +67,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         tracker = new MovementTracker(this, config);
         engine = new Engine(this, config);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
-        getServer().getPluginManager().registerEvents(EventListener.getInstance(this, config), this);
+        getServer().getPluginManager().registerEvents(EventListener.getInstance(this, config, packetProcessor), this);
 
         initialiseCommands();
 
@@ -72,7 +77,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         //bStats
         metricsCollector =  new MetricsCollector(this, config);
 
-        Bukkit.getGlobalRegionScheduler().runDelayed(this, (task) -> {initialisePacketProcessor(); task.cancel();}, 1);
+        //Bukkit.getGlobalRegionScheduler().runDelayed(this, (task) -> {initialisePacketProcessor(); task.cancel();}, 1); todo: Removed pending testing of the move to onLoad
     }
 
     @Override
@@ -98,13 +103,13 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         });
     }
 
-    private void initialisePacketProcessor() {
+    private void initialisePacketProcessor() {/*
         if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
             PacketEventsStatus.init(true);
             packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
             Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.", 3);
         }
-        else PacketEventsStatus.init(false);
+        else PacketEventsStatus.init(false);*/
     }
 
 
