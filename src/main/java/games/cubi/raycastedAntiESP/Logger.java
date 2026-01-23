@@ -20,9 +20,20 @@ public class Logger {
      *
      * Therefore, logs with level of 1 are most important and 10 least
      *
-     * Note that by default the log levels are at 3, so any logs which should appear normally should be at 1-3. Additionally, loggers which fire every tick (or more often) should be at 10, and loggers firing frequently at 7-9
+     * Note that by default the log levels are at 5, so any logs which should appear normally should be at 1-5. Additionally, loggers which fire several times a tick should be at 10, once a tick at 9, and loggers firing frequently at 6-8
      * */
     private static final CheckPreviousLogForError earlyReturn = new CheckPreviousLogForError();
+
+    public enum Frequency {
+        ONCE_PER_TICK(9),
+        MULTI_PER_TICK(10);
+
+        public final int value;
+
+        Frequency(int i) {
+            this.value = i;
+        }
+    }
 
     private enum Level {
         INFO,

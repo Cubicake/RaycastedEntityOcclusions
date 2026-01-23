@@ -65,7 +65,7 @@ public class BukkitBSM implements BlockSnapshotManager {
                         snapshotChunk(key);
                     }
                 }
-                Logger.info("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", 10);
+                Logger.info("ChunkSnapshotManager: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", Logger.Frequency.ONCE_PER_TICK.value);
             }
         }.runTaskTimerAsynchronously(plugin, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L /* This runs 10 times per refreshInterval, spreading out the refreshes */);
     }
@@ -79,7 +79,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     public void snapshotChunk(Chunk c) {
-        Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(),10);
+        Logger.info("ChunkSnapshotManager: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(),Logger.Frequency.MULTI_PER_TICK.value);
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
     public void snapshotChunk(String key) {
@@ -92,7 +92,7 @@ public class BukkitBSM implements BlockSnapshotManager {
 
     // Used by EventListener to update the delta map when a block is placed or broken
     public void onBlockChange(Location loc, Material m, int change) {
-        Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m, 9);
+        Logger.info("ChunkSnapshotManager: Block change at " + loc + " to " + m, Logger.Frequency.MULTI_PER_TICK.value);
         ChunkData d = dataMap.get(key(loc.getChunk()));
         if (d == null) {
             Logger.error("Data map value empty, ignoring block update!",3);
