@@ -50,7 +50,7 @@ public class Engine {
     //run async
     public void distributeTick() {
         Collection<PlayerData> allPlayers = DataHolder.players().getAllPlayerData();
-        int threads = 50; //TODO Don't hardcode
+        int threads = 1; //TODO Don't hardcode
         if (threads < 1) threads = 1;
 
         List<List<PlayerData>> batches = new ArrayList<>(threads);
