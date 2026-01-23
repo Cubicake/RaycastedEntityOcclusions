@@ -30,7 +30,7 @@ public class RaycastUtil {
             dustBlue = new Particle.DustOptions(Color.BLUE,1f);
         }
     }
-
+    @Deprecated
     public static boolean raycastLocationPair(LocationPair locationPair, int maxOccluding, boolean debug, BlockSnapshotManager snap) {
 
         //These locations do not need to be cloned because .toLocation creates a new location object. We can mutate it freely
