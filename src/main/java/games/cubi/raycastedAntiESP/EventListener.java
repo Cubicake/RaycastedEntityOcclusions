@@ -234,6 +234,6 @@ public class EventListener implements Listener {
     }
 
     private boolean isBukkitESM() {
-        return SnapshotManager.blockSnapshotManagerType() == SnapshotManager.BlockSnapshotManagerType.BUKKIT;
+        return SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT;
     }
 }

@@ -32,7 +32,6 @@ public class BukkitESM implements EntitySnapshotManager {
     @Override
     public void removeEntityLocation(UUID entityUUID) {
         entityLocationMap.remove(entityUUID);
-        playerUUIDs.remove(entityUUID);
     }
 
     private volatile ConcurrentHashMap<UUID, ThreadSafeLocation> entityLocationMap = new ConcurrentHashMap<>();

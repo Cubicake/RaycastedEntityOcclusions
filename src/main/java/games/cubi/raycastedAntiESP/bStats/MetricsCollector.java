@@ -31,6 +31,7 @@ public class MetricsCollector {
         metrics.addCustomChart(new Metrics.SimplePie("cull_players", this::getCullPlayersStatus));
 
         metrics.addCustomChart(new Metrics.SimplePie("raycast_radius", () -> getRoundedValue(getRaycastConfig().getRaycastRadius(), getDefaultRaycastConfig().getRaycastRadius())));
+        metrics.addCustomChart(new Metrics.SimplePie("search_radius", () -> "Deprecated"));
         metrics.addCustomChart(new Metrics.SimplePie("always_show_radius", () -> getRoundedValue(getRaycastConfig().getAlwaysShowRadius(), getDefaultRaycastConfig().getAlwaysShowRadius())));
 
         metrics.addCustomChart(new Metrics.SimplePie("engine_mode", () -> String.valueOf(getRaycastConfig().getEngineMode())));
@@ -131,6 +132,26 @@ public class MetricsCollector {
     }
 
     private RaycastConfig getRaycastConfig() {
+        RaycastConfig enabledConfig = getEnabledRaycastConfig();
+        if (enabledConfig != null) {
+            return enabledConfig;
+        }
+        // Fall back to player config when no checks are enabled to keep metrics stable.
+        return config.getPlayerConfig();
+    }
+
+    private RaycastConfig getDefaultRaycastConfig() {
+        RaycastConfig enabledConfig = getEnabledRaycastConfig();
+        if (enabledConfig instanceof EntityConfig) {
+            return ConfigManager.getDefaultEntityConfig();
+        }
+        if (enabledConfig instanceof TileEntityConfig) {
+            return ConfigManager.getDefaultTileEntityConfig();
+        }
+        return ConfigManager.getDefaultPlayerConfig();
+    }
+
+    private RaycastConfig getEnabledRaycastConfig() {
         PlayerConfig playerConfig = config.getPlayerConfig();
         if (playerConfig.isEnabled()) {
             return playerConfig;
@@ -139,19 +160,11 @@ public class MetricsCollector {
         if (entityConfig.isEnabled()) {
             return entityConfig;
         }
-        return config.getTileEntityConfig();
-    }
-
-    private RaycastConfig getDefaultRaycastConfig() {
-        PlayerConfig playerDefaults = ConfigManager.getDefaultPlayerConfig();
-        if (playerDefaults.isEnabled()) {
-            return playerDefaults;
+        TileEntityConfig tileEntityConfig = config.getTileEntityConfig();
+        if (tileEntityConfig.isEnabled()) {
+            return tileEntityConfig;
         }
-        EntityConfig entityDefaults = ConfigManager.getDefaultEntityConfig();
-        if (entityDefaults.isEnabled()) {
-            return entityDefaults;
-        }
-        return ConfigManager.getDefaultTileEntityConfig();
+        return null;
     }
 
     private int getSnapshotPlayerCount() {
@@ -178,6 +191,9 @@ public class MetricsCollector {
         if (SnapshotManager.entitySnapshotManagerType() != SnapshotManager.EntitySnapshotManagerType.BUKKIT) {
             return null;
         }
-        return (BukkitESM) SnapshotManager.getEntitySnapshotManager();
+        if (!(SnapshotManager.getEntitySnapshotManager() instanceof BukkitESM snapshotManager)) {
+            return null;
+        }
+        return snapshotManager;
     }
 }
