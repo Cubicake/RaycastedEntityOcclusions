@@ -97,7 +97,7 @@ public class RaycastUtil {
             }
         }
 
-        Locatable dir = clonedEnd.subtract(start).normalize().scalarMultiply(stepSize); // Locatable may be instance of immutable BlockLocation, so convert to Plain first
+        Locatable dir = clonedEnd.subtract(start).normalize().scalarMultiply(stepSize);
 
         MutableBlockVector current = new MutableBlockVector(start.world(), start.x(),start.y(),start.z());
 
