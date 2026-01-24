@@ -106,6 +106,9 @@ public class EventListener implements Listener {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
         }
+        if (isBukkitESM()) {
+            bukkitEntitySnapshotManager().untrackPlayer(e.getPlayer().getUniqueId());
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -116,7 +119,10 @@ public class EventListener implements Listener {
         }
         DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedantiesp.bypass"));
 
-        if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
+        if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) {
+            updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
+            bukkitEntitySnapshotManager().trackPlayer(player.getUniqueId());
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
