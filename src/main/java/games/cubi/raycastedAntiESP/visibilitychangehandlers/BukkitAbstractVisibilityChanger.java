@@ -28,7 +28,7 @@ public abstract class BukkitAbstractVisibilityChanger extends AbstractEntityCach
     }
 
     public void hideAbstractEntityFromPlayer(UUID playerUUID, UUID entityUUID) {
-        if (DataHolder.players().getPlayerData(playerUUID).compareAndSetEntityVisibility(entityUUID, false)) { //todo Issue appears to be code never entering this if bracket
+        if (DataHolder.players().getPlayerData(playerUUID).compareAndSetEntityVisibility(entityUUID, false)) {
             addEntityToHideCache(playerUUID, entityUUID);
         }
     }

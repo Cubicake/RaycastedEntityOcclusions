@@ -17,8 +17,6 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
-        data.setEntityVisibility(entity, true); //todo: it is bad practice for this to be duplicated, this should be moved elsewhere and called by all visibility changers
-
         super.showAbstractEntityToPlayer(player, entity);
     }
 
@@ -29,8 +27,6 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
-        data.setEntityVisibility(entity, false); //todo: it is bad practice for this to be duplicated, this should be moved elsewhere and called by all visibility changers
-
         super.hideAbstractEntityFromPlayer(player, entity);
     }
 
