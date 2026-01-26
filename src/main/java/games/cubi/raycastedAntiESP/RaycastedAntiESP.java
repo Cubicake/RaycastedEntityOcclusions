@@ -47,7 +47,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public void onLoad() {
         config = ConfigManager.initialiseConfigManager(this);
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
-        Logger.info("Checking for PacketEvents plugin..."+packetEvents, 1);
         if (packetEvents != null) {
             //packetEventsPresent = true;
             Logger.info("PacketEvents detected.", 4);

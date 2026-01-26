@@ -2,6 +2,10 @@ package games.cubi.raycastedAntiESP.config;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
+import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
+import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
+import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
+import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 

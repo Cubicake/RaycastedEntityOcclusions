@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.config;
+package games.cubi.raycastedAntiESP.config.raycast;
 
 import org.bukkit.configuration.file.FileConfiguration;
 

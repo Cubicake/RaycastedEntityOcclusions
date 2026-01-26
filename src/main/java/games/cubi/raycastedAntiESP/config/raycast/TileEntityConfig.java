@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.config;
+package games.cubi.raycastedAntiESP.config.raycast;
 
 import games.cubi.raycastedAntiESP.Logger;
 import org.bukkit.Material;
