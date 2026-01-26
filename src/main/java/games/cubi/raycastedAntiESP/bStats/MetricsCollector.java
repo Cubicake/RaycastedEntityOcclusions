@@ -2,6 +2,7 @@ package games.cubi.raycastedAntiESP.bStats;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
+import games.cubi.raycastedAntiESP.config.RaycastConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +19,16 @@ public class MetricsCollector {
         this.plugin = plugin;
         int pluginId = 24553;
         metrics = new Metrics(plugin, pluginId);
-        this.config = config;/*
+        this.config = config;
         registerCustomMetrics();
-            TODO: Re-enable metrics
-        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
+        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes
     }
 
     public void shutdown() {
         metrics.shutdown();
     }
-/*
-    public void registerCustomMetrics() {
+
+    private void registerCustomMetrics() {
         metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", () -> String.valueOf(config.maxOccludingCount)));
 
         metrics.addCustomChart(new Metrics.SimplePie("cull_players", this::getCullPlayersStatus));
@@ -43,8 +43,28 @@ public class MetricsCollector {
         metrics.addCustomChart(new Metrics.SimplePie("entity_recheck_interval", () -> getRoundedValue(config.recheckInterval, ConfigManager.RECHECK_INTERVAL_DEFAULT)));
         metrics.addCustomChart(new Metrics.SimplePie("tile_entity_recheck_interval", this::tileEntityCheckStatus));
 
+        // Player Config Stats
+
+        registerCustomMetricsForRaycastConfig("player", config.getPlayerConfig(), ConfigManager.getDefaultPlayerConfig());
+
+        // Entity Config Stats
+
+        registerCustomMetricsForRaycastConfig("entity", config.getEntityConfig(), ConfigManager.getDefaultEntityConfig());
+
+        // Tile Entity Config Stats
+
+        registerCustomMetricsForRaycastConfig("tile_entity", config.getTileEntityConfig(), ConfigManager.getDefaultTileEntityConfig());
+
         metrics.addCustomChart(new Metrics.SimplePie("server_size", this::getPlayersOnline));
         metrics.addCustomChart(new Metrics.SimplePie("entities", this::getEntities));
+    }
+
+    private void registerCustomMetricsForRaycastConfig(String configName, RaycastConfig raycastConfig, RaycastConfig defaultConfig) {
+        metrics.addCustomChart(new Metrics.SimplePie(configName + "_max_occluding_count", () -> String.valueOf(raycastConfig.getMaxOccludingCount())));
+        metrics.addCustomChart(new Metrics.SimplePie(configName + "_raycast_radius", () -> getRoundedValue(raycastConfig.getRaycastRadius(), defaultConfig.getRaycastRadius())));
+        metrics.addCustomChart(new Metrics.SimplePie(configName + "_always_show_radius", () -> getRoundedValue(raycastConfig.getAlwaysShowRadius(), defaultConfig.getAlwaysShowRadius())));
+        metrics.addCustomChart(new Metrics.SimplePie(configName + "_engine_mode", () -> String.valueOf(raycastConfig.getEngineMode())));
+        metrics.addCustomChart(new Metrics.SimplePie(configName + "_visible_recheck_interval", () -> getRoundedValue(raycastConfig.getVisibleRecheckInterval(), defaultConfig.getVisibleRecheckInterval())));
     }
 
     public String getCullPlayersStatus() {
@@ -156,5 +176,5 @@ public class MetricsCollector {
             return "5000+";
         }
     }
- */
+
 }
