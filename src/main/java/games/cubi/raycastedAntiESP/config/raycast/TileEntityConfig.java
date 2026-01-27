@@ -45,23 +45,6 @@ public class TileEntityConfig extends RaycastConfig {
         return exemptedBlocks; // Immutable list
     }
 
-    private static List<Material> getMaterialList(FileConfiguration config) {
-        List<String> materialNames = config.getStringList(Factory.EXEMPTED_BLOCKS_PATH);
-
-        ArrayList<Material> materials = new ArrayList<>();
-
-        for (String name : materialNames) {
-            if (name == null) continue;
-            Material m = Material.matchMaterial(name);
-            if (m != null) {
-                materials.add(m);
-            } else {
-                Logger.error("Invalid material in config 'whitelisted-materials': " + name,1);
-            }
-        }
-        return List.copyOf(materials);
-    }
-
     public static class Factory extends RaycastConfig.Factory {
         private static final String EXEMPTED_BLOCKS_PATH = PATH + ".exempted-blocks";
         public Factory() {
@@ -80,6 +63,23 @@ public class TileEntityConfig extends RaycastConfig {
             super.setDefaults(config, fallback);
             config.addDefault(EXEMPTED_BLOCKS_PATH, fallback.getExemptedBlocks().stream().map(Material::name).toList());
             return this;
+        }
+
+        private static List<Material> getMaterialList(FileConfiguration config) {
+            List<String> materialNames = config.getStringList(EXEMPTED_BLOCKS_PATH);
+
+            ArrayList<Material> materials = new ArrayList<>();
+
+            for (String name : materialNames) {
+                if (name == null) continue;
+                Material m = Material.matchMaterial(name);
+                if (m != null) {
+                    materials.add(m);
+                } else {
+                    Logger.error("Invalid material in config 'whitelisted-materials': " + name,1);
+                }
+            }
+            return List.copyOf(materials);
         }
     }
 }

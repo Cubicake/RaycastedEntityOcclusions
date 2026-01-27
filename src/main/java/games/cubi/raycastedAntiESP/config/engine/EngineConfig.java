@@ -54,14 +54,14 @@ public abstract class EngineConfig implements Config {
         }
     }
 
-    private static PredictiveEngineConfig.Factory predictiveFactory() {
+    private static synchronized PredictiveEngineConfig.Factory predictiveFactory() {
         if (predictiveFactory == null) {
             predictiveFactory = new PredictiveEngineConfig.Factory();
         }
         return predictiveFactory;
     }
 
-    private static SimpleEngineConfig.Factory simpleFactory() {
+    private static synchronized SimpleEngineConfig.Factory simpleFactory() {
         if (simpleFactory == null) {
             simpleFactory = new SimpleEngineConfig.Factory();
         }
