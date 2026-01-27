@@ -35,9 +35,7 @@ public enum VisibilityHandlerMode implements ConfigEnum {
     private static final String[] namesCache;
     static {
         namesCache = Arrays.stream(values()).map(VisibilityHandlerMode::getName).toArray(String[]::new);
-    }
-    {
-        register();
+        values()[0].register();
     }
 
     @Override
