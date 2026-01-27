@@ -9,13 +9,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class BlockSnapshotConfig implements Config {
-    private final Mode mode;
+    private final BlockMode mode;
 
-    protected BlockSnapshotConfig(Mode mode) {
+    protected BlockSnapshotConfig(BlockMode mode) {
         this.mode = mode;
     }
 
-    public Mode getMode() {
+    public BlockMode getMode() {
         return mode;
     }
 
@@ -29,7 +29,7 @@ public class BlockSnapshotConfig implements Config {
 
     public static final BlockSnapshotConfig DEFAULT =
             new BlockSnapshotConfig(
-                    Mode.SYNC_BUKKIT
+                    BlockMode.SYNC_BUKKIT
             );
 
     public static class Factory implements ConfigFactory<BlockSnapshotConfig> {
@@ -42,7 +42,7 @@ public class BlockSnapshotConfig implements Config {
 
         @Override
         public @NotNull BlockSnapshotConfig getFromConfig(FileConfiguration config, BlockSnapshotConfig defaults) {
-            Mode mode = getModeFromConfig(config);
+            BlockMode mode = getModeFromConfig(config);
             if (mode == null) {
                 Logger.warning("Invalid block snapshot mode in config, defaulting to " + defaults.getMode().getName(), 3);
                 mode = defaults.getMode();
@@ -55,14 +55,14 @@ public class BlockSnapshotConfig implements Config {
                         throw new UnsupportedOperationException("PacketEvents block snapshot mode is not yet implemented.");
                 default -> {
                     Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), 3);
-                    yield new BukkitBlockSnapshotConfig.Factory(Mode.SYNC_BUKKIT).getFromConfig(config, BukkitBlockSnapshotConfig.DEFAULT);
+                    yield new BukkitBlockSnapshotConfig.Factory(BlockMode.SYNC_BUKKIT).getFromConfig(config, BukkitBlockSnapshotConfig.DEFAULT);
                 }
             };
         }
 
-        private @Nullable Mode getModeFromConfig(FileConfiguration config) {
-            String modeName = config.getString(getFullPath()+".mode", Mode.SYNC_BUKKIT.getName());
-            return Mode.fromString(modeName);
+        private @Nullable BlockMode getModeFromConfig(FileConfiguration config) {
+            String modeName = config.getString(getFullPath()+".mode", BlockSnapshotConfig.DEFAULT.getName());
+            return BlockMode.fromString(modeName);
         }
 
         @Override

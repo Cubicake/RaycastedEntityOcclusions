@@ -1,7 +1,5 @@
 package games.cubi.raycastedAntiESP.config.snapshot.block;
 
-import com.google.common.base.Preconditions;
-import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -10,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
     private final int refreshRateSeconds;
 
-    protected BukkitBlockSnapshotConfig(int refreshRateSeconds, Mode mode) {
+    protected BukkitBlockSnapshotConfig(int refreshRateSeconds, BlockMode mode) {
         super(mode);
         this.refreshRateSeconds = refreshRateSeconds;
     }
@@ -26,9 +24,9 @@ public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
             ); // Mode is null as this is used for both modes. The default mode is set on BlockSnapshotConfig
 
     static class Factory implements ConfigFactory<BukkitBlockSnapshotConfig> {
-        private final Mode mode;
+        private final BlockMode mode;
 
-        public Factory(Mode mode) {
+        public Factory(BlockMode mode) {
             this.mode = mode;
         }
 
@@ -55,8 +53,8 @@ public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
 
         @Override
         public @NotNull ConfigFactory<BukkitBlockSnapshotConfig> setDefaults(FileConfiguration config, BukkitBlockSnapshotConfig defaults) {
-            config.addDefault(getPathUpToBlock() + Mode.SYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
-            config.addDefault(getPathUpToBlock() + Mode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
+            config.addDefault(getPathUpToBlock() + BlockMode.SYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
+            config.addDefault(getPathUpToBlock() + BlockMode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
             return this;
         }
     }

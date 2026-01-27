@@ -5,14 +5,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public enum Mode implements ConfigEnum {
+public enum BlockMode implements ConfigEnum {
     UNSAFE_ASYNC_BUKKIT("unsafe-async-bukkit"),
     PACKETEVENTS("packetevents"),
     SYNC_BUKKIT("sync-bukkit");
 
     private final String pathName;
 
-    Mode(String pathName) {
+    BlockMode(String pathName) {
         this.pathName = pathName;
     }
     public String getName() {
@@ -26,8 +26,8 @@ public enum Mode implements ConfigEnum {
         return "."+pathName;
     }
 
-    public static @Nullable Mode fromString(String name) {
-        for (Mode mode : values()) {
+    public static @Nullable BlockMode fromString(String name) {
+        for (BlockMode mode : values()) {
             if (mode.getName().equalsIgnoreCase(name)) {
                 return mode;
             }
@@ -37,7 +37,7 @@ public enum Mode implements ConfigEnum {
 
     private static final String[] namesCache;
     static {
-        namesCache = Arrays.stream(values()).map(Mode::getName).toArray(String[]::new);
+        namesCache = Arrays.stream(values()).map(BlockMode::getName).toArray(String[]::new);
     }
     {
         register();

@@ -2,7 +2,6 @@ package games.cubi.raycastedAntiESP.config.snapshot;
 
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
-import games.cubi.raycastedAntiESP.config.Defaults;
 import games.cubi.raycastedAntiESP.config.snapshot.block.BlockSnapshotConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.block.BukkitBlockSnapshotConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.entity.EntitySnapshotConfig;
