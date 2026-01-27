@@ -63,9 +63,9 @@ public class ConfigManager {
         entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config, EntityConfig.DEFAULT);
         tileEntityConfig = ((TileEntityConfig.Factory) factories[2]).getFromConfig(config, TileEntityConfig.DEFAULT);
         snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config, null);
-        debugConfig = DebugConfig.getFromConfig(config, DebugConfig.DEFAULT);
-        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[4]).getFromConfig(config, null);
-        engineConfig = ((EngineConfig.Factory) factories[5]).getFromConfig(config, EngineConfig.DEFAULT);
+        debugConfig = ((DebugConfig.Factory) factories[4]).getFromConfig(config, DebugConfig.DEFAULT);
+        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config, null);
+        engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config, EngineConfig.DEFAULT);
 
         // Save any new defaults that were added
         plugin.saveConfig();
@@ -82,6 +82,7 @@ public class ConfigManager {
         EntityConfig.Factory entityFactory = new EntityConfig.Factory();
         TileEntityConfig.Factory tileEntityFactory = new TileEntityConfig.Factory();
         SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
+        DebugConfig.Factory debugFactory = new DebugConfig.Factory();
         VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
         EngineConfig.Factory engineFactory = new EngineConfig.Factory();
 
@@ -90,6 +91,7 @@ public class ConfigManager {
             entityFactory,
             tileEntityFactory,
             snapshotFactory,
+            debugFactory,
             visibilityFactory,
             engineFactory,
         };
@@ -99,10 +101,9 @@ public class ConfigManager {
         tileEntityFactory.setDefaults(config, TileEntityConfig.DEFAULT);
 
         snapshotFactory.setDefaults(config, null);
+        debugFactory.setDefaults(config, DebugConfig.DEFAULT);
         visibilityFactory.setDefaults(config, null);
         engineFactory.setDefaults(config, EngineConfig.DEFAULT);
-
-        DebugConfig.setDefaults(config, DebugConfig.DEFAULT);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();

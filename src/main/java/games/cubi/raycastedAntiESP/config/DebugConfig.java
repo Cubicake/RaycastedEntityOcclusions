@@ -1,8 +1,10 @@
 package games.cubi.raycastedAntiESP.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class DebugConfig {
+public class DebugConfig implements Config {
     private static final String PATH = "debug";
 
     private final byte infoLevel;
@@ -57,24 +59,42 @@ public class DebugConfig {
     }
 
     static DebugConfig getFromConfig(FileConfiguration config, DebugConfig defaults) {
-        DebugConfig fallback = defaults != null ? defaults : DEFAULT;
-        return new DebugConfig(
-                (byte) config.getInt(PATH+".info-level", fallback.getInfoLevel()),
-                (byte) config.getInt(PATH+".warn-level", fallback.getWarnLevel()),
-                (byte) config.getInt(PATH+".error-level", fallback.getErrorLevel()),
-                config.getBoolean(PATH+".particles", fallback.showDebugParticles()),
-                config.getBoolean(PATH+".timings", fallback.recordTimings()),
-                config.getBoolean(PATH+".log-to-file", fallback.logToFile())
-        );
+        return new Factory().getFromConfig(config, defaults);
     }
 
     static void setDefaults(FileConfiguration config, DebugConfig defaults) {
-        DebugConfig fallback = defaults != null ? defaults : DEFAULT;
-        config.addDefault(PATH+".info-level", fallback.getInfoLevel());
-        config.addDefault(PATH+".warn-level", fallback.getWarnLevel());
-        config.addDefault(PATH+".error-level", fallback.getErrorLevel());
-        config.addDefault(PATH+".particles", fallback.showDebugParticles());
-        config.addDefault(PATH+".timings", fallback.recordTimings());
-        config.addDefault(PATH+".log-to-file", fallback.logToFile());
+        new Factory().setDefaults(config, defaults);
+    }
+
+    public static class Factory implements ConfigFactory<DebugConfig> {
+        @Override
+        public String getFullPath() {
+            return PATH;
+        }
+
+        @Override
+        public @NotNull DebugConfig getFromConfig(FileConfiguration config, @Nullable DebugConfig defaults) {
+            DebugConfig fallback = defaults != null ? defaults : DEFAULT;
+            return new DebugConfig(
+                    (byte) config.getInt(PATH + ".info-level", fallback.getInfoLevel()),
+                    (byte) config.getInt(PATH + ".warn-level", fallback.getWarnLevel()),
+                    (byte) config.getInt(PATH + ".error-level", fallback.getErrorLevel()),
+                    config.getBoolean(PATH + ".particles", fallback.showDebugParticles()),
+                    config.getBoolean(PATH + ".timings", fallback.recordTimings()),
+                    config.getBoolean(PATH + ".log-to-file", fallback.logToFile())
+            );
+        }
+
+        @Override
+        public @NotNull ConfigFactory<DebugConfig> setDefaults(FileConfiguration config, @Nullable DebugConfig defaults) {
+            DebugConfig fallback = defaults != null ? defaults : DEFAULT;
+            config.addDefault(PATH + ".info-level", fallback.getInfoLevel());
+            config.addDefault(PATH + ".warn-level", fallback.getWarnLevel());
+            config.addDefault(PATH + ".error-level", fallback.getErrorLevel());
+            config.addDefault(PATH + ".particles", fallback.showDebugParticles());
+            config.addDefault(PATH + ".timings", fallback.recordTimings());
+            config.addDefault(PATH + ".log-to-file", fallback.logToFile());
+            return this;
+        }
     }
 }
