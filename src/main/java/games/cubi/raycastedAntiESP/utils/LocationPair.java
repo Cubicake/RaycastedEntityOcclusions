@@ -1,7 +1,5 @@
 package games.cubi.raycastedAntiESP.utils;
 
-import games.cubi.raycastedAntiESP.deletioncandidates.QuantisedLocation;
-
 import java.util.Objects;
 
 public final class LocationPair {/*
