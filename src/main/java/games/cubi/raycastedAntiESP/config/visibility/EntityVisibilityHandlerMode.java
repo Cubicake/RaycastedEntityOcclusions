@@ -5,13 +5,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public enum VisibilityHandlerMode implements ConfigEnum {
+public enum EntityVisibilityHandlerMode implements ConfigEnum {
     BUKKIT("bukkit"),
     PACKETEVENTS("packetevents");
 
     private final String pathName;
 
-    VisibilityHandlerMode(String pathName) {
+    EntityVisibilityHandlerMode(String pathName) {
         this.pathName = pathName;
     }
 
@@ -23,8 +23,8 @@ public enum VisibilityHandlerMode implements ConfigEnum {
         return "." + pathName;
     }
 
-    public static @Nullable VisibilityHandlerMode fromString(String name) {
-        for (VisibilityHandlerMode mode : values()) {
+    public static @Nullable EntityVisibilityHandlerMode fromString(String name) {
+        for (EntityVisibilityHandlerMode mode : values()) {
             if (mode.getName().equalsIgnoreCase(name)) {
                 return mode;
             }
@@ -34,7 +34,7 @@ public enum VisibilityHandlerMode implements ConfigEnum {
 
     private static final String[] namesCache;
     static {
-        namesCache = Arrays.stream(values()).map(VisibilityHandlerMode::getName).toArray(String[]::new);
+        namesCache = Arrays.stream(values()).map(EntityVisibilityHandlerMode::getName).toArray(String[]::new);
         values()[0].register();
     }
 
