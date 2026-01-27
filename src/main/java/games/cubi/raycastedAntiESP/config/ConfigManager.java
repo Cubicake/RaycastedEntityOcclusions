@@ -109,23 +109,37 @@ public class ConfigManager {
         }
 
         Object currentValue = config.get(path);
-        Object parsedValue;
+        Object parsedValue = null;
 
         try {
-            if (currentValue instanceof Boolean) {
-                String lower = rawValue.toLowerCase();
-                if (!lower.equals("true") && !lower.equals("false")) {
+            switch (currentValue) {
+                case Boolean ignored -> {
+                    String lower = rawValue.toLowerCase();
+                    if (!lower.equals("true") && !lower.equals("false")) {
+                        return -1;
+                    }
+                    parsedValue = Boolean.parseBoolean(lower);
+                }
+                case Integer ignored -> parsedValue = Integer.parseInt(rawValue);
+                case Double ignored -> parsedValue = Double.parseDouble(rawValue);
+                case String ignored -> {
+                    //use ConfigEnum.getAllValues(); to validate that the string is an enum
+                    String[] enums = ConfigEnum.getAllValues(); //they are already formatted correctly
+                    boolean found = false;
+                    for (String enumVal : enums) {
+                        if (enumVal.equalsIgnoreCase(rawValue)) {
+                            parsedValue = enumVal;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return -1;
+                    }
+                }
+                case null, default -> {
                     return -1;
                 }
-                parsedValue = Boolean.parseBoolean(lower);
-            } else if (currentValue instanceof Integer) {
-                int intVal = Integer.parseInt(rawValue);
-                if (intVal < 0 || intVal > 255) {
-                    return 0;
-                }
-                parsedValue = intVal;
-            } else {
-                return -1;
             }
         } catch (NumberFormatException e) {
             return -1;
