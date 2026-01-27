@@ -61,7 +61,7 @@ public class SnapshotConfig implements Config {
         public @NotNull SnapshotConfig getFromConfig(FileConfiguration config, @Nullable SnapshotConfig defaults) {
             BlockSnapshotConfig blockSnapshotConfig = blockSnapshotConfigFactory.getFromConfig(config, BlockSnapshotConfig.DEFAULT);
             EntitySnapshotConfig entitySnapshotConfig = entitySnapshotConfigFactory.getFromConfig(config, EntitySnapshotConfig.DEFAULT);
-            TileEntitySnapshotConfig tileEntitySnapshotConfig = tileEntitySnapshotConfigFactory.getFromConfig(config, null);
+            TileEntitySnapshotConfig tileEntitySnapshotConfig = tileEntitySnapshotConfigFactory.getFromConfig(config, TileEntitySnapshotConfig.DEFAULT);
 
             return new SnapshotConfig(blockSnapshotConfig, entitySnapshotConfig, tileEntitySnapshotConfig);
         }
@@ -70,7 +70,7 @@ public class SnapshotConfig implements Config {
         public @NotNull ConfigFactory<SnapshotConfig> setDefaults(FileConfiguration config, SnapshotConfig defaults) {
             blockSnapshotConfigFactory.setDefaults(config, BlockSnapshotConfig.DEFAULT);
             entitySnapshotConfigFactory.setDefaults(config, EntitySnapshotConfig.DEFAULT);
-            tileEntitySnapshotConfigFactory.setDefaults(config, null);
+            tileEntitySnapshotConfigFactory.setDefaults(config, TileEntitySnapshotConfig.DEFAULT);
             return this;
         }
     }

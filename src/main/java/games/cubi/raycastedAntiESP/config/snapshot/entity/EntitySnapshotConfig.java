@@ -44,7 +44,7 @@ public class EntitySnapshotConfig implements Config {
                 case BUKKIT ->
                         new BukkitEntitySnapshotConfig.Factory().getFromConfig(config, BukkitEntitySnapshotConfig.DEFAULT);
                 case PACKETEVENTS ->
-                        throw new UnsupportedOperationException("PacketEvents entity snapshot mode is not yet implemented.");
+                        new PacketEventsEntitySnapshotConfig.Factory().getFromConfig(config, PacketEventsEntitySnapshotConfig.DEFAULT);
                 default -> {
                     Logger.error(new RuntimeException("Unsupported entity snapshot mode enum value: " + mode + ", falling back on bukkit"), 3);
                     yield new BukkitEntitySnapshotConfig.Factory().getFromConfig(config, BukkitEntitySnapshotConfig.DEFAULT);
@@ -57,6 +57,7 @@ public class EntitySnapshotConfig implements Config {
             EntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
             config.addDefault(getFullPath()+".mode", fallback.getMode().getName());
             new BukkitEntitySnapshotConfig.Factory().setDefaults(config, null);
+            new PacketEventsEntitySnapshotConfig.Factory().setDefaults(config, null);
             return this;
         }
     }

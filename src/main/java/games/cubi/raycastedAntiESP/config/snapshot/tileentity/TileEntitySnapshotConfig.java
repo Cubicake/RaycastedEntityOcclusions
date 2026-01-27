@@ -52,7 +52,7 @@ public class TileEntitySnapshotConfig implements Config {
             return switch (mode) {
                 case BUKKIT -> new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config, BukkitTileEntitySnapshotConfig.DEFAULT);
                 case PACKETEVENTS ->
-                        throw new UnsupportedOperationException("PacketEvents tile entity snapshot mode is not yet implemented.");
+                        new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config, PacketEventsTileEntitySnapshotConfig.DEFAULT);
                 default -> {
                     Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), 3);
                     yield new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config, BukkitTileEntitySnapshotConfig.DEFAULT);
@@ -65,6 +65,7 @@ public class TileEntitySnapshotConfig implements Config {
             TileEntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
             config.addDefault(getFullPath()+".mode", fallback.getName());
             new BukkitTileEntitySnapshotConfig.Factory().setDefaults(config, null);
+            new PacketEventsTileEntitySnapshotConfig.Factory().setDefaults(config, null);
             return this;
         }
     }
