@@ -9,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class EngineConfig implements Config {
     private final EngineMode mode;
+    private static final PredictiveEngineConfig.Factory PREDICTIVE_FACTORY = new PredictiveEngineConfig.Factory();
+    private static final SimpleEngineConfig.Factory SIMPLE_FACTORY = new SimpleEngineConfig.Factory();
 
     protected EngineConfig(EngineMode mode) {
         this.mode = mode;
@@ -37,8 +39,8 @@ public abstract class EngineConfig implements Config {
                 mode = fallback.getMode();
             }
             return switch (mode) {
-                case PREDICTIVE -> new PredictiveEngineConfig.Factory().getFromConfig(config, PredictiveEngineConfig.DEFAULT);
-                case SIMPLE -> new SimpleEngineConfig.Factory().getFromConfig(config, SimpleEngineConfig.DEFAULT);
+                case PREDICTIVE -> PREDICTIVE_FACTORY.getFromConfig(config, PredictiveEngineConfig.DEFAULT);
+                case SIMPLE -> SIMPLE_FACTORY.getFromConfig(config, SimpleEngineConfig.DEFAULT);
             };
         }
 
@@ -46,8 +48,8 @@ public abstract class EngineConfig implements Config {
         public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config, @Nullable EngineConfig defaults) {
             EngineConfig fallback = defaults != null ? defaults : DEFAULT;
             config.addDefault(getFullPath() + ".mode", fallback.getMode().getName());
-            new PredictiveEngineConfig.Factory().setDefaults(config, PredictiveEngineConfig.DEFAULT);
-            new SimpleEngineConfig.Factory().setDefaults(config, SimpleEngineConfig.DEFAULT);
+            PREDICTIVE_FACTORY.setDefaults(config, PredictiveEngineConfig.DEFAULT);
+            SIMPLE_FACTORY.setDefaults(config, SimpleEngineConfig.DEFAULT);
             return this;
         }
     }

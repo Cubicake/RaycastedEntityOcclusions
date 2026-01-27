@@ -46,7 +46,7 @@ public class TileEntityConfig extends RaycastConfig {
     }
 
     private static List<Material> getMaterialList(FileConfiguration config) {
-        List<String> materialNames = config.getStringList(PATH + ".exempted-blocks");
+        List<String> materialNames = config.getStringList(Factory.EXEMPTED_BLOCKS_PATH);
 
         ArrayList<Material> materials = new ArrayList<>();
 
@@ -63,6 +63,7 @@ public class TileEntityConfig extends RaycastConfig {
     }
 
     public static class Factory extends RaycastConfig.Factory {
+        private static final String EXEMPTED_BLOCKS_PATH = PATH + ".exempted-blocks";
         public Factory() {
             super(PATH);
         }
@@ -77,7 +78,7 @@ public class TileEntityConfig extends RaycastConfig {
         public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
             TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
             super.setDefaults(config, fallback);
-            config.addDefault(PATH+".exempted-blocks", fallback.getExemptedBlocks().stream().map(Material::name).toArray(String[]::new));
+            config.addDefault(EXEMPTED_BLOCKS_PATH, fallback.getExemptedBlocks().stream().map(Material::name).toArray(String[]::new));
             return this;
         }
     }
