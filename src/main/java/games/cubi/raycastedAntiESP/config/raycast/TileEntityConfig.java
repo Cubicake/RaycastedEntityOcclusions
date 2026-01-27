@@ -11,9 +11,10 @@ import java.util.List;
 
 public class TileEntityConfig extends RaycastConfig {
     private static final String PATH = "checks.tile-entity";
+    private static final List<Material> DEFAULT_EXEMPTED_BLOCKS = List.of(Material.BEACON);
     private final List<Material> exemptedBlocks; // This list is immutable
 
-    public static final TileEntityConfig DEFAULT = new TileEntityConfig(3, 1, 48, 10, true, List.of(Material.BEACON));
+    public static final TileEntityConfig DEFAULT = new TileEntityConfig(3, 1, 48, 10, true, DEFAULT_EXEMPTED_BLOCKS);
 
     public TileEntityConfig(byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled, List<Material> exemptedBlocks) {
         super(maxOccludingCount, alwaysShowRadius, raycastRadius, visibleRecheckInterval, enabled);
@@ -76,7 +77,7 @@ public class TileEntityConfig extends RaycastConfig {
         public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
             TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
             super.setDefaults(config, fallback);
-            config.addDefault(PATH+".exempted-blocks", fallback.getExemptedBlocks().stream().map(Material::name).toList());
+            config.addDefault(PATH+".exempted-blocks", fallback.getExemptedBlocks().stream().map(Material::name).toArray(String[]::new));
             return this;
         }
     }
