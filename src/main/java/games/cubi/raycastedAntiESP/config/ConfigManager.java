@@ -28,7 +28,6 @@ public class ConfigManager {
     private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
     private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
     private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true, List.of(Material.BEACON));
-    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
     private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(5, 5, 5, false, false, false);
 
     private int maxEngineMode;
@@ -64,13 +63,13 @@ public class ConfigManager {
         config = plugin.getConfig();
 
         // Set defaults if they don't exist
-        setDefaults();
+        ConfigFactory<?>[] factories = setDefaults();
 
         // Load config objects
         playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
         entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
         tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
-        snapshotConfig = SnapshotConfig.getFromConfig(config, getDefaultSnapshotConfig());
+        snapshotConfig = ((SnapshotConfig.Factory) factories[1]).getFromConfig(config, null);
         debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
 
         // Save any new defaults that were added
@@ -82,19 +81,27 @@ public class ConfigManager {
     /**
      * Set default values in the configuration file if they don't exist
      */
-    private void setDefaults() {
+    private ConfigFactory<?>[] setDefaults() {
         config.addDefault("config-version", "1.0");
+
+        ConfigFactory<?>[] factories = new ConfigFactory<?>[] {
+            null,//RaycastConfig.getFactory(),
+            new SnapshotConfig.Factory(),
+            null, //VisibilityCHangerConfig.getFactory(),
+            //DebugConfig.getFactory()
+        };
 
         PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
         EntityConfig.setDefaults(config, getDefaultEntityConfig());
         TileEntityConfig.setDefaults(config, getDefaultTileEntityConfig());
 
-        SnapshotConfig.setDefaults(config, getDefaultSnapshotConfig());
+        factories[1].setDefaults(config, null);
 
         DebugConfig.setDefaults(config, getDefaultDebugConfig());
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
+        return factories;
     }
 
     /**
@@ -182,10 +189,6 @@ public class ConfigManager {
 
     public static TileEntityConfig getDefaultTileEntityConfig() {
         return DEFAULT_TILE_ENTITY_CONFIG;
-    }
-
-    public static SnapshotConfig getDefaultSnapshotConfig() {
-        return DEFAULT_SNAPSHOT_CONFIG;
     }
 
     public static DebugConfig getDefaultDebugConfig() {

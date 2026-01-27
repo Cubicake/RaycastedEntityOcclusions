@@ -28,6 +28,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
+
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
     private static MovementTracker tracker;

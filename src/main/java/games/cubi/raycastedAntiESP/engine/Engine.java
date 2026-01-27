@@ -6,6 +6,7 @@ import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
 import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
+import games.cubi.raycastedAntiESP.config.snapshot.block.BukkitBlockSnapshotConfig;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
@@ -156,8 +157,9 @@ public class Engine {
 
 
 
-    private void forceEntityLocationUpdate() {
-        int recheckInterval = ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
+    private void forceEntityLocationUpdate() { //todo is this needed?
+        int recheckInterval = -1;//ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
+
         if (recheckInterval <= 0) {
             bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed
             return;
