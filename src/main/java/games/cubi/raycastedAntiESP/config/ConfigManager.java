@@ -82,7 +82,7 @@ public class ConfigManager {
         EntityConfig.Factory entityFactory = new EntityConfig.Factory();
         TileEntityConfig.Factory tileEntityFactory = new TileEntityConfig.Factory();
         SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
-        DebugConfig.Factory debugFactory = new DebugConfig.Factory();
+        DebugConfig.Factory debugFactory = DebugConfig.factory();
         VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
         EngineConfig.Factory engineFactory = new EngineConfig.Factory();
 

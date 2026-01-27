@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class DebugConfig implements Config {
     private static final String PATH = "debug";
+    private static final Factory FACTORY = new Factory();
 
     private final byte infoLevel;
     private final byte warnLevel;
@@ -59,11 +60,15 @@ public class DebugConfig implements Config {
     }
 
     static DebugConfig getFromConfig(FileConfiguration config, DebugConfig defaults) {
-        return new Factory().getFromConfig(config, defaults);
+        return factory().getFromConfig(config, defaults);
     }
 
     static void setDefaults(FileConfiguration config, DebugConfig defaults) {
-        new Factory().setDefaults(config, defaults);
+        factory().setDefaults(config, defaults);
+    }
+
+    static Factory factory() {
+        return FACTORY;
     }
 
     public static class Factory implements ConfigFactory<DebugConfig> {
