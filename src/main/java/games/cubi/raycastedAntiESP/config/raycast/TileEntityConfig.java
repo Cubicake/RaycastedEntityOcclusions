@@ -3,6 +3,8 @@ package games.cubi.raycastedAntiESP.config.raycast;
 import games.cubi.raycastedAntiESP.Logger;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,8 @@ import java.util.List;
 public class TileEntityConfig extends RaycastConfig {
     private static final String PATH = "checks.tile-entity";
     private final List<Material> exemptedBlocks; // This list is immutable
+
+    public static final TileEntityConfig DEFAULT = new TileEntityConfig(3, 1, 48, 10, true, List.of(Material.BEACON));
 
     public TileEntityConfig(byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled, List<Material> exemptedBlocks) {
         super(maxOccludingCount, alwaysShowRadius, raycastRadius, visibleRecheckInterval, enabled);
@@ -40,12 +44,8 @@ public class TileEntityConfig extends RaycastConfig {
         return exemptedBlocks; // Immutable list
     }
 
-    public static TileEntityConfig getFromConfig(FileConfiguration config, TileEntityConfig defaults) {
-        return new TileEntityConfig(RaycastConfig.getFromConfig(config, PATH, defaults), getMaterialList(config));
-    }
-
     private static List<Material> getMaterialList(FileConfiguration config) {
-        List<String> materialNames = config.getStringList(PATH);
+        List<String> materialNames = config.getStringList(PATH + ".exempted-blocks");
 
         ArrayList<Material> materials = new ArrayList<>();
 
@@ -61,8 +61,23 @@ public class TileEntityConfig extends RaycastConfig {
         return List.copyOf(materials);
     }
 
-    public static void setDefaults(FileConfiguration config, TileEntityConfig defaults) {
-        RaycastConfig.setDefaults(config, PATH, defaults);
-        config.addDefault(PATH+".exempted-blocks", defaults.getExemptedBlocks().stream().map(Material::name).toList());
+    public static class Factory extends RaycastConfig.Factory {
+        public Factory() {
+            super(PATH);
+        }
+
+        @Override
+        public @NotNull TileEntityConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
+            TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
+            return new TileEntityConfig(super.getFromConfig(config, fallback), getMaterialList(config));
+        }
+
+        @Override
+        public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
+            TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
+            super.setDefaults(config, fallback);
+            config.addDefault(PATH+".exempted-blocks", fallback.getExemptedBlocks().stream().map(Material::name).toList());
+            return this;
+        }
     }
 }

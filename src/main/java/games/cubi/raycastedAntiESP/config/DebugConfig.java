@@ -30,6 +30,8 @@ public class DebugConfig {
         this.logToFile = logToFile;
     }
 
+    public static final DebugConfig DEFAULT = new DebugConfig(5, 5, 5, false, false, false);
+
     public byte getInfoLevel() {
         return infoLevel;
     }
@@ -55,22 +57,24 @@ public class DebugConfig {
     }
 
     static DebugConfig getFromConfig(FileConfiguration config, DebugConfig defaults) {
+        DebugConfig fallback = defaults != null ? defaults : DEFAULT;
         return new DebugConfig(
-                (byte) config.getInt(PATH+".info-level", defaults.getInfoLevel()),
-                (byte) config.getInt(PATH+".warn-level", defaults.getWarnLevel()),
-                (byte) config.getInt(PATH+".error-level", defaults.getErrorLevel()),
-                config.getBoolean(PATH+".particles", defaults.showDebugParticles()),
-                config.getBoolean(PATH+".timings", defaults.recordTimings()),
-                config.getBoolean(PATH+".log-to-file", defaults.logToFile())
+                (byte) config.getInt(PATH+".info-level", fallback.getInfoLevel()),
+                (byte) config.getInt(PATH+".warn-level", fallback.getWarnLevel()),
+                (byte) config.getInt(PATH+".error-level", fallback.getErrorLevel()),
+                config.getBoolean(PATH+".particles", fallback.showDebugParticles()),
+                config.getBoolean(PATH+".timings", fallback.recordTimings()),
+                config.getBoolean(PATH+".log-to-file", fallback.logToFile())
         );
     }
 
     static void setDefaults(FileConfiguration config, DebugConfig defaults) {
-        config.addDefault(PATH+".info-level", defaults.getInfoLevel());
-        config.addDefault(PATH+".warn-level", defaults.getWarnLevel());
-        config.addDefault(PATH+".error-level", defaults.getErrorLevel());
-        config.addDefault(PATH+".particles", defaults.showDebugParticles());
-        config.addDefault(PATH+".timings", defaults.recordTimings());
-        config.addDefault(PATH+".log-to-file", defaults.logToFile());
+        DebugConfig fallback = defaults != null ? defaults : DEFAULT;
+        config.addDefault(PATH+".info-level", fallback.getInfoLevel());
+        config.addDefault(PATH+".warn-level", fallback.getWarnLevel());
+        config.addDefault(PATH+".error-level", fallback.getErrorLevel());
+        config.addDefault(PATH+".particles", fallback.showDebugParticles());
+        config.addDefault(PATH+".timings", fallback.recordTimings());
+        config.addDefault(PATH+".log-to-file", fallback.logToFile());
     }
 }

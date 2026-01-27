@@ -8,10 +8,7 @@ import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
 import games.cubi.raycastedAntiESP.config.engine.EngineConfig;
-import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
-
-import java.util.List;
 
 public class ConfigManager {
     private static ConfigManager instance;
@@ -27,12 +24,6 @@ public class ConfigManager {
     private DebugConfig debugConfig;
     private EngineConfig engineConfig;
     private VisibilityHandlersConfig visibilityHandlersConfig;
-
-    // Default config objects TODO: Keep these here or move into individual config classes?
-    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(3, 16, 48, 50, true, true);
-    private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig(1, 1, 48, 10, true);
-    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(3, 1, 48, 10, true, List.of(Material.BEACON));
-    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(5, 5, 5, false, false, false);
 
     private ConfigManager(RaycastedAntiESP plugin) {
         this.plugin = plugin;
@@ -68,13 +59,13 @@ public class ConfigManager {
         ConfigFactory<?>[] factories = setDefaults();
 
         // Load config objects
-        playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
-        entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
-        tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
-        snapshotConfig = ((SnapshotConfig.Factory) factories[1]).getFromConfig(config, null);
-        debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
-        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[2]).getFromConfig(config, null);
-        engineConfig = ((EngineConfig.Factory) factories[3]).getFromConfig(config, EngineConfig.DEFAULT);
+        playerConfig = ((PlayerConfig.Factory) factories[0]).getFromConfig(config, PlayerConfig.DEFAULT);
+        entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config, EntityConfig.DEFAULT);
+        tileEntityConfig = ((TileEntityConfig.Factory) factories[2]).getFromConfig(config, TileEntityConfig.DEFAULT);
+        snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config, null);
+        debugConfig = DebugConfig.getFromConfig(config, DebugConfig.DEFAULT);
+        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[4]).getFromConfig(config, null);
+        engineConfig = ((EngineConfig.Factory) factories[5]).getFromConfig(config, EngineConfig.DEFAULT);
 
         // Save any new defaults that were added
         plugin.saveConfig();
@@ -87,22 +78,31 @@ public class ConfigManager {
     private ConfigFactory<?>[] setDefaults() {
         config.addDefault("config-version", "1.0");
 
+        PlayerConfig.Factory playerFactory = new PlayerConfig.Factory();
+        EntityConfig.Factory entityFactory = new EntityConfig.Factory();
+        TileEntityConfig.Factory tileEntityFactory = new TileEntityConfig.Factory();
+        SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
+        VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
+        EngineConfig.Factory engineFactory = new EngineConfig.Factory();
+
         ConfigFactory<?>[] factories = new ConfigFactory<?>[] {
-            null,//RaycastConfig.getFactory(),
-            new SnapshotConfig.Factory(),
-            new VisibilityHandlersConfig.Factory(),
-            new EngineConfig.Factory(),
+            playerFactory,
+            entityFactory,
+            tileEntityFactory,
+            snapshotFactory,
+            visibilityFactory,
+            engineFactory,
         };
 
-        PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
-        EntityConfig.setDefaults(config, getDefaultEntityConfig());
-        TileEntityConfig.setDefaults(config, getDefaultTileEntityConfig());
+        playerFactory.setDefaults(config, PlayerConfig.DEFAULT);
+        entityFactory.setDefaults(config, EntityConfig.DEFAULT);
+        tileEntityFactory.setDefaults(config, TileEntityConfig.DEFAULT);
 
-        factories[1].setDefaults(config, null);
-        factories[2].setDefaults(config, null);
-        factories[3].setDefaults(config, EngineConfig.DEFAULT);
+        snapshotFactory.setDefaults(config, null);
+        visibilityFactory.setDefaults(config, null);
+        engineFactory.setDefaults(config, EngineConfig.DEFAULT);
 
-        DebugConfig.setDefaults(config, getDefaultDebugConfig());
+        DebugConfig.setDefaults(config, DebugConfig.DEFAULT);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();
@@ -173,22 +173,6 @@ public class ConfigManager {
         }
         Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."), 2);
         return true;
-    }
-
-    public static PlayerConfig getDefaultPlayerConfig() {
-        return DEFAULT_PLAYER_CONFIG;
-    }
-
-    public static EntityConfig getDefaultEntityConfig() {
-        return DEFAULT_ENTITY_CONFIG;
-    }
-
-    public static TileEntityConfig getDefaultTileEntityConfig() {
-        return DEFAULT_TILE_ENTITY_CONFIG;
-    }
-
-    public static DebugConfig getDefaultDebugConfig() {
-        return DEFAULT_DEBUG_CONFIG;
     }
 
     // Getters for current config objects

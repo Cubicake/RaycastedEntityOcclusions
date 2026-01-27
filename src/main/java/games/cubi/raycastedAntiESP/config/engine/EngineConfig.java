@@ -7,24 +7,17 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class EngineConfig implements Config {
+public abstract class EngineConfig implements Config {
     private final EngineMode mode;
-    private final int leniencyTicks;
 
-    public EngineConfig(EngineMode mode, int leniencyTicks) {
+    protected EngineConfig(EngineMode mode) {
         this.mode = mode;
-        this.leniencyTicks = leniencyTicks;
     }
 
     public EngineMode getMode() {
         return mode;
     }
-
-    public int getLeniencyTicks() {
-        return leniencyTicks;
-    }
-
-    public static final EngineConfig DEFAULT = new EngineConfig(EngineMode.SIMPLE, 30);
+    public static final EngineConfig DEFAULT = new SimpleEngineConfig();
 
     public static class Factory implements ConfigFactory<EngineConfig> {
         public static final String PATH = "engine";
@@ -43,19 +36,18 @@ public class EngineConfig implements Config {
                 Logger.warning("Invalid engine mode in config, defaulting to " + fallback.getMode().getName(), 3);
                 mode = fallback.getMode();
             }
-
-            int leniency = config.getInt(getFullPath() + EngineMode.PREDICTIVE.getPathName() + ".leniency", fallback.getLeniencyTicks());
-            if (leniency < 0) {
-                leniency = fallback.getLeniencyTicks();
-            }
-            return new EngineConfig(mode, leniency);
+            return switch (mode) {
+                case PREDICTIVE -> new PredictiveEngineConfig.Factory().getFromConfig(config, PredictiveEngineConfig.DEFAULT);
+                case SIMPLE -> new SimpleEngineConfig.Factory().getFromConfig(config, SimpleEngineConfig.DEFAULT);
+            };
         }
 
         @Override
         public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config, @Nullable EngineConfig defaults) {
             EngineConfig fallback = defaults != null ? defaults : DEFAULT;
             config.addDefault(getFullPath() + ".mode", fallback.getMode().getName());
-            config.addDefault(getFullPath() + EngineMode.PREDICTIVE.getPathName() + ".leniency", fallback.getLeniencyTicks());
+            new PredictiveEngineConfig.Factory().setDefaults(config, PredictiveEngineConfig.DEFAULT);
+            new SimpleEngineConfig.Factory().setDefaults(config, SimpleEngineConfig.DEFAULT);
             return this;
         }
     }

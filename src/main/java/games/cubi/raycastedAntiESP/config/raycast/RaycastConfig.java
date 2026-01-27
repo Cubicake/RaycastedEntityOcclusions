@@ -1,7 +1,10 @@
 package games.cubi.raycastedAntiESP.config.raycast;
 
 import games.cubi.raycastedAntiESP.config.Config;
+import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class RaycastConfig implements Config {
     private final byte maxOccludingCount;
@@ -43,24 +46,6 @@ public class RaycastConfig implements Config {
     }
 
 
-    static RaycastConfig getFromConfig(FileConfiguration config, String path, RaycastConfig defaults) {
-        return new RaycastConfig(
-                config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
-                config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
-                config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
-                config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval()),
-                config.getBoolean(path+".enabled", defaults.isEnabled())
-        );
-    }
-
-    static void setDefaults(FileConfiguration config, String path, RaycastConfig defaults) {
-        config.addDefault(path+".enabled", defaults.isEnabled());
-        config.addDefault(path+".max-occluding-count", defaults.getMaxOccludingCount());
-        config.addDefault(path+".always-show-radius", defaults.getAlwaysShowRadius());
-        config.addDefault(path+".raycast-radius", defaults.getRaycastRadius());
-        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval());
-    }
-
     public byte getMaxOccludingCount() {
         return maxOccludingCount;
     }
@@ -82,4 +67,40 @@ public class RaycastConfig implements Config {
     }
 
     public boolean isEnabled() { return enabled; }
+
+    public static class Factory implements ConfigFactory<RaycastConfig> {
+        private final String path;
+
+        public Factory(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public String getFullPath() {
+            return path;
+        }
+
+        @Override
+        public @NotNull RaycastConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
+            RaycastConfig fallback = defaults != null ? defaults : new RaycastConfig(false);
+            return new RaycastConfig(
+                    config.getInt(path+".max-occluding-count", fallback.getMaxOccludingCount()),
+                    config.getInt(path+".always-show-radius", fallback.getAlwaysShowRadius()),
+                    config.getInt(path+".raycast-radius", fallback.getRaycastRadius()),
+                    config.getInt(path+".visible-recheck-interval", fallback.getVisibleRecheckInterval()),
+                    config.getBoolean(path+".enabled", fallback.isEnabled())
+            );
+        }
+
+        @Override
+        public @NotNull ConfigFactory<RaycastConfig> setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
+            RaycastConfig fallback = defaults != null ? defaults : new RaycastConfig(false);
+            config.addDefault(path+".enabled", fallback.isEnabled());
+            config.addDefault(path+".max-occluding-count", fallback.getMaxOccludingCount());
+            config.addDefault(path+".always-show-radius", fallback.getAlwaysShowRadius());
+            config.addDefault(path+".raycast-radius", fallback.getRaycastRadius());
+            config.addDefault(path+".visible-recheck-interval", fallback.getVisibleRecheckInterval());
+            return this;
+        }
+    }
 }

@@ -4,7 +4,6 @@ import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import games.cubi.raycastedAntiESP.config.snapshot.block.BukkitBlockSnapshotConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
