@@ -78,7 +78,7 @@ public class TileEntityConfig extends RaycastConfig {
         public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
             TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
             super.setDefaults(config, fallback);
-            config.addDefault(EXEMPTED_BLOCKS_PATH, fallback.getExemptedBlocks().stream().map(Material::name).toArray(String[]::new));
+            config.addDefault(EXEMPTED_BLOCKS_PATH, fallback.getExemptedBlocks().stream().map(Material::name).toList());
             return this;
         }
     }

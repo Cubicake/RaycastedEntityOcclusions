@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class EngineConfig implements Config {
     private final EngineMode mode;
-    private static final PredictiveEngineConfig.Factory PREDICTIVE_FACTORY = new PredictiveEngineConfig.Factory();
-    private static final SimpleEngineConfig.Factory SIMPLE_FACTORY = new SimpleEngineConfig.Factory();
+    private static PredictiveEngineConfig.Factory predictiveFactory;
+    private static SimpleEngineConfig.Factory simpleFactory;
 
     protected EngineConfig(EngineMode mode) {
         this.mode = mode;
@@ -39,8 +39,8 @@ public abstract class EngineConfig implements Config {
                 mode = fallback.getMode();
             }
             return switch (mode) {
-                case PREDICTIVE -> PREDICTIVE_FACTORY.getFromConfig(config, PredictiveEngineConfig.DEFAULT);
-                case SIMPLE -> SIMPLE_FACTORY.getFromConfig(config, SimpleEngineConfig.DEFAULT);
+                case PREDICTIVE -> predictiveFactory().getFromConfig(config, PredictiveEngineConfig.DEFAULT);
+                case SIMPLE -> simpleFactory().getFromConfig(config, SimpleEngineConfig.DEFAULT);
             };
         }
 
@@ -48,9 +48,23 @@ public abstract class EngineConfig implements Config {
         public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config, @Nullable EngineConfig defaults) {
             EngineConfig fallback = defaults != null ? defaults : DEFAULT;
             config.addDefault(getFullPath() + ".mode", fallback.getMode().getName());
-            PREDICTIVE_FACTORY.setDefaults(config, PredictiveEngineConfig.DEFAULT);
-            SIMPLE_FACTORY.setDefaults(config, SimpleEngineConfig.DEFAULT);
+            predictiveFactory().setDefaults(config, PredictiveEngineConfig.DEFAULT);
+            simpleFactory().setDefaults(config, SimpleEngineConfig.DEFAULT);
             return this;
         }
+    }
+
+    private static PredictiveEngineConfig.Factory predictiveFactory() {
+        if (predictiveFactory == null) {
+            predictiveFactory = new PredictiveEngineConfig.Factory();
+        }
+        return predictiveFactory;
+    }
+
+    private static SimpleEngineConfig.Factory simpleFactory() {
+        if (simpleFactory == null) {
+            simpleFactory = new SimpleEngineConfig.Factory();
+        }
+        return simpleFactory;
     }
 }
