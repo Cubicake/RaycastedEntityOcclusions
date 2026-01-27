@@ -6,6 +6,8 @@ import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
 import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
+import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
+import games.cubi.raycastedAntiESP.config.engine.EngineConfig;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -23,14 +25,14 @@ public class ConfigManager {
     private TileEntityConfig tileEntityConfig;
     private SnapshotConfig snapshotConfig;
     private DebugConfig debugConfig;
+    private EngineConfig engineConfig;
+    private VisibilityHandlersConfig visibilityHandlersConfig;
 
     // Default config objects TODO: Keep these here or move into individual config classes?
-    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
-    private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
-    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true, List.of(Material.BEACON));
+    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(3, 16, 48, 50, true, true);
+    private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig(1, 1, 48, 10, true);
+    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(3, 1, 48, 10, true, List.of(Material.BEACON));
     private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(5, 5, 5, false, false, false);
-
-    private int maxEngineMode;
 
     private ConfigManager(RaycastedAntiESP plugin) {
         this.plugin = plugin;
@@ -71,11 +73,12 @@ public class ConfigManager {
         tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
         snapshotConfig = ((SnapshotConfig.Factory) factories[1]).getFromConfig(config, null);
         debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
+        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[2]).getFromConfig(config, null);
+        engineConfig = ((EngineConfig.Factory) factories[3]).getFromConfig(config, EngineConfig.DEFAULT);
 
         // Save any new defaults that were added
         plugin.saveConfig();
 
-        maxEngineMode = calculateMaxEngineMode();
     }
 
     /**
@@ -87,8 +90,8 @@ public class ConfigManager {
         ConfigFactory<?>[] factories = new ConfigFactory<?>[] {
             null,//RaycastConfig.getFactory(),
             new SnapshotConfig.Factory(),
-            null, //VisibilityCHangerConfig.getFactory(),
-            //DebugConfig.getFactory()
+            new VisibilityHandlersConfig.Factory(),
+            new EngineConfig.Factory(),
         };
 
         PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
@@ -96,6 +99,8 @@ public class ConfigManager {
         TileEntityConfig.setDefaults(config, getDefaultTileEntityConfig());
 
         factories[1].setDefaults(config, null);
+        factories[2].setDefaults(config, null);
+        factories[3].setDefaults(config, EngineConfig.DEFAULT);
 
         DebugConfig.setDefaults(config, getDefaultDebugConfig());
 
@@ -162,15 +167,6 @@ public class ConfigManager {
         return 1;
     }
 
-    private int calculateMaxEngineMode() {
-        //return the highest engine mode listed
-        int maxMode = 0;
-        if (playerConfig.getEngineMode() > maxMode) maxMode = playerConfig.getEngineMode();
-        if (entityConfig.getEngineMode() > maxMode) maxMode = entityConfig.getEngineMode();
-        if (tileEntityConfig.getEngineMode() > maxMode) maxMode = tileEntityConfig.getEngineMode();
-        return maxMode;
-    }
-
     private static boolean isNotOnMainThread() {
         if (RaycastedAntiESP.get().getServer().isPrimaryThread()) {
             return false;
@@ -216,11 +212,15 @@ public class ConfigManager {
         return debugConfig;
     }
 
+    public VisibilityHandlersConfig getVisibilityHandlersConfig() {
+        return visibilityHandlersConfig;
+    }
+
     public FileConfiguration getConfigFile() {
         return config;
     }
 
-    public int getEngineMode() {
-        return maxEngineMode;
+    public EngineConfig getEngineConfig() {
+        return engineConfig;
     }
 }

@@ -1,6 +1,7 @@
 package games.cubi.raycastedAntiESP.raycast;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.engine.EngineMode;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,7 +20,7 @@ public class MovementTracker {
     }
 
     private Runnable updateLocationHistory(ConfigManager config) {
-        if (config.getEngineMode() != 2) return () -> {};
+        if (config.getEngineConfig().getMode() != EngineMode.PREDICTIVE) return () -> {};
         for (Player p : Bukkit.getOnlinePlayers()) {
             history.computeIfAbsent(p, k -> new ArrayDeque<>(5));
             Deque<Location> dq = history.get(p);

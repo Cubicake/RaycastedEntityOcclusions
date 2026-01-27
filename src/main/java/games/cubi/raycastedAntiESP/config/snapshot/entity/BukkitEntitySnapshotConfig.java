@@ -12,6 +12,11 @@ public class BukkitEntitySnapshotConfig extends EntitySnapshotConfig{
         super(mode);
     }
 
+    public static final BukkitEntitySnapshotConfig DEFAULT =
+            new BukkitEntitySnapshotConfig(
+                    EntityMode.BUKKIT
+            );
+
     public static class Factory implements ConfigFactory<BukkitEntitySnapshotConfig> {
         public final static String PATH = ".bukkit";
 
@@ -22,12 +27,12 @@ public class BukkitEntitySnapshotConfig extends EntitySnapshotConfig{
 
         @Override
         public @NotNull BukkitEntitySnapshotConfig getFromConfig(FileConfiguration config, BukkitEntitySnapshotConfig defaults) {
-            return null;
+            return new BukkitEntitySnapshotConfig(EntityMode.BUKKIT);
         }
 
         @Override
         public @NotNull ConfigFactory<BukkitEntitySnapshotConfig> setDefaults(FileConfiguration config, @Nullable BukkitEntitySnapshotConfig defaults) {
-            return null;
+            return this;
         }
     }
 }
