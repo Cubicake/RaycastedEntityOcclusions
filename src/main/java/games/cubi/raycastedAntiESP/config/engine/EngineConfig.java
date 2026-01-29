@@ -19,7 +19,7 @@ public abstract class EngineConfig implements Config {
     public EngineMode getMode() {
         return mode;
     }
-    public static final EngineConfig DEFAULT = new SimpleEngineConfig();
+    public static final EngineConfig DEFAULT = new EngineConfig(EngineMode.SIMPLE) {};
 
     public static class Factory implements ConfigFactory<EngineConfig> {
         public static final String PATH = "engine";
@@ -30,26 +30,24 @@ public abstract class EngineConfig implements Config {
         }
 
         @Override
-        public @NotNull EngineConfig getFromConfig(FileConfiguration config, @Nullable EngineConfig defaults) {
-            EngineConfig fallback = defaults != null ? defaults : DEFAULT;
-            String modeName = config.getString(getFullPath() + ".mode", fallback.getMode().getName());
+        public @NotNull EngineConfig getFromConfig(FileConfiguration config) {
+            String modeName = config.getString(getFullPath() + ".mode", DEFAULT.getMode().getName());
             EngineMode mode = EngineMode.fromString(modeName);
             if (mode == null) {
-                Logger.warning("Invalid engine mode in config, defaulting to " + fallback.getMode().getName(), 3);
-                mode = fallback.getMode();
+                Logger.warning("Invalid engine mode in config, defaulting to " + DEFAULT.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
+                mode = DEFAULT.getMode();
             }
             return switch (mode) {
-                case PREDICTIVE -> predictiveFactory().getFromConfig(config, PredictiveEngineConfig.DEFAULT);
-                case SIMPLE -> simpleFactory().getFromConfig(config, SimpleEngineConfig.DEFAULT);
+                case PREDICTIVE -> predictiveFactory().getFromConfig(config);
+                case SIMPLE -> simpleFactory().getFromConfig(config);
             };
         }
 
         @Override
-        public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config, @Nullable EngineConfig defaults) {
-            EngineConfig fallback = defaults != null ? defaults : DEFAULT;
-            config.addDefault(getFullPath() + ".mode", fallback.getMode().getName());
-            predictiveFactory().setDefaults(config, PredictiveEngineConfig.DEFAULT);
-            simpleFactory().setDefaults(config, SimpleEngineConfig.DEFAULT);
+        public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath() + ".mode", DEFAULT.getMode().getName());
+            predictiveFactory().setDefaults(config);
+            simpleFactory().setDefaults(config);
             return this;
         }
     }

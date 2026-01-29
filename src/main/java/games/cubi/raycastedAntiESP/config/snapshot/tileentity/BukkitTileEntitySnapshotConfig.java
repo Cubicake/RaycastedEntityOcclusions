@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP.config.snapshot.tileentity;
 
+import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -7,14 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class BukkitTileEntitySnapshotConfig extends TileEntitySnapshotConfig {
-    protected BukkitTileEntitySnapshotConfig(TileEntitySnapshotMode mode) {
-        super(mode);
+    protected BukkitTileEntitySnapshotConfig() {
+        super(TileEntitySnapshotMode.BUKKIT);
     }
 
     public static final BukkitTileEntitySnapshotConfig DEFAULT =
-            new BukkitTileEntitySnapshotConfig(
-                    TileEntitySnapshotMode.BUKKIT
-            );
+            new BukkitTileEntitySnapshotConfig();
 
     public static class Factory implements ConfigFactory<BukkitTileEntitySnapshotConfig> {
         public static final String PATH = ".bukkit";
@@ -25,12 +24,12 @@ public class BukkitTileEntitySnapshotConfig extends TileEntitySnapshotConfig {
         }
 
         @Override
-        public @NotNull BukkitTileEntitySnapshotConfig getFromConfig(FileConfiguration config, BukkitTileEntitySnapshotConfig defaults) {
-            return new BukkitTileEntitySnapshotConfig(TileEntitySnapshotMode.BUKKIT);
+        public @NotNull BukkitTileEntitySnapshotConfig getFromConfig(FileConfiguration config) {
+            return new BukkitTileEntitySnapshotConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitTileEntitySnapshotConfig> setDefaults(FileConfiguration config, @Nullable BukkitTileEntitySnapshotConfig defaults) {
+        public @NotNull ConfigFactory<BukkitTileEntitySnapshotConfig> setDefaults(FileConfiguration config) {
             return this;
         }
     }

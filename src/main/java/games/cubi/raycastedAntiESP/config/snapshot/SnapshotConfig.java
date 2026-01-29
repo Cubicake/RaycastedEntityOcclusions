@@ -10,27 +10,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SnapshotConfig implements Config {
-
-    private final BlockSnapshotConfig blockSnapshotConfig;
-    private final EntitySnapshotConfig entitySnapshotConfig;
-    private final TileEntitySnapshotConfig tileEntitySnapshotConfig;
-
-    public SnapshotConfig(BlockSnapshotConfig blockSnapshotConfig, EntitySnapshotConfig entitySnapshotConfig, TileEntitySnapshotConfig tileEntitySnapshotConfig) {
-        this.blockSnapshotConfig = blockSnapshotConfig;
-        this.entitySnapshotConfig = entitySnapshotConfig;
-        this.tileEntitySnapshotConfig = tileEntitySnapshotConfig;
-    }
-
-    public BlockSnapshotConfig getBlockSnapshotConfig() {
-        return blockSnapshotConfig;
-    }
-    public EntitySnapshotConfig getEntitySnapshotConfig() {
-        return entitySnapshotConfig;
-    }
-    public TileEntitySnapshotConfig getTileEntitySnapshotConfig() {
-        return tileEntitySnapshotConfig;
-    }
+public record SnapshotConfig(BlockSnapshotConfig blockSnapshotConfig, EntitySnapshotConfig entitySnapshotConfig,
+                             TileEntitySnapshotConfig tileEntitySnapshotConfig) implements Config {
 
     public @Nullable BukkitBlockSnapshotConfig getBukkitBlockSnapshotConfig() {
         if (blockSnapshotConfig instanceof BukkitBlockSnapshotConfig bukkitBlockSnapshotConfig) {
@@ -58,19 +39,19 @@ public class SnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull SnapshotConfig getFromConfig(FileConfiguration config, @Nullable SnapshotConfig defaults) {
-            BlockSnapshotConfig blockSnapshotConfig = blockSnapshotConfigFactory.getFromConfig(config, BlockSnapshotConfig.DEFAULT);
-            EntitySnapshotConfig entitySnapshotConfig = entitySnapshotConfigFactory.getFromConfig(config, EntitySnapshotConfig.DEFAULT);
-            TileEntitySnapshotConfig tileEntitySnapshotConfig = tileEntitySnapshotConfigFactory.getFromConfig(config, TileEntitySnapshotConfig.DEFAULT);
+        public @NotNull SnapshotConfig getFromConfig(FileConfiguration config) {
+            BlockSnapshotConfig blockSnapshotConfig = blockSnapshotConfigFactory.getFromConfig(config);
+            EntitySnapshotConfig entitySnapshotConfig = entitySnapshotConfigFactory.getFromConfig(config);
+            TileEntitySnapshotConfig tileEntitySnapshotConfig = tileEntitySnapshotConfigFactory.getFromConfig(config);
 
             return new SnapshotConfig(blockSnapshotConfig, entitySnapshotConfig, tileEntitySnapshotConfig);
         }
 
         @Override
-        public @NotNull ConfigFactory<SnapshotConfig> setDefaults(FileConfiguration config, SnapshotConfig defaults) {
-            blockSnapshotConfigFactory.setDefaults(config, BlockSnapshotConfig.DEFAULT);
-            entitySnapshotConfigFactory.setDefaults(config, EntitySnapshotConfig.DEFAULT);
-            tileEntitySnapshotConfigFactory.setDefaults(config, TileEntitySnapshotConfig.DEFAULT);
+        public @NotNull ConfigFactory<SnapshotConfig> setDefaults(FileConfiguration config) {
+            blockSnapshotConfigFactory.setDefaults(config);
+            entitySnapshotConfigFactory.setDefaults(config);
+            tileEntitySnapshotConfigFactory.setDefaults(config);
             return this;
         }
     }

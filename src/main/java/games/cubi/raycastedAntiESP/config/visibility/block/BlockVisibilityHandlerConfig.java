@@ -1,8 +1,9 @@
-package games.cubi.raycastedAntiESP.config.visibility;
+package games.cubi.raycastedAntiESP.config.visibility.block;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
+import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,9 +33,9 @@ public class BlockVisibilityHandlerConfig implements Config {
     public static class Factory implements ConfigFactory<BlockVisibilityHandlerConfig> {
         public static final String PATH = ".block";
         private final BukkitBlockVisibilityHandlerConfig.Factory bukkitFactory =
-            new BukkitBlockVisibilityHandlerConfig.Factory(BlockVisibilityHandlerMode.BUKKIT);
+            new BukkitBlockVisibilityHandlerConfig.Factory();
         private final PacketEventsBlockVisibilityHandlerConfig.Factory packetEventsFactory =
-            new PacketEventsBlockVisibilityHandlerConfig.Factory(BlockVisibilityHandlerMode.PACKETEVENTS);
+            new PacketEventsBlockVisibilityHandlerConfig.Factory();
 
         @Override
         public String getFullPath() {
@@ -42,41 +43,33 @@ public class BlockVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull BlockVisibilityHandlerConfig getFromConfig(FileConfiguration config,
-                                                                   @Nullable BlockVisibilityHandlerConfig defaults) {
-            BlockVisibilityHandlerConfig fallback = defaults != null ? defaults : DEFAULT;
-            BlockVisibilityHandlerMode mode = readMode(config, fallback);
+        public @NotNull BlockVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
+            BlockVisibilityHandlerMode mode = readMode(config);
             return switch (mode) {
-                case BUKKIT -> bukkitFactory.getFromConfig(config, BukkitBlockVisibilityHandlerConfig.DEFAULT);
-                case PACKETEVENTS -> packetEventsFactory.getFromConfig(
-                    config,
-                    PacketEventsBlockVisibilityHandlerConfig.DEFAULT
-                );
+                case BUKKIT -> bukkitFactory.getFromConfig(config);
+                case PACKETEVENTS -> packetEventsFactory.getFromConfig(config);
             };
         }
 
-        private BlockVisibilityHandlerMode readMode(FileConfiguration config, BlockVisibilityHandlerConfig fallback) {
-            String modeName = config.getString(getFullPath() + ".mode", fallback.getName());
+        private BlockVisibilityHandlerMode readMode(FileConfiguration config) {
+            String modeName = config.getString(getFullPath() + ".mode", BlockVisibilityHandlerConfig.DEFAULT.getName());
             BlockVisibilityHandlerMode mode = BlockVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
-                Logger.warning("Invalid block visibility handler mode in config, defaulting to " + fallback.getName(), 3);
-                mode = fallback.getMode();
+                Logger.warning("Invalid block visibility handler mode in config, defaulting to " + BlockVisibilityHandlerConfig.DEFAULT.getName(), 3);
+                mode = BlockVisibilityHandlerConfig.DEFAULT.getMode();
             }
             return mode;
         }
 
         @Override
-        public @NotNull ConfigFactory<BlockVisibilityHandlerConfig> setDefaults(FileConfiguration config,
-                                                                                @Nullable BlockVisibilityHandlerConfig defaults) {
-            BlockVisibilityHandlerConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull ConfigFactory<BlockVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
+            BlockVisibilityHandlerConfig fallback = DEFAULT;
             config.addDefault(getFullPath() + ".mode", fallback.getName());
             BlockVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
-                case BUKKIT -> bukkitFactory.setDefaults(config, BukkitBlockVisibilityHandlerConfig.DEFAULT);
+                case BUKKIT -> bukkitFactory.setDefaults(config);
                 case PACKETEVENTS -> packetEventsFactory.setDefaults(
-                    config,
-                    PacketEventsBlockVisibilityHandlerConfig.DEFAULT
-                );
+                    config);
             }
             return this;
         }

@@ -41,21 +41,21 @@ public class BlockSnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull BlockSnapshotConfig getFromConfig(FileConfiguration config, BlockSnapshotConfig defaults) {
+        public @NotNull BlockSnapshotConfig getFromConfig(FileConfiguration config) {
             BlockMode mode = getModeFromConfig(config);
             if (mode == null) {
-                Logger.warning("Invalid block snapshot mode in config, defaulting to " + defaults.getMode().getName(), 3);
-                mode = defaults.getMode();
+                Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
+                mode = DEFAULT.getMode();
             }
 
             return switch (mode) {
                 case SYNC_BUKKIT, UNSAFE_ASYNC_BUKKIT ->
-                        new BukkitBlockSnapshotConfig.Factory(mode).getFromConfig(config, BukkitBlockSnapshotConfig.DEFAULT);
+                        new BukkitBlockSnapshotConfig.Factory(mode).getFromConfig(config);
                 case PACKETEVENTS ->
                         throw new UnsupportedOperationException("PacketEvents block snapshot mode is not yet implemented.");
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), 3);
-                    yield new BukkitBlockSnapshotConfig.Factory(BlockMode.SYNC_BUKKIT).getFromConfig(config, BukkitBlockSnapshotConfig.DEFAULT);
+                    Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), Logger.Frequency.CONFIG_LOAD.value);
+                    yield new BukkitBlockSnapshotConfig.Factory(BlockMode.SYNC_BUKKIT).getFromConfig(config);
                 }
             };
         }
@@ -66,10 +66,9 @@ public class BlockSnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<BlockSnapshotConfig> setDefaults(FileConfiguration config, BlockSnapshotConfig defaults) {
-            // Save the mode
-            config.addDefault(getFullPath()+".mode", defaults.getMode().getName());
-            new BukkitBlockSnapshotConfig.Factory(null).setDefaults(config, BukkitBlockSnapshotConfig.DEFAULT);
+        public @NotNull ConfigFactory<BlockSnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath()+".mode", DEFAULT.getMode().getName());
+            new BukkitBlockSnapshotConfig.Factory(null).setDefaults(config);
             return this;
         }
     }

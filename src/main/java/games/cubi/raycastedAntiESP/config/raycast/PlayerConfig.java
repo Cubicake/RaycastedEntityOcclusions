@@ -34,22 +34,22 @@ public class PlayerConfig extends RaycastConfig {
         return onlyCullWhileSneaking;
     }
 
-    public static class Factory extends RaycastConfig.Factory {
+    public static class Factory extends RaycastConfig.Factory<PlayerConfig>  {
         public Factory() {
             super(PATH);
         }
 
         @Override
-        public @NotNull PlayerConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            PlayerConfig fallback = defaults instanceof PlayerConfig playerDefaults ? playerDefaults : DEFAULT;
-            return new PlayerConfig(super.getFromConfig(config, fallback), config.getBoolean(PATH+".only-cull-while-sneaking", fallback.onlyCullWhileSneaking()));
+        public @NotNull PlayerConfig getFromConfig(FileConfiguration config) {
+            return new PlayerConfig(
+                    super.getFromConfig(config, DEFAULT),
+                    config.getBoolean(PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking()));
         }
 
         @Override
-        public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            PlayerConfig fallback = defaults instanceof PlayerConfig playerDefaults ? playerDefaults : DEFAULT;
-            super.setDefaults(config, fallback);
-            config.addDefault(PATH+".only-cull-while-sneaking", fallback.onlyCullWhileSneaking());
+        public @NotNull Factory setDefaults(FileConfiguration config) {
+            super.setDefaults(config, DEFAULT);
+            config.addDefault(PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking());
             return this;
         }
     }

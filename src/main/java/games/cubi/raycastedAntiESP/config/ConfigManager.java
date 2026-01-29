@@ -59,13 +59,13 @@ public class ConfigManager {
         ConfigFactory<?>[] factories = setDefaults();
 
         // Load config objects
-        playerConfig = ((PlayerConfig.Factory) factories[0]).getFromConfig(config, PlayerConfig.DEFAULT);
-        entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config, EntityConfig.DEFAULT);
-        tileEntityConfig = ((TileEntityConfig.Factory) factories[2]).getFromConfig(config, TileEntityConfig.DEFAULT);
-        snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config, null);
-        debugConfig = ((DebugConfig.Factory) factories[4]).getFromConfig(config, DebugConfig.DEFAULT);
-        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config, null);
-        engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config, EngineConfig.DEFAULT);
+        playerConfig = ((PlayerConfig.Factory) factories[0]).getFromConfig(config);
+        entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config);
+        tileEntityConfig = ((TileEntityConfig.Factory) factories[2]).getFromConfig(config);
+        snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config);
+        debugConfig = ((DebugConfig.Factory) factories[4]).getFromConfig(config);
+        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config);
+        engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config);
 
         // Save any new defaults that were added
         plugin.saveConfig();
@@ -82,7 +82,7 @@ public class ConfigManager {
         EntityConfig.Factory entityFactory = new EntityConfig.Factory();
         TileEntityConfig.Factory tileEntityFactory = new TileEntityConfig.Factory();
         SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
-        DebugConfig.Factory debugFactory = DebugConfig.factory();
+        DebugConfig.Factory debugFactory = new DebugConfig.Factory();
         VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
         EngineConfig.Factory engineFactory = new EngineConfig.Factory();
 
@@ -96,14 +96,14 @@ public class ConfigManager {
             engineFactory,
         };
 
-        playerFactory.setDefaults(config, PlayerConfig.DEFAULT);
-        entityFactory.setDefaults(config, EntityConfig.DEFAULT);
-        tileEntityFactory.setDefaults(config, TileEntityConfig.DEFAULT);
+        playerFactory.setDefaults(config);
+        entityFactory.setDefaults(config);
+        tileEntityFactory.setDefaults(config);
 
-        snapshotFactory.setDefaults(config, null);
-        debugFactory.setDefaults(config, DebugConfig.DEFAULT);
-        visibilityFactory.setDefaults(config, null);
-        engineFactory.setDefaults(config, EngineConfig.DEFAULT);
+        snapshotFactory.setDefaults(config);
+        debugFactory.setDefaults(config);
+        visibilityFactory.setDefaults(config);
+        engineFactory.setDefaults(config);
 
         config.options().copyDefaults(true);
         plugin.saveConfig();

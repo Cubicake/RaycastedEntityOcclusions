@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class RaycastConfig implements Config {
-    private static final RaycastConfig DISABLED_DEFAULT = new RaycastConfig(false);
+    private static final RaycastConfig DEFAULTS = new RaycastConfig(false);
     private final byte maxOccludingCount;
     private final short alwaysShowRadius;
     private final short raycastRadius;
@@ -38,7 +38,6 @@ public class RaycastConfig implements Config {
     }
 
     public RaycastConfig(RaycastConfig other) {
-        // This is unhinged but also the simplest way I can think of to do this
         this.maxOccludingCount = other.maxOccludingCount;
         this.alwaysShowRadius = other.alwaysShowRadius;
         this.raycastRadius = other.raycastRadius;
@@ -69,7 +68,7 @@ public class RaycastConfig implements Config {
 
     public boolean isEnabled() { return enabled; }
 
-    public static class Factory implements ConfigFactory<RaycastConfig> {
+    public static abstract class Factory<T extends RaycastConfig> implements ConfigFactory<T> {
         private final String path;
 
         public Factory(String path) {
@@ -81,31 +80,24 @@ public class RaycastConfig implements Config {
             return path;
         }
 
-        @Override
-        public @NotNull RaycastConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            RaycastConfig fallback = getFallback(defaults);
+        public @NotNull RaycastConfig getFromConfig(FileConfiguration config, @NotNull RaycastConfig defaults) {
             return new RaycastConfig(
-                    config.getInt(path+".max-occluding-count", fallback.getMaxOccludingCount()),
-                    config.getInt(path+".always-show-radius", fallback.getAlwaysShowRadius()),
-                    config.getInt(path+".raycast-radius", fallback.getRaycastRadius()),
-                    config.getInt(path+".visible-recheck-interval", fallback.getVisibleRecheckInterval()),
-                    config.getBoolean(path+".enabled", fallback.isEnabled())
+                    config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
+                    config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
+                    config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
+                    config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval()),
+                    config.getBoolean(path+".enabled", defaults.isEnabled())
             );
         }
 
-        @Override
-        public @NotNull ConfigFactory<RaycastConfig> setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            RaycastConfig fallback = getFallback(defaults);
+        public @NotNull ConfigFactory<T> setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
+            RaycastConfig fallback = defaults != null ? defaults : DEFAULTS;
             config.addDefault(path+".enabled", fallback.isEnabled());
             config.addDefault(path+".max-occluding-count", fallback.getMaxOccludingCount());
             config.addDefault(path+".always-show-radius", fallback.getAlwaysShowRadius());
             config.addDefault(path+".raycast-radius", fallback.getRaycastRadius());
             config.addDefault(path+".visible-recheck-interval", fallback.getVisibleRecheckInterval());
             return this;
-        }
-
-        private RaycastConfig getFallback(@Nullable RaycastConfig defaults) {
-            return defaults != null ? defaults : DISABLED_DEFAULT;
         }
     }
 }

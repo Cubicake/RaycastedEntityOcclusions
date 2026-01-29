@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 public class EntityConfig extends RaycastConfig {
     public static final String PATH = "checks.entity";
 
-    public static final EntityConfig DEFAULT = new EntityConfig(1, 1, 48, 10, true);
+    public static final EntityConfig DEFAULT = new EntityConfig(3, 16, 48, 50, true);
 
     public EntityConfig(byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled) {
         super(maxOccludingCount, alwaysShowRadius, raycastRadius, visibleRecheckInterval, enabled);
@@ -25,21 +25,19 @@ public class EntityConfig extends RaycastConfig {
         super(superConfig);
     }
 
-    public static class Factory extends RaycastConfig.Factory {
+    public static class Factory extends RaycastConfig.Factory<EntityConfig> {
         public Factory() {
             super(PATH);
         }
 
         @Override
-        public @NotNull EntityConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            EntityConfig fallback = defaults instanceof EntityConfig entityDefaults ? entityDefaults : DEFAULT;
-            return new EntityConfig(super.getFromConfig(config, fallback));
+        public @NotNull EntityConfig getFromConfig(FileConfiguration config) {
+            return new EntityConfig(super.getFromConfig(config, DEFAULT));
         }
 
         @Override
-        public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            EntityConfig fallback = defaults instanceof EntityConfig entityDefaults ? entityDefaults : DEFAULT;
-            super.setDefaults(config, fallback);
+        public @NotNull Factory setDefaults(FileConfiguration config) {
+            super.setDefaults(config, DEFAULT);
             return this;
         }
     }

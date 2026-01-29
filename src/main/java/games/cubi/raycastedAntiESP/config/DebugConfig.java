@@ -59,18 +59,6 @@ public class DebugConfig implements Config {
         return logToFile;
     }
 
-    static DebugConfig getFromConfig(FileConfiguration config, DebugConfig defaults) {
-        return factory().getFromConfig(config, defaults);
-    }
-
-    static void setDefaults(FileConfiguration config, DebugConfig defaults) {
-        factory().setDefaults(config, defaults);
-    }
-
-    static Factory factory() {
-        return FACTORY;
-    }
-
     public static class Factory implements ConfigFactory<DebugConfig> {
         @Override
         public String getFullPath() {
@@ -78,8 +66,8 @@ public class DebugConfig implements Config {
         }
 
         @Override
-        public @NotNull DebugConfig getFromConfig(FileConfiguration config, @Nullable DebugConfig defaults) {
-            DebugConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull DebugConfig getFromConfig(FileConfiguration config) {
+            DebugConfig fallback = DEFAULT;
             return new DebugConfig(
                     (byte) config.getInt(PATH + ".info-level", fallback.getInfoLevel()),
                     (byte) config.getInt(PATH + ".warn-level", fallback.getWarnLevel()),
@@ -91,8 +79,8 @@ public class DebugConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<DebugConfig> setDefaults(FileConfiguration config, @Nullable DebugConfig defaults) {
-            DebugConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull ConfigFactory<DebugConfig> setDefaults(FileConfiguration config) {
+            DebugConfig fallback = DEFAULT;
             config.addDefault(PATH + ".info-level", fallback.getInfoLevel());
             config.addDefault(PATH + ".warn-level", fallback.getWarnLevel());
             config.addDefault(PATH + ".error-level", fallback.getErrorLevel());

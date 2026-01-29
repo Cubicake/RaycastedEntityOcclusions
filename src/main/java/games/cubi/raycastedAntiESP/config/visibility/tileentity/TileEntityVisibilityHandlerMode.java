@@ -1,17 +1,17 @@
-package games.cubi.raycastedAntiESP.config.visibility;
+package games.cubi.raycastedAntiESP.config.visibility.tileentity;
 
 import games.cubi.raycastedAntiESP.config.ConfigEnum;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-public enum BlockVisibilityHandlerMode implements ConfigEnum {
+public enum TileEntityVisibilityHandlerMode implements ConfigEnum {
     BUKKIT("bukkit"),
     PACKETEVENTS("packetevents");
 
     private final String pathName;
 
-    BlockVisibilityHandlerMode(String pathName) {
+    TileEntityVisibilityHandlerMode(String pathName) {
         this.pathName = pathName;
     }
 
@@ -23,8 +23,8 @@ public enum BlockVisibilityHandlerMode implements ConfigEnum {
         return "." + pathName;
     }
 
-    public static @Nullable BlockVisibilityHandlerMode fromString(String name) {
-        for (BlockVisibilityHandlerMode mode : values()) {
+    public static @Nullable TileEntityVisibilityHandlerMode fromString(String name) {
+        for (TileEntityVisibilityHandlerMode mode : values()) {
             if (mode.getName().equalsIgnoreCase(name)) {
                 return mode;
             }
@@ -34,7 +34,7 @@ public enum BlockVisibilityHandlerMode implements ConfigEnum {
 
     private static final String[] namesCache;
     static {
-        namesCache = Arrays.stream(values()).map(BlockVisibilityHandlerMode::getName).toArray(String[]::new);
+        namesCache = Arrays.stream(values()).map(TileEntityVisibilityHandlerMode::getName).toArray(String[]::new);
         values()[0].register();
     }
 

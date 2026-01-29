@@ -7,14 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PacketEventsEntitySnapshotConfig extends EntitySnapshotConfig {
-    protected PacketEventsEntitySnapshotConfig(EntityMode mode) {
-        super(mode);
+    protected PacketEventsEntitySnapshotConfig() {
+        super(EntityMode.PACKETEVENTS);
     }
 
     public static final PacketEventsEntitySnapshotConfig DEFAULT =
-            new PacketEventsEntitySnapshotConfig(
-                    EntityMode.PACKETEVENTS
-            );
+            new PacketEventsEntitySnapshotConfig();
 
     public static class Factory implements ConfigFactory<PacketEventsEntitySnapshotConfig> {
         public static final String PATH = ".packetevents";
@@ -25,15 +23,12 @@ public class PacketEventsEntitySnapshotConfig extends EntitySnapshotConfig {
         }
 
         @Override
-        public @NotNull PacketEventsEntitySnapshotConfig getFromConfig(FileConfiguration config, PacketEventsEntitySnapshotConfig defaults) {
-            if (defaults != null) {
-                return new PacketEventsEntitySnapshotConfig(defaults.getMode());
-            }
-            return new PacketEventsEntitySnapshotConfig(EntityMode.PACKETEVENTS);
+        public @NotNull PacketEventsEntitySnapshotConfig getFromConfig(FileConfiguration config) {
+            return new PacketEventsEntitySnapshotConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<PacketEventsEntitySnapshotConfig> setDefaults(FileConfiguration config, @Nullable PacketEventsEntitySnapshotConfig defaults) {
+        public @NotNull ConfigFactory<PacketEventsEntitySnapshotConfig> setDefaults(FileConfiguration config) {
             config.addDefault(getFullPath(), null);
             return this;
         }

@@ -6,7 +6,6 @@ import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class TileEntitySnapshotConfig implements Config {
     private final TileEntitySnapshotMode mode;
@@ -40,32 +39,31 @@ public class TileEntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull TileEntitySnapshotConfig getFromConfig(FileConfiguration config, TileEntitySnapshotConfig defaults) {
-            TileEntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull TileEntitySnapshotConfig getFromConfig(FileConfiguration config) {
+            TileEntitySnapshotConfig fallback = DEFAULT;
             String modeName = config.getString(getFullPath()+".mode", fallback.getName());
             TileEntitySnapshotMode mode = TileEntitySnapshotMode.fromString(modeName);
             if (mode == null) {
-                Logger.warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), 3);
+                Logger.warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), Logger.Frequency.CONFIG_LOAD.value);
                 mode = fallback.mode;
             }
 
             return switch (mode) {
-                case BUKKIT -> new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config, BukkitTileEntitySnapshotConfig.DEFAULT);
+                case BUKKIT -> new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 case PACKETEVENTS ->
-                        new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config, PacketEventsTileEntitySnapshotConfig.DEFAULT);
+                        new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), 3);
-                    yield new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config, BukkitTileEntitySnapshotConfig.DEFAULT);
+                    Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Logger.Frequency.CONFIG_LOAD.value);
+                    yield new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 }
             };
         }
 
         @Override
-        public @NotNull ConfigFactory<TileEntitySnapshotConfig> setDefaults(FileConfiguration config, @Nullable TileEntitySnapshotConfig defaults) {
-            TileEntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
-            config.addDefault(getFullPath()+".mode", fallback.getName());
-            new BukkitTileEntitySnapshotConfig.Factory().setDefaults(config, null);
-            new PacketEventsTileEntitySnapshotConfig.Factory().setDefaults(config, null);
+        public @NotNull ConfigFactory<TileEntitySnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath()+".mode", DEFAULT.getName());
+            new BukkitTileEntitySnapshotConfig.Factory().setDefaults(config);
+            new PacketEventsTileEntitySnapshotConfig.Factory().setDefaults(config);
             return this;
         }
     }

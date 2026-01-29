@@ -19,12 +19,13 @@ public class SimpleEngineConfig extends EngineConfig {
         }
 
         @Override
-        public @NotNull SimpleEngineConfig getFromConfig(FileConfiguration config, @Nullable SimpleEngineConfig defaults) {
+        public @NotNull SimpleEngineConfig getFromConfig(FileConfiguration config) {
             return new SimpleEngineConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<SimpleEngineConfig> setDefaults(FileConfiguration config, @Nullable SimpleEngineConfig defaults) {
+        public @NotNull ConfigFactory<SimpleEngineConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath(), null);
             return this;
         }
     }

@@ -45,27 +45,25 @@ public class TileEntityConfig extends RaycastConfig {
         return exemptedBlocks; // Immutable list
     }
 
-    public static class Factory extends RaycastConfig.Factory {
+    public static class Factory extends RaycastConfig.Factory<TileEntityConfig> {
         private static final String EXEMPTED_BLOCKS_PATH = PATH + ".exempted-blocks";
         public Factory() {
             super(PATH);
         }
 
         @Override
-        public @NotNull TileEntityConfig getFromConfig(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
-            return new TileEntityConfig(super.getFromConfig(config, fallback), getMaterialList(config));
+        public @NotNull TileEntityConfig getFromConfig(FileConfiguration config) {
+            return new TileEntityConfig(super.getFromConfig(config, DEFAULT), getMaterialList(config));
         }
 
         @Override
-        public @NotNull RaycastConfig.Factory setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
-            TileEntityConfig fallback = defaults instanceof TileEntityConfig tileDefaults ? tileDefaults : DEFAULT;
-            super.setDefaults(config, fallback);
-            config.addDefault(EXEMPTED_BLOCKS_PATH, fallback.getExemptedBlocks().stream().map(Material::name).toList());
+        public @NotNull Factory setDefaults(FileConfiguration config) {
+            super.setDefaults(config, DEFAULT);
+            config.addDefault(EXEMPTED_BLOCKS_PATH, DEFAULT.getExemptedBlocks().stream().map(Material::name).toList());
             return this;
         }
 
-        private static List<Material> getMaterialList(FileConfiguration config) {
+        private List<Material> getMaterialList(FileConfiguration config) {
             List<String> materialNames = config.getStringList(EXEMPTED_BLOCKS_PATH);
 
             ArrayList<Material> materials = new ArrayList<>();

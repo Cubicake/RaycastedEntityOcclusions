@@ -1,8 +1,9 @@
-package games.cubi.raycastedAntiESP.config.visibility;
+package games.cubi.raycastedAntiESP.config.visibility.entity;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
+import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,41 +43,33 @@ public class EntityVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull EntityVisibilityHandlerConfig getFromConfig(FileConfiguration config,
-                                                                    @Nullable EntityVisibilityHandlerConfig defaults) {
-            EntityVisibilityHandlerConfig fallback = defaults != null ? defaults : DEFAULT;
-            EntityVisibilityHandlerMode mode = readMode(config, fallback);
+        public @NotNull EntityVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
+            EntityVisibilityHandlerMode mode = readMode(config);
             return switch (mode) {
-                case BUKKIT -> bukkitFactory.getFromConfig(config, BukkitEntityVisibilityHandlerConfig.DEFAULT);
+                case BUKKIT -> bukkitFactory.getFromConfig(config);
                 case PACKETEVENTS -> packetEventsFactory.getFromConfig(
-                    config,
-                    PacketEventsEntityVisibilityHandlerConfig.DEFAULT
-                );
+                    config);
             };
         }
 
-        private EntityVisibilityHandlerMode readMode(FileConfiguration config, EntityVisibilityHandlerConfig fallback) {
-            String modeName = config.getString(getFullPath() + ".mode", fallback.getName());
+        private EntityVisibilityHandlerMode readMode(FileConfiguration config) {
+            String modeName = config.getString(getFullPath() + ".mode", EntityVisibilityHandlerConfig.DEFAULT.getName());
             EntityVisibilityHandlerMode mode = EntityVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
-                Logger.warning("Invalid entity visibility handler mode in config, defaulting to " + fallback.getName(), 3);
-                mode = fallback.getMode();
+                Logger.warning("Invalid entity visibility handler mode in config, defaulting to " + EntityVisibilityHandlerConfig.DEFAULT.getName(), 3);
+                mode = EntityVisibilityHandlerConfig.DEFAULT.getMode();
             }
             return mode;
         }
 
         @Override
-        public @NotNull ConfigFactory<EntityVisibilityHandlerConfig> setDefaults(FileConfiguration config,
-                                                                                 @Nullable EntityVisibilityHandlerConfig defaults) {
-            EntityVisibilityHandlerConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull ConfigFactory<EntityVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
+            EntityVisibilityHandlerConfig fallback = DEFAULT;
             config.addDefault(getFullPath() + ".mode", fallback.getName());
             EntityVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
-                case BUKKIT -> bukkitFactory.setDefaults(config, BukkitEntityVisibilityHandlerConfig.DEFAULT);
-                case PACKETEVENTS -> packetEventsFactory.setDefaults(
-                    config,
-                    PacketEventsEntityVisibilityHandlerConfig.DEFAULT
-                );
+                case BUKKIT -> bukkitFactory.setDefaults(config);
+                case PACKETEVENTS -> packetEventsFactory.setDefaults(config);
             }
             return this;
         }

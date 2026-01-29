@@ -2,34 +2,15 @@ package games.cubi.raycastedAntiESP.config.visibility;
 
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
+import games.cubi.raycastedAntiESP.config.visibility.block.BlockVisibilityHandlerConfig;
+import games.cubi.raycastedAntiESP.config.visibility.entity.EntityVisibilityHandlerConfig;
+import games.cubi.raycastedAntiESP.config.visibility.tileentity.TileEntityVisibilityHandlerConfig;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class VisibilityHandlersConfig implements Config {
-    private final BlockVisibilityHandlerConfig blockConfig;
-    private final EntityVisibilityHandlerConfig entityConfig;
-    private final TileEntityVisibilityHandlerConfig tileEntityConfig;
-
-    public VisibilityHandlersConfig(BlockVisibilityHandlerConfig blockConfig,
-                                    EntityVisibilityHandlerConfig entityConfig,
-                                    TileEntityVisibilityHandlerConfig tileEntityConfig) {
-        this.blockConfig = blockConfig;
-        this.entityConfig = entityConfig;
-        this.tileEntityConfig = tileEntityConfig;
-    }
-
-    public BlockVisibilityHandlerConfig getBlockConfig() {
-        return blockConfig;
-    }
-
-    public EntityVisibilityHandlerConfig getEntityConfig() {
-        return entityConfig;
-    }
-
-    public TileEntityVisibilityHandlerConfig getTileEntityConfig() {
-        return tileEntityConfig;
-    }
+public record VisibilityHandlersConfig(BlockVisibilityHandlerConfig blockConfig,
+                                       EntityVisibilityHandlerConfig entityConfig,
+                                       TileEntityVisibilityHandlerConfig tileEntityConfig) implements Config {
 
     public static class Factory implements ConfigFactory<VisibilityHandlersConfig> {
         public static final String PATH = "visibility-handlers";
@@ -44,35 +25,18 @@ public class VisibilityHandlersConfig implements Config {
         }
 
         @Override
-        public @NotNull VisibilityHandlersConfig getFromConfig(FileConfiguration config,
-                                                               @Nullable VisibilityHandlersConfig defaults) {
-            BlockVisibilityHandlerConfig blockDefaults =
-                defaults != null ? defaults.getBlockConfig() : BlockVisibilityHandlerConfig.DEFAULT;
-            EntityVisibilityHandlerConfig entityDefaults =
-                defaults != null ? defaults.getEntityConfig() : EntityVisibilityHandlerConfig.DEFAULT;
-            TileEntityVisibilityHandlerConfig tileEntityDefaults =
-                defaults != null ? defaults.getTileEntityConfig() : TileEntityVisibilityHandlerConfig.DEFAULT;
-            BlockVisibilityHandlerConfig blockConfig =
-                blockFactory.getFromConfig(config, blockDefaults);
-            EntityVisibilityHandlerConfig entityConfig =
-                entityFactory.getFromConfig(config, entityDefaults);
-            TileEntityVisibilityHandlerConfig tileEntityConfig =
-                tileEntityFactory.getFromConfig(config, tileEntityDefaults);
+        public @NotNull VisibilityHandlersConfig getFromConfig(FileConfiguration config) {
+            BlockVisibilityHandlerConfig blockConfig = blockFactory.getFromConfig(config);
+            EntityVisibilityHandlerConfig entityConfig = entityFactory.getFromConfig(config);
+            TileEntityVisibilityHandlerConfig tileEntityConfig = tileEntityFactory.getFromConfig(config);
             return new VisibilityHandlersConfig(blockConfig, entityConfig, tileEntityConfig);
         }
 
         @Override
-        public @NotNull ConfigFactory<VisibilityHandlersConfig> setDefaults(FileConfiguration config,
-                                                                            @Nullable VisibilityHandlersConfig defaults) {
-            BlockVisibilityHandlerConfig blockDefaults =
-                defaults != null ? defaults.getBlockConfig() : BlockVisibilityHandlerConfig.DEFAULT;
-            EntityVisibilityHandlerConfig entityDefaults =
-                defaults != null ? defaults.getEntityConfig() : EntityVisibilityHandlerConfig.DEFAULT;
-            TileEntityVisibilityHandlerConfig tileEntityDefaults =
-                defaults != null ? defaults.getTileEntityConfig() : TileEntityVisibilityHandlerConfig.DEFAULT;
-            blockFactory.setDefaults(config, blockDefaults);
-            entityFactory.setDefaults(config, entityDefaults);
-            tileEntityFactory.setDefaults(config, tileEntityDefaults);
+        public @NotNull ConfigFactory<VisibilityHandlersConfig> setDefaults(FileConfiguration config) {
+            blockFactory.setDefaults(config);
+            entityFactory.setDefaults(config);
+            tileEntityFactory.setDefaults(config);
             return this;
         }
     }

@@ -1,6 +1,8 @@
 package games.cubi.raycastedAntiESP.config.engine;
 
+import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,6 +13,7 @@ public class PredictiveEngineConfig extends EngineConfig {
     public PredictiveEngineConfig(int leniencyTicks) {
         super(EngineMode.PREDICTIVE);
         this.leniencyTicks = leniencyTicks;
+        Logger.warning(new RuntimeException("Predictive Engine not functional"), Logger.Frequency.CONFIG_LOAD.value);
     }
 
     public int getLeniencyTicks() {
@@ -26,19 +29,17 @@ public class PredictiveEngineConfig extends EngineConfig {
         }
 
         @Override
-        public @NotNull PredictiveEngineConfig getFromConfig(FileConfiguration config, @Nullable PredictiveEngineConfig defaults) {
-            PredictiveEngineConfig fallback = defaults != null ? defaults : DEFAULT;
-            int leniency = config.getInt(getFullPath() + ".leniency", fallback.getLeniencyTicks());
+        public @NotNull PredictiveEngineConfig getFromConfig(FileConfiguration config) {
+            int leniency = config.getInt(getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
             if (leniency < 0) {
-                leniency = fallback.getLeniencyTicks();
+                leniency = DEFAULT.getLeniencyTicks();
             }
             return new PredictiveEngineConfig(leniency);
         }
 
         @Override
-        public @NotNull ConfigFactory<PredictiveEngineConfig> setDefaults(FileConfiguration config, @Nullable PredictiveEngineConfig defaults) {
-            PredictiveEngineConfig fallback = defaults != null ? defaults : DEFAULT;
-            config.addDefault(getFullPath() + ".leniency", fallback.getLeniencyTicks());
+        public @NotNull ConfigFactory<PredictiveEngineConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
             return this;
         }
     }

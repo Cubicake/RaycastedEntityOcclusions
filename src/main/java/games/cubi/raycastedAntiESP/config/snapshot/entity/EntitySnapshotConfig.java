@@ -31,33 +31,32 @@ public class EntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull EntitySnapshotConfig getFromConfig(FileConfiguration config, EntitySnapshotConfig defaults) {
-            EntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
+        public @NotNull EntitySnapshotConfig getFromConfig(FileConfiguration config) {
+            EntitySnapshotConfig fallback = DEFAULT;
             String modeName = config.getString(getFullPath()+".mode", fallback.getMode().getName());
             EntityMode mode = EntityMode.fromString(modeName);
             if (mode == null) {
-                Logger.warning("Invalid entity snapshot mode in config, defaulting to " + fallback.getMode().getName(), 3);
+                Logger.warning("Invalid entity snapshot mode in config, defaulting to " + fallback.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
                 mode = fallback.getMode();
             }
 
             return switch (mode) {
                 case BUKKIT ->
-                        new BukkitEntitySnapshotConfig.Factory().getFromConfig(config, BukkitEntitySnapshotConfig.DEFAULT);
+                        new BukkitEntitySnapshotConfig.Factory().getFromConfig(config);
                 case PACKETEVENTS ->
-                        new PacketEventsEntitySnapshotConfig.Factory().getFromConfig(config, PacketEventsEntitySnapshotConfig.DEFAULT);
+                        new PacketEventsEntitySnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported entity snapshot mode enum value: " + mode + ", falling back on bukkit"), 3);
-                    yield new BukkitEntitySnapshotConfig.Factory().getFromConfig(config, BukkitEntitySnapshotConfig.DEFAULT);
+                    Logger.error(new RuntimeException("Unsupported entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Logger.Frequency.CONFIG_LOAD.value);
+                    yield new BukkitEntitySnapshotConfig.Factory().getFromConfig(config);
                 }
             };
         }
 
         @Override
-        public @NotNull ConfigFactory<EntitySnapshotConfig> setDefaults(FileConfiguration config, EntitySnapshotConfig defaults) {
-            EntitySnapshotConfig fallback = defaults != null ? defaults : DEFAULT;
-            config.addDefault(getFullPath()+".mode", fallback.getMode().getName());
-            new BukkitEntitySnapshotConfig.Factory().setDefaults(config, null);
-            new PacketEventsEntitySnapshotConfig.Factory().setDefaults(config, null);
+        public @NotNull ConfigFactory<EntitySnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath()+".mode", DEFAULT.getMode().getName());
+            new BukkitEntitySnapshotConfig.Factory().setDefaults(config);
+            new PacketEventsEntitySnapshotConfig.Factory().setDefaults(config);
             return this;
         }
     }

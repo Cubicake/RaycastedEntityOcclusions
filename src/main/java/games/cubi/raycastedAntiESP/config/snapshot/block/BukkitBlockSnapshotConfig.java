@@ -40,21 +40,21 @@ public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
         }
 
         @Override
-        public @NotNull BukkitBlockSnapshotConfig getFromConfig(FileConfiguration config, BukkitBlockSnapshotConfig defaults) {
+        public @NotNull BukkitBlockSnapshotConfig getFromConfig(FileConfiguration config) {
             String fullPath = getFullPath();
-            int snapshotRate = config.getInt(fullPath + ".refresh-interval", defaults.getRefreshRateSeconds());
+            int snapshotRate = config.getInt(fullPath + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
 
             if (snapshotRate < 1) {
-                snapshotRate = defaults.getRefreshRateSeconds();
+                snapshotRate = DEFAULT.getRefreshRateSeconds();
             }
 
             return new BukkitBlockSnapshotConfig(snapshotRate, mode);
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitBlockSnapshotConfig> setDefaults(FileConfiguration config, BukkitBlockSnapshotConfig defaults) {
-            config.addDefault(getPathUpToBlock() + BlockMode.SYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
-            config.addDefault(getPathUpToBlock() + BlockMode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", defaults.getRefreshRateSeconds());
+        public @NotNull ConfigFactory<BukkitBlockSnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getPathUpToBlock() + BlockMode.SYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
+            config.addDefault(getPathUpToBlock() + BlockMode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
             return this;
         }
     }
