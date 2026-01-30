@@ -4,6 +4,7 @@ import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,20 +21,29 @@ import java.util.UUID;
 public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityChanger {
     @Override
     public void showTileEntityToPlayer(UUID player, BlockLocation tileEntity) {
-        setTileEntityVisibilityForPlayer(player, tileEntity, true);
+        if (SnapshotManager.getTileEntitySnapshotManager().isTileEntityVisibleToPlayer(tileEntity, player).equals(TriState.TRUE)) {
+            return; // Already visible
+        }
+
+        addToTileEntityCache(player, tileEntity, true);
     }
 
     @Override
     public void hideTileEntityFromPlayer(UUID player, BlockLocation tileEntity) {
-        setTileEntityVisibilityForPlayer(player, tileEntity, false);
+        if (SnapshotManager.getTileEntitySnapshotManager().isTileEntityVisibleToPlayer(tileEntity, player).equals(TriState.FALSE)) {
+            return; // Already hidden
+        }
+
+        addToTileEntityCache(player, tileEntity, false);
     }
 
     @Override
     public void setTileEntityVisibilityForPlayer(UUID player, BlockLocation tileEntity, boolean visible) {
-        if (SnapshotManager.getTileEntitySnapshotManager().isTileEntityVisibleToPlayer(tileEntity, player) == visible) {
-            return;
+        if (visible) {
+            showTileEntityToPlayer(player, tileEntity);
+        } else {
+            hideTileEntityFromPlayer(player, tileEntity);
         }
-        addToTileEntityCache(player, tileEntity, visible);
     }
 
     @Override

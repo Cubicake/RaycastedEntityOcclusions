@@ -3,6 +3,7 @@ package games.cubi.raycastedAntiESP.snapshot.tileentity;
 import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import net.kyori.adventure.util.TriState;
 
 import java.util.Set;
 import java.util.UUID;
@@ -32,9 +33,12 @@ public interface TileEntitySnapshotManager {
 
     void removeFromTileEntityLastSeenMap(AbstractBlockLocation location);
 
-    boolean isTileEntityVisibleToPlayer(BlockLocation location, UUID playerUUID);
+    /**
+     * @return TriState.TRUE if visible, TriState.FALSE if not visible, TriState.UNDEFINED if it has never been checked.
+     */
+    TriState isTileEntityVisibleToPlayer(BlockLocation location, UUID playerUUID);
 
-    void addOrUpdateTileEntityLastSeenMap(BlockLocation location, UUID playerUUID, int timestamp, boolean visible);
+    void addOrUpdateTileEntityLastSeenMap(BlockLocation location, UUID playerUUID, boolean visible);
 
     void clearTileEntityLastSeenMap();
 }

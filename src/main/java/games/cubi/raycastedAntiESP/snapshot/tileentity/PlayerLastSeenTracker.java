@@ -1,11 +1,14 @@
 package games.cubi.raycastedAntiESP.snapshot.tileentity;
 
+import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import net.kyori.adventure.util.TriState;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager {
     private final ConcurrentHashMap<BlockLocation, Set<PlayerLastCheckTimestamp>> tileEntityLastSeenMap = new ConcurrentHashMap<>();
@@ -29,19 +32,36 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
         tileEntityLastSeenMap.remove(location);
     }
 
-    public boolean isTileEntityVisibleToPlayer(BlockLocation location, UUID playerUUID) {
-        Set<PlayerLastCheckTimestamp> set = tileEntityLastSeenMap.get(location);
-        if (set == null) return false;
-        for (PlayerLastCheckTimestamp playerLastCheckTimestamp : set) {
-            if (playerLastCheckTimestamp.getPlayer().equals(playerUUID)) {
-                return playerLastCheckTimestamp.hasBeenSeen();
+    public TriState isTileEntityVisibleToPlayer(BlockLocation location, UUID playerUUID) {
+
+        AtomicReference<TriState> result = new AtomicReference<>();
+
+        Set<PlayerLastCheckTimestamp> playerLastCheckTimestampSet = tileEntityLastSeenMap.compute(location, (key, set) -> {
+            if (set == null) {
+                Set<PlayerLastCheckTimestamp> newSet = ConcurrentHashMap.newKeySet();
+                newSet.add(new PlayerLastCheckTimestamp(playerUUID, DataHolder.getTick(), false));
+                result.set(TriState.NOT_SET);
+                return newSet;
             }
-        }
-        return false; //default to not visible if no entry exists
+            // Check existing entry
+            for (PlayerLastCheckTimestamp playerLastCheckTimestamp : set) {
+                if (playerLastCheckTimestamp.getPlayer().equals(playerUUID)) {
+                    result.set(playerLastCheckTimestamp.hasBeenSeen() ? TriState.TRUE : TriState.FALSE);
+                    return set;
+                }
+            }
+            // Otherwise add new entry
+            set.add(new PlayerLastCheckTimestamp(playerUUID, DataHolder.getTick(), false));
+            result.set(TriState.NOT_SET);
+            return set;
+        });
+
+        return result.get();
     }
 
-    public void addOrUpdateTileEntityLastSeenMap(BlockLocation location, UUID playerUUID, int timestamp, boolean visible) {
+    public void addOrUpdateTileEntityLastSeenMap(BlockLocation location, UUID playerUUID, boolean visible) {
         //mutate existing UUID entry if it exists, otherwise add new
+        int timestamp = DataHolder.getTick();
         tileEntityLastSeenMap.compute(location, (key, set) -> {
             if (set == null) {
                 Set<PlayerLastCheckTimestamp> newSet = ConcurrentHashMap.newKeySet();
@@ -59,8 +79,6 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
             set.add(new PlayerLastCheckTimestamp(playerUUID, timestamp, visible));
             return set;
         });
-
-
     }
 
     public void clearTileEntityLastSeenMap() {

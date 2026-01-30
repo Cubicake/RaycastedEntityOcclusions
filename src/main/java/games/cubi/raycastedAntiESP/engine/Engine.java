@@ -140,7 +140,7 @@ public class Engine {
             boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee);
             if (canSee) {
-                tileSnapshotManager.addOrUpdateTileEntityLastSeenMap(tileEntityLocation, player.getPlayerUUID(), DataHolder.getTick(), true);
+                tileSnapshotManager.addOrUpdateTileEntityLastSeenMap(tileEntityLocation, player.getPlayerUUID(), true);
                 if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().showTileEntityToPlayer(player.getPlayerUUID(), tileEntityLocation);
             }
             else {
