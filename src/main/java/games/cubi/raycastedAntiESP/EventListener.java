@@ -12,9 +12,9 @@ import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
-import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
+import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -35,7 +35,6 @@ import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
@@ -181,7 +180,7 @@ public class EventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPlayerUntrackEntity(PlayerTrackEntityEvent event) {
+    public void onPlayerUntrackEntity(PlayerUntrackEntityEvent event) {
         //todo: Same as above, probs specific to Bukkit
         UUID entityUUID = event.getEntity().getUniqueId();
         Player player = event.getPlayer();
