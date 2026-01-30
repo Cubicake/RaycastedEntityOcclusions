@@ -1,46 +1,43 @@
 package games.cubi.raycastedAntiESP.bStats;
 
-import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-
-import java.util.ArrayList;
-import java.util.List;
+import games.cubi.raycastedAntiESP.config.ConfigManager;
+import games.cubi.raycastedAntiESP.config.EntityConfig;
+import games.cubi.raycastedAntiESP.config.PlayerConfig;
+import games.cubi.raycastedAntiESP.config.RaycastConfig;
+import games.cubi.raycastedAntiESP.config.TileEntityConfig;
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 
 public class MetricsCollector {
     private final RaycastedAntiESP plugin;
     private final Metrics metrics;
     private final ConfigManager config;
 
-    private List<Integer> playersOnline = new ArrayList<>();
-    private List<Integer> entities = new ArrayList<>();
-
     public MetricsCollector(RaycastedAntiESP plugin, ConfigManager config) {
         this.plugin = plugin;
         int pluginId = 24553;
         metrics = new Metrics(plugin, pluginId);
-        this.config = config;/*
+        this.config = config;
         registerCustomMetrics();
-            TODO: Re-enable metrics
-        plugin.getServer().getScheduler().runTaskTimer(plugin, this::collectMetrics, 0L, 6000L); // 6000 ticks = 5 minutes*/
     }
 
     public void shutdown() {
         metrics.shutdown();
     }
-/*
     public void registerCustomMetrics() {
-        metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", () -> String.valueOf(config.maxOccludingCount)));
+        metrics.addCustomChart(new Metrics.SimplePie("max_occluding_count", this::getMaxOccludingCount));
 
         metrics.addCustomChart(new Metrics.SimplePie("cull_players", this::getCullPlayersStatus));
 
-        metrics.addCustomChart(new Metrics.SimplePie("raycast_radius", () -> getRoundedValue(config.raycastRadius, ConfigManager.RAYCAST_RADIUS_DEFAULT)));
-        metrics.addCustomChart(new Metrics.SimplePie("search_radius", () -> getRoundedValue(config.searchRadius, ConfigManager.SEARCH_RADIUS_DEFAULT)));
-        metrics.addCustomChart(new Metrics.SimplePie("always_show_radius", () -> getRoundedValue(config.alwaysShowRadius, ConfigManager.ALWAYS_SHOW_RADIUS_DEFAULT)));
+        metrics.addCustomChart(new Metrics.SimplePie("raycast_radius", () -> getRoundedValue(getRaycastConfig().getRaycastRadius(), getDefaultRaycastConfig().getRaycastRadius())));
+        metrics.addCustomChart(new Metrics.SimplePie("search_radius", () -> "Deprecated"));
+        metrics.addCustomChart(new Metrics.SimplePie("always_show_radius", () -> getRoundedValue(getRaycastConfig().getAlwaysShowRadius(), getDefaultRaycastConfig().getAlwaysShowRadius())));
 
-        metrics.addCustomChart(new Metrics.SimplePie("engine_mode", () -> String.valueOf(config.engineMode)));
+        metrics.addCustomChart(new Metrics.SimplePie("engine_mode", () -> String.valueOf(getRaycastConfig().getEngineMode())));
 
-        metrics.addCustomChart(new Metrics.SimplePie("snapshot_refresh_interval", () -> getRoundedValue(config.snapshotRefreshInterval, ConfigManager.SNAPSHOT_REFRESH_INTERVAL_DEFAULT)));
-        metrics.addCustomChart(new Metrics.SimplePie("entity_recheck_interval", () -> getRoundedValue(config.recheckInterval, ConfigManager.RECHECK_INTERVAL_DEFAULT)));
+        metrics.addCustomChart(new Metrics.SimplePie("snapshot_refresh_interval", () -> getRoundedValue(config.getSnapshotConfig().getWorldSnapshotRefreshInterval(), ConfigManager.getDefaultSnapshotConfig().getWorldSnapshotRefreshInterval())));
+        metrics.addCustomChart(new Metrics.SimplePie("entity_recheck_interval", () -> getRoundedValue(getRaycastConfig().getVisibleRecheckInterval(), getDefaultRaycastConfig().getVisibleRecheckInterval())));
         metrics.addCustomChart(new Metrics.SimplePie("tile_entity_recheck_interval", this::tileEntityCheckStatus));
 
         metrics.addCustomChart(new Metrics.SimplePie("server_size", this::getPlayersOnline));
@@ -48,8 +45,9 @@ public class MetricsCollector {
     }
 
     public String getCullPlayersStatus() {
-        if (config.cullPlayers) {
-            if (config.onlyCullSneakingPlayers) {
+        PlayerConfig playerConfig = config.getPlayerConfig();
+        if (playerConfig.isEnabled()) {
+            if (playerConfig.onlyCullWhileSneaking()) {
                 return "Sneaking";
             } else {
                 return "Always";
@@ -60,8 +58,9 @@ public class MetricsCollector {
     }
 
     public String tileEntityCheckStatus() {
-        if (config.checkTileEntities) {
-            return getRoundedValue(config.tileEntityRecheckInterval, ConfigManager.TILE_ENTITY_RECHECK_INTERVAL_DEFAULT);
+        TileEntityConfig tileEntityConfig = config.getTileEntityConfig();
+        if (tileEntityConfig.isEnabled()) {
+            return getRoundedValue(tileEntityConfig.getVisibleRecheckInterval(), ConfigManager.getDefaultTileEntityConfig().getVisibleRecheckInterval());
         } else {
             return "Disabled";
         }
@@ -76,25 +75,8 @@ public class MetricsCollector {
         }
     }
 
-    public void collectMetrics() {
-        playersOnline.add(Bukkit.getServer().getOnlinePlayers().size());
-        // TODO: Cache all entities in Engine, and also use that here
-        int totalEntities = 0;
-        for (World world : Bukkit.getWorlds()) {
-            totalEntities += world.getEntities().size();
-        }
-        entities.add(totalEntities);
-    }
     public String getPlayersOnline() {
-        if (playersOnline == null) {
-            return "Null";
-        }
-        int averaged = (int) playersOnline.stream()
-                .mapToInt(Integer::intValue)
-                .average()
-                .orElse(-1);
-        playersOnline.clear();
-
+        int averaged = getSnapshotPlayerCount();
         if (averaged < 0) {
             return "Null";
         } else if (averaged < 4) {
@@ -125,15 +107,7 @@ public class MetricsCollector {
 
     }
     public String getEntities() {
-        if (entities == null) {
-            return "Null";
-        }
-        int averaged = (int) entities.stream()
-                .mapToInt(Integer::intValue)
-                .average()
-                .orElse(-1);
-        entities.clear();
-
+        int averaged = getSnapshotEntityCount();
         if (averaged < 0) {
             return "Null";
         } else if (averaged < 21) {
@@ -156,5 +130,70 @@ public class MetricsCollector {
             return "5000+";
         }
     }
- */
+
+    private RaycastConfig getRaycastConfig() {
+        RaycastConfig enabledConfig = getEnabledRaycastConfig();
+        if (enabledConfig != null) {
+            return enabledConfig;
+        }
+        // Fall back to player config when no checks are enabled to keep metrics stable.
+        return config.getPlayerConfig();
+    }
+
+    private RaycastConfig getDefaultRaycastConfig() {
+        RaycastConfig enabledConfig = getEnabledRaycastConfig();
+        if (enabledConfig instanceof EntityConfig) {
+            return ConfigManager.getDefaultEntityConfig();
+        }
+        if (enabledConfig instanceof TileEntityConfig) {
+            return ConfigManager.getDefaultTileEntityConfig();
+        }
+        return ConfigManager.getDefaultPlayerConfig();
+    }
+
+    private RaycastConfig getEnabledRaycastConfig() {
+        PlayerConfig playerConfig = config.getPlayerConfig();
+        if (playerConfig.isEnabled()) {
+            return playerConfig;
+        }
+        EntityConfig entityConfig = config.getEntityConfig();
+        if (entityConfig.isEnabled()) {
+            return entityConfig;
+        }
+        TileEntityConfig tileEntityConfig = config.getTileEntityConfig();
+        if (tileEntityConfig.isEnabled()) {
+            return tileEntityConfig;
+        }
+        return null;
+    }
+
+    private int getSnapshotPlayerCount() {
+        BukkitESM snapshotManager = getEntitySnapshotManager();
+        if (snapshotManager == null) {
+            return -1;
+        }
+        return snapshotManager.getPlayerCount();
+    }
+
+    private int getSnapshotEntityCount() {
+        BukkitESM snapshotManager = getEntitySnapshotManager();
+        if (snapshotManager == null) {
+            return -1;
+        }
+        return snapshotManager.getEntityCount();
+    }
+
+    private String getMaxOccludingCount() {
+        return String.valueOf(getRaycastConfig().getMaxOccludingCount());
+    }
+
+    private BukkitESM getEntitySnapshotManager() {
+        if (SnapshotManager.entitySnapshotManagerType() != SnapshotManager.EntitySnapshotManagerType.BUKKIT) {
+            return null;
+        }
+        if (!(SnapshotManager.getEntitySnapshotManager() instanceof BukkitESM snapshotManager)) {
+            return null;
+        }
+        return snapshotManager;
+    }
 }
