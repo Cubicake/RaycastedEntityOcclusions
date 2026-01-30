@@ -1,6 +1,8 @@
-Latest version: v1.6.4
+Latest stable version: v1.6.5 | Latest beta version: v2.0.0-beta-1
 
-The latest version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-entity-occlusions/
+The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-entity-occlusions/
+
+The latest beta version can be found on the [discord](https://discord.cubi.games).
 
 This is an async plugin for PaperMC and its forks that hides/culls entities (and tile entities) from players if they do not have line-of-sight.
 
