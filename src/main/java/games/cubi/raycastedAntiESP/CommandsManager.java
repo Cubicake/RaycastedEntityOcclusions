@@ -8,10 +8,14 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
+import org.bukkit.entity.Player;
 
 @SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
@@ -90,6 +94,25 @@ public class CommandsManager {
                         return Command.SINGLE_SUCCESS;
                     })
             )
+            .then(Commands.literal("sync-test")
+                    .executes(context -> {
+                        Player player = (Player) context.getSource().getSender();
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            player.sendBlockChange(new Location(player.getWorld(), 0, -59, 0), Material.COMMAND_BLOCK.createBlockData());
+                        });
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+                .then(Commands.literal("async-test")
+                        .executes(context -> {
+                            Player player = (Player) context.getSource().getSender();
+                            Bukkit.getAsyncScheduler().runNow(plugin, (scheduledTask) -> {
+                                player.sendBlockChange(new Location(player.getWorld(), 0.12839, -59.1238912, 0.2139012), Material.COMMAND_BLOCK.createBlockData());
+                            });
+                            return Command.SINGLE_SUCCESS;
+                        })
+                )
+
             .build();
     }
 

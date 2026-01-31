@@ -29,9 +29,13 @@ public interface TileEntitySnapshotManager {
 
     boolean tileEntityLastSeenMapContains(AbstractBlockLocation location);
 
+    TriState canPlayerSeeTileEntity(UUID playerUUID, BlockLocation location);
+
     void setValuesInTileEntityLastSeenMap(BlockLocation location, Set<PlayerLastCheckTimestamp> values);
 
     void removeFromTileEntityLastSeenMap(AbstractBlockLocation location);
+
+    void markAsNotVisible(BlockLocation location, UUID playerUUID);
 
     /**
      * @return TriState.TRUE if visible, TriState.FALSE if not visible, TriState.UNDEFINED if it has never been checked.

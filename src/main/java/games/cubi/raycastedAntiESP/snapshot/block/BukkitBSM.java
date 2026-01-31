@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BukkitBSM implements BlockSnapshotManager {
     private static class ChunkData {
@@ -172,11 +173,15 @@ public class BukkitBSM implements BlockSnapshotManager {
         return getKeyWorld(key).getChunkAt(getKeyX(key), getKeyZ(key));
     }
 
+    static final AtomicInteger stupidErrorCounter = new AtomicInteger(0);
+
     public Material getMaterialAt(AbstractBlockLocation loc) {
         ChunkData chunkData = dataMap.get(key(loc));
         if (chunkData == null) {
-            Logger.error("BukkitBSM: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5);
-            //EngineOld.syncRecheck.add(chunk); TODO reenable
+            if (stupidErrorCounter.addAndGet(1) % 500 == 0) {
+                Logger.error("BukkitBSM: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5);
+            }
+            RaycastedAntiESP.getEngine().recheckQueue.add(loc);
             return null;
         }
         double yLevel = loc.y();

@@ -129,7 +129,6 @@ public class EventListener implements Listener {
         DataHolder.incrementTick();
 
         Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().distributeTick());
-        RaycastedAntiESP.getEngine().distributeTick();
     }
 
     @EventHandler(priority = EventPriority.MONITOR) //Runs last

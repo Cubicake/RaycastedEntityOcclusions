@@ -22,6 +22,18 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
         return tileEntityLastSeenMap.containsKey(location);
     }
 
+    public TriState canPlayerSeeTileEntity(UUID playerUUID, BlockLocation location) {
+        Set<PlayerLastCheckTimestamp> set = tileEntityLastSeenMap.get(location); //not atomic, but 100% guarantee is not necessary here
+        if (set != null) {
+            for (PlayerLastCheckTimestamp entry : set) {
+                if (entry.getPlayer().equals(playerUUID)) {
+                    return TriState.byBoolean(entry.hasBeenSeen());
+                }
+            }
+        }
+        return TriState.NOT_SET;
+    }
+
     public void setValuesInTileEntityLastSeenMap(BlockLocation location, Set<PlayerLastCheckTimestamp> values) {
         Set<PlayerLastCheckTimestamp> newSet = ConcurrentHashMap.newKeySet();
         newSet.addAll(values);
@@ -30,6 +42,10 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
 
     public void removeFromTileEntityLastSeenMap(AbstractBlockLocation location) {
         tileEntityLastSeenMap.remove(location);
+    }
+
+    public void markAsNotVisible(BlockLocation location, UUID playerUUID) {
+        addOrUpdateTileEntityLastSeenMap(location, playerUUID, false);
     }
 
     public TriState isTileEntityVisibleToPlayer(BlockLocation location, UUID playerUUID) {

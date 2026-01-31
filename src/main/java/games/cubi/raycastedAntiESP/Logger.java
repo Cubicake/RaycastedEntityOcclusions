@@ -59,6 +59,11 @@ public class Logger {
         throw earlyReturn;
     }
 
+    @Deprecated
+    public static void debug(String message) {
+        forwardLog(message, Level.INFO, 1);
+    }
+
     public static void error(Throwable throwable, @Range(from = 1, to = 10) int level) {
         error(processThrowable(throwable), 1);
     }

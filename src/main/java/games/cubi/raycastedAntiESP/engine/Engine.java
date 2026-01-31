@@ -5,9 +5,11 @@ import games.cubi.raycastedAntiESP.config.*;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
+import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.raycast.RaycastUtil;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.snapshot.entity.EntitySnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
@@ -20,12 +22,15 @@ import games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity.TileEntit
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
+import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class Engine {
@@ -45,6 +50,19 @@ public class Engine {
 
         processEntityMovements(null); //first one will run on main thread but it shouldn't have to do much anyways
         flushLogCache(null);
+    }
+
+    public final ConcurrentLinkedQueue<AbstractBlockLocation> recheckQueue = new ConcurrentLinkedQueue<>();
+
+    public void syncRecheck() {
+        while (!recheckQueue.isEmpty()) {
+            AbstractBlockLocation location = recheckQueue.poll();
+
+            World world = Bukkit.getWorld(location.world());
+            if (world == null) continue;
+
+            ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).snapshotChunk(world.getChunkAt(location.blockX() >> 4, location.blockZ() >> 4));
+        }
     }
 
     //run async
@@ -138,22 +156,17 @@ public class Engine {
             int timeSinceLastCheck = tileSnapshotManager.getTicksSincePlayerSawTileEntity(player.getPlayerUUID(), tileEntityLocation);
             if ((timeSinceLastCheck > -1) && (timeSinceLastCheck < tileEntityConfig.getVisibleRecheckInterval())) continue;
             boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            TriState test = tileSnapshotManager.canPlayerSeeTileEntity(player.getPlayerUUID(), tileEntityLocation);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee);
             if (canSee) {
                 tileSnapshotManager.addOrUpdateTileEntityLastSeenMap(tileEntityLocation, player.getPlayerUUID(), true);
-                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().showTileEntityToPlayer(player.getPlayerUUID(), tileEntityLocation);
+                continue;
             }
-            else {
-                tileSnapshotManager.removeFromTileEntityLastSeenMap(tileEntityLocation);
-                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().hideTileEntityFromPlayer(player.getPlayerUUID(), tileEntityLocation);
-            }
+            tileSnapshotManager.markAsNotVisible(tileEntityLocation, player.getPlayerUUID());
         }
     }
 
-
-
-
-    private void forceEntityLocationUpdate() {
+    private void forceEntityLocationUpdate() {  //todo: Quite frankly idk if this is needed
         int recheckInterval = ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
         if (recheckInterval <= 0) {
             bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed

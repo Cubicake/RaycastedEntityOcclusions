@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
+import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
@@ -25,8 +26,11 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
             return; // Already visible
         }
 
-        addToTileEntityCache(player, tileEntity, true);
+        addToTileEntityCache(player, tileEntity);
     }
+
+    BlockData STONE_DATA = Material.STONE.createBlockData();
+    BlockData DEEPSLATE_DATA = Material.DEEPSLATE.createBlockData();
 
     @Override
     public void hideTileEntityFromPlayer(UUID player, BlockLocation tileEntity) {
@@ -34,16 +38,14 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
             return; // Already hidden
         }
 
-        addToTileEntityCache(player, tileEntity, false);
-    }
+        if (tileEntity.blockY() > 0) Bukkit.getPlayer(player).sendBlockChange(tileEntity.toBukkitLocation(), STONE_DATA);
+        else {
+            Player p = Bukkit.getPlayer(player);
+            Location loc = tileEntity.toBukkitLocation().toBlockLocation();
 
-    @Override
-    public void setTileEntityVisibilityForPlayer(UUID player, BlockLocation tileEntity, boolean visible) {
-        if (visible) {
-            showTileEntityToPlayer(player, tileEntity);
-        } else {
-            hideTileEntityFromPlayer(player, tileEntity);
-        }
+            p.sendBlockChange(loc, DEEPSLATE_DATA);
+            Logger.debug("Sent deepslate block change to " + p.getName() + " at " + loc);
+        } //todo need to toggle isTileEntityVisibleToPlayer in snapshot manager
     }
 
     @Override
@@ -53,12 +55,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
     @Override
     public void processCache() {
-        processACache(flushTileEntityShowCache(), true);
-        processACache(flushTileEntityHideCache(), false);
-    }
-
-    private void processACache(Map<UUID, Set<AbstractBlockLocation>> cache, boolean show) {
-        for (Map.Entry<UUID, Set<AbstractBlockLocation>> entry : cache.entrySet()) {
+        for (Map.Entry<UUID, Set<AbstractBlockLocation>> entry : getCache().entrySet()) {
             UUID playerUUID = entry.getKey();
             Set<AbstractBlockLocation> tileEntities = entry.getValue();
             for (AbstractBlockLocation tileEntity : tileEntities) {
@@ -69,17 +66,8 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
                     if (player == null) return;
                     Location location = blockState.getLocation();
 
-                    BlockData blockData;
-                    if (show) {
-                        blockData = tileState.getBlockData();
-                    }
-                    else {
-                        if (location.getBlockY() > 0) blockData = Material.STONE.createBlockData();
-                        else blockData = Material.DEEPSLATE.createBlockData();
-                    }
-
-                    player.sendBlockChange(location, blockData);
-                    if (show) player.sendBlockUpdate(location, tileState);
+                    player.sendBlockChange(location, tileState.getBlockData());
+                    player.sendBlockUpdate(location, tileState);
                 }
                 else {
                     //Logger.warning("Tried to show tile entity at " + location + " to "+p.getName()+" but it was not a TileState! Block type: " + block.getType()+". Removing from the list of tile entities.");
