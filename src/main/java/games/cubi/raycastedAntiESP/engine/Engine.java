@@ -89,8 +89,7 @@ public class Engine {
         EntitySnapshotManager entitySnapshotManager = SnapshotManager.getEntitySnapshotManager();
         TileEntitySnapshotManager tileEntitySnapshotManager = SnapshotManager.getTileEntitySnapshotManager();
 
-        int maxRadius = Bukkit.getViewDistance() * 16;
-        int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), maxRadius)+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
+        int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), Bukkit.getViewDistance())+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
 
         for (int i = 0; i < batches.size(); i++) {
             int finalI = i;
