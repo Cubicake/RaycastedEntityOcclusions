@@ -55,7 +55,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
     @Override
     public void processCache() {
-        for (Map.Entry<UUID, Set<AbstractBlockLocation>> entry : getCache().entrySet()) {
+        for (Map.Entry<UUID, Set<AbstractBlockLocation>> entry : flushTileEntityShowCache().entrySet()) {
             UUID playerUUID = entry.getKey();
             Set<AbstractBlockLocation> tileEntities = entry.getValue();
             for (AbstractBlockLocation tileEntity : tileEntities) {

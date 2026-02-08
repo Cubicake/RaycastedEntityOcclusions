@@ -19,7 +19,7 @@ public abstract class TileEntityCache {
         return tileEntitiesToShowCache.get();
     }
 
-    protected ConcurrentHashMap<UUID, Set<AbstractBlockLocation>> getCache() {
+    private ConcurrentHashMap<UUID, Set<AbstractBlockLocation>> getCache() {
         return entitiesToShowCache();
     }
 
