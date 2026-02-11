@@ -3,7 +3,7 @@ package games.cubi.raycastedAntiESP;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import games.cubi.raycastedAntiESP.engine.Engine;
+import games.cubi.raycastedAntiESP.engine.SimpleEngine;
 import games.cubi.raycastedAntiESP.packets.PacketEventsStatus;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.packets.Registrar;
@@ -33,7 +33,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static MovementTracker tracker;
     //private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
-    private static Engine engine;
+    private static SimpleEngine engine;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
     private static java.util.logging.Logger logger;
@@ -65,7 +65,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     @Override
     public void onEnable() {
         tracker = new MovementTracker(this, config);
-        engine = new Engine(this, config);
+        engine = new SimpleEngine(this, config);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
         getServer().getPluginManager().registerEvents(EventListener.getInstance(this, config, packetProcessor), this);
 
@@ -122,7 +122,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public static PacketProcessor getPacketProcessor() {
         return packetProcessor;
     }
-    public static Engine getEngine() {
+    public static SimpleEngine getEngine() {
         return engine;
     }
     public static RaycastedAntiESP get() {
