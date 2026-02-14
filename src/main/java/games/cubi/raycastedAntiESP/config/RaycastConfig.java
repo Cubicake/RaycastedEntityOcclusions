@@ -52,7 +52,7 @@ public class RaycastConfig {
                 config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
                 config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
                 config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
-                config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval()),
+                config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckIntervalTicks()),
                 config.getBoolean(path+".enabled", defaults.isEnabled())
         );
     }
@@ -63,7 +63,7 @@ public class RaycastConfig {
         config.addDefault(path+".max-occluding-count", defaults.getMaxOccludingCount());
         config.addDefault(path+".always-show-radius", defaults.getAlwaysShowRadius());
         config.addDefault(path+".raycast-radius", defaults.getRaycastRadius());
-        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval());
+        config.addDefault(path+".visible-recheck-interval", defaults.getVisibleRecheckIntervalTicks());
     }
 
     public byte getEngineMode() {
@@ -82,7 +82,11 @@ public class RaycastConfig {
         return raycastRadius;
     }
 
-    public short getVisibleRecheckInterval() {
+    public short getVisibleRecheckIntervalTicks() {
+        return visibleRecheckInterval;
+    }
+
+    protected short getVisibleRecheckIntervalRaw() {
         return visibleRecheckInterval;
     }
 

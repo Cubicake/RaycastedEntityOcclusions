@@ -1,8 +1,10 @@
 package games.cubi.raycastedAntiESP.data;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class DataHolder {
 
-    private static int tick = 0;
+    private static AtomicInteger tick = new AtomicInteger();
 
     private static final PlayerRegistry playerRegistry;
 
@@ -15,12 +17,12 @@ public class DataHolder {
     }
 
     public static int getTick() {
-        return tick;
+        return tick.get();
     }
     /**
      * This method should ONLY be called on the tick start event
      * **/
     public static void incrementTick() {
-        tick++;
+        tick.incrementAndGet();
     }
 }

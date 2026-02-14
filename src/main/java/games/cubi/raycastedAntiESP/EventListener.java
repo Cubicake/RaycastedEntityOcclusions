@@ -2,7 +2,6 @@ package games.cubi.raycastedAntiESP;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import games.cubi.raycastedAntiESP.engine.Engine;
 import games.cubi.raycastedAntiESP.packets.PacketEventsStatus;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
@@ -34,12 +33,15 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(EventListener.class);
     private final ConfigManager config;
     private final PacketProcessor packetProcessor;
     private final RaycastedAntiESP plugin;
@@ -105,6 +107,7 @@ public class EventListener implements Listener {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
         }
+        DataHolder.players().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -120,6 +123,9 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
+
+        RaycastedAntiESP.getEngine().syncRecheck();
+
         if (VisibilityChangeHandlers.entityVisibilityChangeHandlerType() == VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getEntity().processCache();
 
         if (VisibilityChangeHandlers.playerVisibilityChangeHandlerType() == VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getPlayer().processCache();
@@ -128,7 +134,7 @@ public class EventListener implements Listener {
 
         DataHolder.incrementTick();
 
-        Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().distributeTick());
+        Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().tick());
     }
 
     @EventHandler(priority = EventPriority.MONITOR) //Runs last
@@ -168,7 +174,7 @@ public class EventListener implements Listener {
 
         PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
 
-        if (playerData == null || playerData.isEntityVisible(entityUUID)) return; // The player is meant to see the entity, do nothing
+        if (playerData == null || playerData.entityVisibility().isVisible(entityUUID, DataHolder.getTick())) return; // The player is meant to see the entity, do nothing
 
         event.setCancelled(true);
         if (event.getEntity() instanceof Player) {
@@ -180,26 +186,31 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerUntrackEntity(PlayerUntrackEntityEvent event) {
-        //todo: Same as above, probs specific to Bukkit
+        //todo: Same as above, probs specific to Bukkit, also is this event fired for players too? If so then must add a check for that
         UUID entityUUID = event.getEntity().getUniqueId();
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
         PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
-        if ((playerData == null) || (!playerData.isEntityVisible(entityUUID))) return; // State change was triggered by us, do nothing
+        final int currentTick = DataHolder.getTick();
 
-        DataHolder.players().getPlayerData(playerUUID).removeEntity(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
+        if ((playerData == null) || (!playerData.entityVisibility().isVisible(entityUUID, currentTick))) return; // State change was triggered by us, do nothing
+
+        DataHolder.players().getPlayerData(playerUUID).entityVisibility().remove(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntitySpawn(EntitySpawnEvent event) {
-        if (isBukkitESM()) bukkitEntitySnapshotManager().queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getLocation());
+        ifIsBukkitESM(bukkitESM -> bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getLocation()));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         if (!isBukkitESM()) return;
+        BukkitESM bukkitESM = (BukkitESM) SnapshotManager.getEntitySnapshotManager();
+        if (bukkitESM == null) { Logger.errorAndReturn(new RuntimeException("EntityLoad: Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!"), 2); return; }
+
         for (var entity : event.getEntities()) {
-            bukkitEntitySnapshotManager().queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation());
+            bukkitESM.queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation());
         }
     }
 
@@ -224,6 +235,19 @@ public class EventListener implements Listener {
         }
         return (BukkitESM) SnapshotManager.getEntitySnapshotManager();
     }
+
+    private void ifIsBukkitESM(Consumer<BukkitESM> onBukkitESM) {
+        if (SnapshotManager.entitySnapshotManagerType() != SnapshotManager.EntitySnapshotManagerType.BUKKIT) {
+            return;
+        }
+
+        var manager = SnapshotManager.getEntitySnapshotManager();
+        if (manager instanceof BukkitESM bukkitESM) {
+            onBukkitESM.accept(bukkitESM);
+        }
+        else Logger.error("Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!", 2);
+    }
+
 
     private boolean isBukkitESM() {
         return SnapshotManager.blockSnapshotManagerType() == SnapshotManager.BlockSnapshotManagerType.BUKKIT;

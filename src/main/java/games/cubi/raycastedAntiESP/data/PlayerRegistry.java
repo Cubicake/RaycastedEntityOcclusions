@@ -25,6 +25,10 @@ public class PlayerRegistry {
         playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, bypass));
     }
 
+    public void unregisterPlayer(UUID playerUUID) {
+        playerDataMap.remove(playerUUID);
+    }
+
     public PlayerData getPlayerData(UUID playerUUID) {
         return playerDataMap.get(playerUUID);
     }

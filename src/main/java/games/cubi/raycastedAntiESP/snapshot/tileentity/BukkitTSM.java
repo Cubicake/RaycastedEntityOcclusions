@@ -10,7 +10,8 @@ import org.bukkit.Bukkit;
 import java.util.Set;
 import java.util.UUID;
 
-public class BukkitTSM extends PlayerLastSeenTracker {
+@Deprecated(forRemoval = true)
+public class BukkitTSM/* extends PlayerLastSeenTracker */{/*
     public BukkitTSM() {
     }
 
@@ -38,5 +39,5 @@ public class BukkitTSM extends PlayerLastSeenTracker {
     @Override
     public SnapshotManager.TileEntitySnapshotManagerType getType() {
         return SnapshotManager.TileEntitySnapshotManagerType.BUKKIT;
-    }
+    }*/
 }

@@ -21,6 +21,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.Set;
 import java.util.Map;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -237,4 +238,8 @@ public class BukkitBSM implements BlockSnapshotManager {
         //created to use in a info command maybe
     }
 
+    @Override
+    public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z) {
+        return getTileEntitiesInChunk(Bukkit.getWorld(world), x, z);
+    }
 }

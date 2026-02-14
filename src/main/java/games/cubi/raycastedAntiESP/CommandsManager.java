@@ -98,21 +98,26 @@ public class CommandsManager {
                     .executes(context -> {
                         Player player = (Player) context.getSource().getSender();
                         Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendBlockChange(new Location(player.getWorld(), 0, -59, 0), Material.COMMAND_BLOCK.createBlockData());
+                            player.sendBlockChange(new Location(player.getWorld(), -80, -59, 0), Material.COMMAND_BLOCK.createBlockData());
                         });
                         return Command.SINGLE_SUCCESS;
                     })
             )
-                .then(Commands.literal("async-test")
-                        .executes(context -> {
-                            Player player = (Player) context.getSource().getSender();
-                            Bukkit.getAsyncScheduler().runNow(plugin, (scheduledTask) -> {
-                                player.sendBlockChange(new Location(player.getWorld(), 0.12839, -59.1238912, 0.2139012), Material.COMMAND_BLOCK.createBlockData());
-                            });
-                            return Command.SINGLE_SUCCESS;
-                        })
-                )
-
+            .then(Commands.literal("async-test")
+                    .executes(context -> {
+                        Player player = (Player) context.getSource().getSender();
+                        Bukkit.getAsyncScheduler().runNow(plugin, (scheduledTask) -> {
+                            player.sendBlockChange(new Location(player.getWorld(), -80, -59.1238912, 0.2139012), Material.COMMAND_BLOCK.createBlockData());
+                        });
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .then(Commands.literal("tick")
+                    .executes(context -> {
+                        Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().tick());
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
             .build();
     }
 

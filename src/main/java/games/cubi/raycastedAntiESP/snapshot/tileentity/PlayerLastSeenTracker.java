@@ -52,25 +52,18 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
 
         AtomicReference<TriState> result = new AtomicReference<>();
 
-        Set<PlayerLastCheckTimestamp> playerLastCheckTimestampSet = tileEntityLastSeenMap.compute(location, (key, set) -> {
-            if (set == null) {
-                Set<PlayerLastCheckTimestamp> newSet = ConcurrentHashMap.newKeySet();
-                newSet.add(new PlayerLastCheckTimestamp(playerUUID, DataHolder.getTick(), false));
-                result.set(TriState.NOT_SET);
-                return newSet;
-            }
-            // Check existing entry
-            for (PlayerLastCheckTimestamp playerLastCheckTimestamp : set) {
+        Set<PlayerLastCheckTimestamp> playerLastCheckTimestampSet = tileEntityLastSeenMap.get(location);
+        if (playerLastCheckTimestampSet != null) {
+            for (PlayerLastCheckTimestamp playerLastCheckTimestamp : playerLastCheckTimestampSet) {
                 if (playerLastCheckTimestamp.getPlayer().equals(playerUUID)) {
                     result.set(playerLastCheckTimestamp.hasBeenSeen() ? TriState.TRUE : TriState.FALSE);
-                    return set;
+                    break;
                 }
             }
-            // Otherwise add new entry
-            set.add(new PlayerLastCheckTimestamp(playerUUID, DataHolder.getTick(), false));
+        }
+        else {
             result.set(TriState.NOT_SET);
-            return set;
-        });
+        }
 
         return result.get();
     }
@@ -95,6 +88,39 @@ public abstract class PlayerLastSeenTracker implements TileEntitySnapshotManager
             set.add(new PlayerLastCheckTimestamp(playerUUID, timestamp, visible));
             return set;
         });
+    }
+
+    @Override
+    public TriState compareAndSet(BlockLocation location, UUID playerUUID, boolean visible) {
+        AtomicReference<TriState> result = new AtomicReference<>();
+
+        int timestamp = DataHolder.getTick();
+        tileEntityLastSeenMap.compute(location, (key, set) -> {
+            if (set == null) {
+                Set<PlayerLastCheckTimestamp> newSet = ConcurrentHashMap.newKeySet();
+                newSet.add(new PlayerLastCheckTimestamp(playerUUID, timestamp, visible));
+                result.set(TriState.NOT_SET);
+                return newSet;
+            }
+            // Check existing entry
+            for (PlayerLastCheckTimestamp playerLastCheckTimestamp : set) {
+                if (playerLastCheckTimestamp.getPlayer().equals(playerUUID)) {
+                    if (playerLastCheckTimestamp.hasBeenSeen() == visible) {
+                        result.set(TriState.FALSE);
+                    } else {
+                        result.set(TriState.TRUE);
+                    }
+                    playerLastCheckTimestamp.update(timestamp, visible); //this may not be atomic/thread-safe, but it's unlikely to cause issues in practice
+                    return set;
+                }
+            }
+            // Otherwise add new entry
+            set.add(new PlayerLastCheckTimestamp(playerUUID, timestamp, visible));
+            result.set(TriState.NOT_SET);
+            return set;
+        });
+
+        return result.get();
     }
 
     public void clearTileEntityLastSeenMap() {
