@@ -14,7 +14,6 @@ import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.snapshot.entity.EntitySnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.snapshot.tileentity.TileEntitySnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.EntityVisibilityChanger;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.player.PlayerVisibilityChanger;
@@ -91,7 +90,6 @@ public class SimpleEngine implements Engine {
         DebugConfig debugConfig = config.getDebugConfig();
         BlockSnapshotManager blockSnapshotManager = SnapshotManager.getBlockSnapshotManager();
         EntitySnapshotManager entitySnapshotManager = SnapshotManager.getEntitySnapshotManager();
-        TileEntitySnapshotManager tileEntitySnapshotManager = SnapshotManager.getTileEntitySnapshotManager();
 
         int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), Bukkit.getViewDistance())+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
 
@@ -100,15 +98,14 @@ public class SimpleEngine implements Engine {
             List<PlayerData> batch = batches.get(i);
             plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
                 Thread.currentThread().setName("RaycastedAntiESP Engine TickProcessor "+ finalI + " - Folia Async Pool");
-                processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), blockSnapshotManager, entitySnapshotManager, tileEntitySnapshotManager, currentTick);
+                processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), blockSnapshotManager, entitySnapshotManager, currentTick);
                 task.cancel();
             });
         }
     }
 
-    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig,
-                                       int tileEntityRadius, boolean debugParticles, BlockSnapshotManager blockSnapshotManager, EntitySnapshotManager entitySnapshotManager,
-                                       TileEntitySnapshotManager tileEntitySnapshotManager, int currentTick) {
+    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig, int tileEntityRadius,
+                                       boolean debugParticles, BlockSnapshotManager blockSnapshotManager, EntitySnapshotManager entitySnapshotManager, int currentTick) {
 
         for (PlayerData playerData : playerDataList) {
             if (playerData.hasBypassPermission()) continue;
@@ -132,7 +129,7 @@ public class SimpleEngine implements Engine {
                 //todo: add loggers to figure out why
             }
             boolean canSee = RaycastUtil.raycast(playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee);
+            entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee, currentTick);
         }
     }
 
@@ -142,7 +139,7 @@ public class SimpleEngine implements Engine {
         for (UUID otherPlayerUUID : player.playerVisibility().getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             Locatable otherPlayerLocation = entitySnapshotManager.getLocation(otherPlayerUUID);
             boolean canSee = RaycastUtil.raycast(playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee);
+            playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee, currentTick);
         }
     }
 
@@ -156,7 +153,7 @@ public class SimpleEngine implements Engine {
 
         for (BlockLocation tileEntityLocation : tileEntitiesToCheck) {
             boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee);
+            tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
         }
     }
 

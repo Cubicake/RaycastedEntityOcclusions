@@ -174,13 +174,15 @@ public class EventListener implements Listener {
 
         PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
 
-        if (playerData == null || playerData.entityVisibility().isVisible(entityUUID, DataHolder.getTick())) return; // The player is meant to see the entity, do nothing
+        int currentTick = DataHolder.getTick();
+
+        if (playerData == null || playerData.entityVisibility().isVisible(entityUUID, currentTick)) return; // The player is meant to see the entity, do nothing
 
         event.setCancelled(true);
         if (event.getEntity() instanceof Player) {
-            VisibilityChangeHandlers.getPlayer().hidePlayerFromPlayer(playerUUID, entityUUID);
+            VisibilityChangeHandlers.getPlayer().hidePlayerFromPlayer(playerUUID, entityUUID, currentTick);
         } else {
-            VisibilityChangeHandlers.getEntity().hideEntityFromPlayer(playerUUID, entityUUID);
+            VisibilityChangeHandlers.getEntity().hideEntityFromPlayer(playerUUID, entityUUID, currentTick);
         }
     }
 

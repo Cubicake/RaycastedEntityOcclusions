@@ -18,16 +18,16 @@ public class PlayerData {
     private final UUID playerUUID;
     private volatile boolean hasBypassPermission;
 
-    public static class TileEntityVisibilityTracker extends VisibilityTracker<BlockLocation> {
-        private final ConcurrentHashMap<BlockLocation, VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
+    public static class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlockLocation> {
+        private final ConcurrentHashMap<AbstractBlockLocation, VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
 
         @Override
-        protected ConcurrentHashMap<BlockLocation, VisibilityAndLastCheckTime> getMap() {
+        protected ConcurrentHashMap<AbstractBlockLocation, VisibilityAndLastCheckTime> getMap() {
             return tileEntityVisibility;
         }
 
         @Override
-        public Set<BlockLocation> getNeedingRecheck(int recheckTicks, int currentTime) {
+        public Set<AbstractBlockLocation> getNeedingRecheck(int recheckTicks, int currentTime) {
             Logger.errorAndReturn(new RuntimeException("getNeedingRecheck without world and chunk parameters called on TileEntityVisibilityTracker."), 1);
             return null;
         }

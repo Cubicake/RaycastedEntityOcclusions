@@ -11,13 +11,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public interface EntityVisibilityChanger {
     //Implementation detail: Remember to update the playerdata visibility maps when changing entity visibility
-    void showEntityToPlayer(UUID player, UUID entity);
-    void hideEntityFromPlayer(UUID player, UUID entity);
-    default void setEntityVisibilityForPlayer(UUID player, UUID entity, boolean visible) {
+    void showEntityToPlayer(UUID player, UUID entity, int currentTick);
+    void hideEntityFromPlayer(UUID player, UUID entity, int currentTick);
+    default void setEntityVisibilityForPlayer(UUID player, UUID entity, boolean visible, int currentTick) {
         if (visible) {
-            showEntityToPlayer(player, entity);
+            showEntityToPlayer(player, entity, currentTick);
         } else {
-            hideEntityFromPlayer(player, entity);
+            hideEntityFromPlayer(player, entity, currentTick);
         }
     }
 

@@ -11,23 +11,23 @@ import java.util.UUID;
 public class BukkitEVC extends BukkitAbstractVisibilityChanger implements EntityVisibilityChanger {
 
     @Override
-    public void showEntityToPlayer(UUID player, UUID entity) {
+    public void showEntityToPlayer(UUID player, UUID entity, int currentTick) {
         PlayerData data = DataHolder.players().getPlayerData(player);
         if (data == null) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
-        super.showAbstractEntityToPlayer(player, entity);
+        super.showAbstractEntityToPlayer(player, entity, currentTick);
     }
 
     @Override
-    public void hideEntityFromPlayer(UUID player, UUID entity) {
+    public void hideEntityFromPlayer(UUID player, UUID entity, int currentTick) {
         PlayerData data = DataHolder.players().getPlayerData(player);
         if (data == null) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
-        super.hideAbstractEntityFromPlayer(player, entity);
+        super.hideAbstractEntityFromPlayer(player, entity, currentTick);
     }
 
     @Override

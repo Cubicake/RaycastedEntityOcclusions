@@ -71,7 +71,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
         initialiseCommands();
 
-        SnapshotManager.initialise(new BukkitBSM(this, config), new BukkitESM(), new BukkitTSM());
+        SnapshotManager.initialise(new BukkitBSM(this, config), new BukkitESM());
         VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
 
         //bStats

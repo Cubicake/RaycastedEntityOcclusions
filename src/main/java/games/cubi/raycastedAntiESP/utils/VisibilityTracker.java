@@ -66,7 +66,7 @@ public abstract class VisibilityTracker<T> {
      * @param newVisibility The new visibility state
      * @return true if the visibility was changed, false if it was already set to newVisibility
      */
-    public boolean compareAndSetGenericVisibility(T entity, boolean newVisibility, int currentTick) {
+    public boolean compareAndSetVisibility(T entity, boolean newVisibility, int currentTick) {
         final boolean[] changed = {false};
         getMap().compute(entity, (key, current) -> {
 
