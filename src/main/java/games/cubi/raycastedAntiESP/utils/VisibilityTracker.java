@@ -32,22 +32,22 @@ public abstract class VisibilityTracker<T> {
                 .visible();
     }
 
-    public Set<T> getNeedingRecheck(int recheckTicks, int currentTime) {
+    public Set<T> getNeedingRecheck(int recheckTicks, int currentTick) {
         Set<T> recheckList = new HashSet<>();
 
         for (Map.Entry<T, PlayerData.VisibilityAndLastCheckTime> values : getMap().entrySet()) {
-            if ((values.getValue().visible()) && (currentTime - values.getValue().lastChecked() < recheckTicks)) continue;
+            if ((values.getValue().visible()) && (currentTick - values.getValue().lastChecked() < recheckTicks)) continue;
             recheckList.add(values.getKey());
         }
 
         return recheckList;
     }
 
-    protected Set<T> getNotNeedingRecheck(int recheckTicks, int currentTime) {
+    protected Set<T> getNotNeedingRecheck(int recheckTicks, int currentTick) {
         Set<T> notNeedingRecheckList = new HashSet<>();
 
         for (Map.Entry<T, PlayerData.VisibilityAndLastCheckTime> values : getMap().entrySet()) {
-            if ((values.getValue().visible()) && (currentTime - values.getValue().lastChecked() < recheckTicks)) {
+            if ((values.getValue().visible()) && (currentTick - values.getValue().lastChecked() < recheckTicks)) {
                 notNeedingRecheckList.add(values.getKey());
             }
         }
