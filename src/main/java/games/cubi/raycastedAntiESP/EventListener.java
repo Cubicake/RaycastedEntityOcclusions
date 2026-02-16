@@ -12,6 +12,8 @@ import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 import io.papermc.paper.event.entity.EntityMoveEvent;
+import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
+import io.papermc.paper.event.packet.PlayerChunkUnloadEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import io.papermc.paper.event.player.PlayerUntrackEntityEvent;
 import org.bukkit.Bukkit;
@@ -110,15 +112,28 @@ public class EventListener implements Listener {
         DataHolder.players().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
+    @EventHandler(priority = EventPriority.LOWEST) //Runs first
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+
         if (player.hasPermission("raycastedantiesp.updatecheck")) { //todo: centralise permission strings to prevent issues when perm names are changed
             checkForUpdates(plugin, player);
         }
         DataHolder.players().registerPlayer(player.getUniqueId(),player.hasPermission("raycastedantiesp.bypass") ,DataHolder.getTick());
 
         if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerChunkLoad(PlayerChunkLoadEvent e) {
+        DataHolder.players().getPlayerData(e.getPlayer().getUniqueId()).tileVisibility().addChunk(e.getChunk().getX(), e.getChunk().getZ());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerChunkUnload(PlayerChunkUnloadEvent e) {
+        PlayerData player = DataHolder.players().getPlayerData(e.getPlayer().getUniqueId());
+        if (player == null) return; // They've logged out
+        player.tileVisibility().removeChunk(e.getWorld().getUID(), e.getChunk().getX(), e.getChunk().getZ());
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
@@ -155,7 +170,16 @@ public class EventListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         updateEntityLocation(event.getPlayer().getUniqueId(), event.getPlayer().getEyeLocation());
+
+        /*if (DataHolder.players().isPlayerRegistered(event.getPlayer().getUniqueId())) return; //todo this will be used for the backport version where PlayerClientLoadWorldEvent is not available
+        onPlayerJoin(event.getPlayer());*/
     }
+/*
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerLoadWorld(PlayerClientLoadedWorldEvent event) {
+        if (DataHolder.players().isPlayerRegistered(event.getPlayer().getUniqueId())) return;
+        onPlayerJoin(event.getPlayer());
+    }*/
 
     private void updateEntityLocation(UUID entityUUID, Location newLocation) {
         if (!(SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT)) {
