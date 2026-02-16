@@ -35,6 +35,10 @@ public class PlayerRegistry {
         return playerDataMap.get(playerUUID);
     }
 
+    public boolean isPlayerRegistered(UUID playerUUID) {
+        return playerDataMap.containsKey(playerUUID);
+    }
+
     /**
      * @return Live, mutable collection of all PlayerData instances.
      * **/

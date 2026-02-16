@@ -12,8 +12,7 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
 
     @Override
     public void showEntityToPlayer(UUID player, UUID entity, int currentTick) {
-        PlayerData data = DataHolder.players().getPlayerData(player);
-        if (data == null) {
+        if (!DataHolder.players().isPlayerRegistered(player)) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
@@ -22,8 +21,7 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
 
     @Override
     public void hideEntityFromPlayer(UUID player, UUID entity, int currentTick) {
-        PlayerData data = DataHolder.players().getPlayerData(player);
-        if (data == null) {
+        if (!DataHolder.players().isPlayerRegistered(player)) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
