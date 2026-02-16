@@ -1,14 +1,5 @@
 package games.cubi.raycastedAntiESP.utils;
 
-import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
-import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
-import org.bukkit.entity.Player;
-
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -18,35 +9,6 @@ public class PlayerData {
     private final UUID playerUUID;
     private final int joinTick;
     private volatile boolean hasBypassPermission;
-
-    public static class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlockLocation> {
-        private final ConcurrentHashMap<AbstractBlockLocation, VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
-
-        @Override
-        protected ConcurrentHashMap<AbstractBlockLocation, VisibilityAndLastCheckTime> getMap() {
-            return tileEntityVisibility;
-        }
-
-        @Override
-        public Set<AbstractBlockLocation> getNeedingRecheck(int recheckTicks, int currentTime) {
-            Logger.errorAndReturn(new RuntimeException("getNeedingRecheck without world and chunk parameters called on TileEntityVisibilityTracker."), 1);
-            return null;
-        }
-
-        public Set<BlockLocation> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
-            HashSet<BlockLocation> recheckList = new HashSet<>();
-
-            for (int x = chunkX-chunkRadius; x <= chunkRadius+chunkX; x++) {
-                for (int z = chunkZ-chunkRadius; z <= chunkRadius+chunkZ; z++) {
-                    recheckList.addAll(blockSnapshotManager.getTileEntitiesInChunk(world, x, z));
-                }
-            }
-
-            recheckList.removeAll(getNotNeedingRecheck(recheckTicks, currentTime));
-
-            return recheckList;
-        }
-    }
 
     public static class EntityVisibilityTracker extends VisibilityTracker<UUID> {
         private final ConcurrentHashMap<UUID, VisibilityAndLastCheckTime> entityVisibility = new ConcurrentHashMap<>();     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
@@ -94,6 +56,10 @@ public class PlayerData {
 
     public boolean hasBypassPermission() {
         return hasBypassPermission;
+    }
+
+    public int getJoinTick() {
+        return joinTick;
     }
 
     public void setBypassPermission(boolean hasBypassPermission) {
