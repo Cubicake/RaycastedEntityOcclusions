@@ -49,7 +49,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
             Location loc = tileEntity.toBukkitLocation().toBlockLocation();
 
             p.sendBlockChange(loc, DEEPSLATE_DATA);
-            Logger.debug("Sent deepslate block change to " + p.getName() + " at " + loc);
+            //Logger.debug("Sent deepslate block change to " + p.getName() + " at " + loc);
         } //todo need to toggle isTileEntityVisibleToPlayer in snapshot manager
     }
 
@@ -75,6 +75,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
                     player.sendBlockChange(location, tileState.getBlockData());
                     player.sendBlockUpdate(location, tileState);
+                    //Logger.debug("Sent block change to " + player.getName() + " at " + location + " for tile entity at " + tileEntity);
                 }
                 else {
                     Logger.warning("Tried to show tile entity at " + tileEntity + " to "+player.getName()+" but it was not a TileState! Block type: " + blockState.getType()+". Removing from the list of tile entities.", 5);
