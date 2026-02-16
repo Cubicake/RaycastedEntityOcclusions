@@ -23,8 +23,8 @@ public class PlayerRegistry {
 
     private final ConcurrentHashMap<UUID, PlayerData> playerDataMap = new ConcurrentHashMap<>();
 
-    public void registerPlayer(UUID playerUUID, boolean bypass) {
-        playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, bypass));
+    public void registerPlayer(UUID playerUUID, boolean hasBypassPermission, int joinTick) {
+        playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, hasBypassPermission, joinTick));
     }
 
     public void unregisterPlayer(UUID playerUUID) {

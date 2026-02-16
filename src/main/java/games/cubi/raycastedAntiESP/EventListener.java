@@ -116,7 +116,7 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedantiesp.updatecheck")) { //todo: centralise permission strings to prevent issues when perm names are changed
             checkForUpdates(plugin, player);
         }
-        DataHolder.players().registerPlayer(player.getUniqueId(), player.hasPermission("raycastedantiesp.bypass"));
+        DataHolder.players().registerPlayer(player.getUniqueId(),player.hasPermission("raycastedantiesp.bypass") ,DataHolder.getTick());
 
         if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
     }

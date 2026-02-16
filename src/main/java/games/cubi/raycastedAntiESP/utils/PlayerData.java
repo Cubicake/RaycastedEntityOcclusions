@@ -16,6 +16,7 @@ public class PlayerData {
     protected record VisibilityAndLastCheckTime(boolean visible, int lastChecked) {}
 
     private final UUID playerUUID;
+    private final int joinTick;
     private volatile boolean hasBypassPermission;
 
     public static class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlockLocation> {
@@ -69,14 +70,10 @@ public class PlayerData {
     private final EntityVisibilityTracker entityVisibilityTracker = new EntityVisibilityTracker();
     private final PlayerVisibilityTracker playerVisibilityTracker = new PlayerVisibilityTracker();
 
-    public PlayerData(UUID playerUUID, boolean hasBypassPermission) {
-        this.playerUUID = playerUUID;
+    public PlayerData(UUID player, boolean hasBypassPermission, int joinTick) {
+        this.joinTick = joinTick;
+        this.playerUUID = player;
         this.hasBypassPermission = hasBypassPermission;
-    }
-
-    public PlayerData(Player player) {
-        this.playerUUID = player.getUniqueId();
-        this.hasBypassPermission = player.hasPermission("raycastedantiesp.bypass");
     }
 
     public TileEntityVisibilityTracker tileVisibility() {
