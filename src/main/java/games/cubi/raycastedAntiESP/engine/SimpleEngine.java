@@ -152,6 +152,7 @@ public class SimpleEngine implements Engine {
         Set<BlockLocation> tileEntitiesToCheck = player.tileVisibility().getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick, playerLocation.world(), chunkX, chunkZ, chunkRadius, blockSnapshotManager);
 
         for (BlockLocation tileEntityLocation : tileEntitiesToCheck) {
+            if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
             boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
         }
