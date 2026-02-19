@@ -1,6 +1,5 @@
 package games.cubi.raycastedAntiESP.config;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.SerializationException;
@@ -12,6 +11,7 @@ public final class ConfigNodeUtil {
     private ConfigNodeUtil() {}
 
     public static @NotNull ConfigurationNode node(@NotNull ConfigurationNode config, @NotNull String path) {
+        // REO config keys are dot-delimited and do not contain literal dots in key names
         return config.node((Object[]) path.split("\\."));
     }
 
@@ -29,9 +29,9 @@ public final class ConfigNodeUtil {
 
     public static @NotNull List<String> getStringList(@NotNull ConfigurationNode config, @NotNull String path) {
         try {
-            return node(config, path).getList(String.class, List.of());
+            return new ArrayList<>(node(config, path).getList(String.class, List.of()));
         } catch (SerializationException ignored) {
-            return List.of();
+            return new ArrayList<>();
         }
     }
 

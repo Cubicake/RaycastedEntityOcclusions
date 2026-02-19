@@ -80,6 +80,7 @@ public class ConfigManager {
         if (!ConfigNodeUtil.contains(config, "configurate-migrated")) {
             Logger.info("Migrated configuration loading to Configurate YAML.", Logger.Frequency.CONFIG_LOAD.value);
             ConfigNodeUtil.set(config, "configurate-migrated", true);
+            saveConfigNode();
         }
 
         // Set defaults if they don't exist
@@ -94,7 +95,7 @@ public class ConfigManager {
         visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config);
         engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config);
 
-        // Save any new defaults that were added
+        // Persist the config tree after load/default initialization
         saveConfigNode();
 
     }
