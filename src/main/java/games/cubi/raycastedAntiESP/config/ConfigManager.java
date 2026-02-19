@@ -81,6 +81,7 @@ public class ConfigManager {
         }
         if (ConfigNodeUtil.contains(config, "configurate-migrated")) {
             ConfigNodeUtil.set(config, "configurate-migrated", null);
+            saveConfigNode();
         }
 
         // Set defaults if they don't exist
