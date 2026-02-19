@@ -1,9 +1,10 @@
 package games.cubi.raycastedAntiESP.config.engine;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,8 +31,8 @@ public abstract class EngineConfig implements Config {
         }
 
         @Override
-        public @NotNull EngineConfig getFromConfig(FileConfiguration config) {
-            String modeName = config.getString(getFullPath() + ".mode", DEFAULT.getMode().getName());
+        public @NotNull EngineConfig getFromConfig(ConfigurationNode config) {
+            String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", DEFAULT.getMode().getName());
             EngineMode mode = EngineMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid engine mode in config, defaulting to " + DEFAULT.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
@@ -44,8 +45,8 @@ public abstract class EngineConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<EngineConfig> setDefaults(FileConfiguration config) {
-            config.addDefault(getFullPath() + ".mode", DEFAULT.getMode().getName());
+        public @NotNull ConfigFactory<EngineConfig> setDefaults(ConfigurationNode config) {
+            ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", DEFAULT.getMode().getName());
             predictiveFactory().setDefaults(config);
             simpleFactory().setDefaults(config);
             return this;

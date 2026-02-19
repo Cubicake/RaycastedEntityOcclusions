@@ -1,10 +1,11 @@
 package games.cubi.raycastedAntiESP.config.snapshot.block;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public class BlockSnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull BlockSnapshotConfig getFromConfig(FileConfiguration config) {
+        public @NotNull BlockSnapshotConfig getFromConfig(ConfigurationNode config) {
             BlockMode mode = getModeFromConfig(config);
             if (mode == null) {
                 Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
@@ -60,14 +61,14 @@ public class BlockSnapshotConfig implements Config {
             };
         }
 
-        private @Nullable BlockMode getModeFromConfig(FileConfiguration config) {
-            String modeName = config.getString(getFullPath()+".mode", BlockSnapshotConfig.DEFAULT.getName());
+        private @Nullable BlockMode getModeFromConfig(ConfigurationNode config) {
+            String modeName = ConfigNodeUtil.getString(config, getFullPath()+".mode", BlockSnapshotConfig.DEFAULT.getName());
             return BlockMode.fromString(modeName);
         }
 
         @Override
-        public @NotNull ConfigFactory<BlockSnapshotConfig> setDefaults(FileConfiguration config) {
-            config.addDefault(getFullPath()+".mode", DEFAULT.getMode().getName());
+        public @NotNull ConfigFactory<BlockSnapshotConfig> setDefaults(ConfigurationNode config) {
+            ConfigNodeUtil.addDefault(config, getFullPath()+".mode", DEFAULT.getMode().getName());
             new BukkitBlockSnapshotConfig.Factory(null).setDefaults(config);
             return this;
         }

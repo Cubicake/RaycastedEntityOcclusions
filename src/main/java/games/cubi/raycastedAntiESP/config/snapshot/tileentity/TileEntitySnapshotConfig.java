@@ -1,10 +1,11 @@
 package games.cubi.raycastedAntiESP.config.snapshot.tileentity;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 
 public class TileEntitySnapshotConfig implements Config {
@@ -39,9 +40,9 @@ public class TileEntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull TileEntitySnapshotConfig getFromConfig(FileConfiguration config) {
+        public @NotNull TileEntitySnapshotConfig getFromConfig(ConfigurationNode config) {
             TileEntitySnapshotConfig fallback = DEFAULT;
-            String modeName = config.getString(getFullPath()+".mode", fallback.getName());
+            String modeName = ConfigNodeUtil.getString(config, getFullPath()+".mode", fallback.getName());
             TileEntitySnapshotMode mode = TileEntitySnapshotMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), Logger.Frequency.CONFIG_LOAD.value);
@@ -60,8 +61,8 @@ public class TileEntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<TileEntitySnapshotConfig> setDefaults(FileConfiguration config) {
-            config.addDefault(getFullPath()+".mode", DEFAULT.getName());
+        public @NotNull ConfigFactory<TileEntitySnapshotConfig> setDefaults(ConfigurationNode config) {
+            ConfigNodeUtil.addDefault(config, getFullPath()+".mode", DEFAULT.getName());
             new BukkitTileEntitySnapshotConfig.Factory().setDefaults(config);
             new PacketEventsTileEntitySnapshotConfig.Factory().setDefaults(config);
             return this;
