@@ -5,8 +5,16 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.raycastedAntiESP.data.DataHolder;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
+import games.cubi.raycastedAntiESP.utils.TileEntityVisibilityTracker;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
+import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -94,30 +102,22 @@ public class CommandsManager {
                         return Command.SINGLE_SUCCESS;
                     })
             )
-            .then(Commands.literal("sync-test")
-                    .executes(context -> {
-                        Player player = (Player) context.getSource().getSender();
-                        Bukkit.getScheduler().runTask(plugin, () -> {
-                            player.sendBlockChange(new Location(player.getWorld(), -80, -59, 0), Material.COMMAND_BLOCK.createBlockData());
-                        });
+            .then(Commands.argument("arg", ArgumentTypes.blockPosition())
+                    .executes(ctx -> {
+                        final BlockPositionResolver blockPositionResolver = ctx.getArgument("arg", BlockPositionResolver.class);
+                        final BlockPosition blockPosition = blockPositionResolver.resolve(ctx.getSource());
+
+                        BlockLocation location = new BlockLocation(ctx.getSource().getLocation().getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z());
+
+                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
+                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ()).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
+                        Player player = (Player) ctx.getSource().getSender();
+                        TileEntityVisibilityTracker tileEntityVisibilityTracker = DataHolder.players().getPlayerData(player.getUniqueId()).tileVisibility();
+                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1);
+                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1);
+
                         return Command.SINGLE_SUCCESS;
-                    })
-            )
-            .then(Commands.literal("async-test")
-                    .executes(context -> {
-                        Player player = (Player) context.getSource().getSender();
-                        Bukkit.getAsyncScheduler().runNow(plugin, (scheduledTask) -> {
-                            player.sendBlockChange(new Location(player.getWorld(), -80, -59.1238912, 0.2139012), Material.COMMAND_BLOCK.createBlockData());
-                        });
-                        return Command.SINGLE_SUCCESS;
-                    })
-            )
-            .then(Commands.literal("tick")
-                    .executes(context -> {
-                        Bukkit.getAsyncScheduler().runNow(plugin, task -> RaycastedAntiESP.getEngine().tick());
-                        return Command.SINGLE_SUCCESS;
-                    })
-            )
+                        }))
             .build();
     }
 
