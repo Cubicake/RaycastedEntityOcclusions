@@ -5,7 +5,7 @@ import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.block.BlockVisibilityHandlerConfig;
 import games.cubi.raycastedAntiESP.config.visibility.entity.EntityVisibilityHandlerConfig;
 import games.cubi.raycastedAntiESP.config.visibility.tileentity.TileEntityVisibilityHandlerConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public record VisibilityHandlersConfig(BlockVisibilityHandlerConfig blockConfig,
@@ -25,7 +25,7 @@ public record VisibilityHandlersConfig(BlockVisibilityHandlerConfig blockConfig,
         }
 
         @Override
-        public @NotNull VisibilityHandlersConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull VisibilityHandlersConfig getFromConfig(FileConfiguration config) {
             BlockVisibilityHandlerConfig blockConfig = blockFactory.getFromConfig(config);
             EntityVisibilityHandlerConfig entityConfig = entityFactory.getFromConfig(config);
             TileEntityVisibilityHandlerConfig tileEntityConfig = tileEntityFactory.getFromConfig(config);
@@ -33,7 +33,7 @@ public record VisibilityHandlersConfig(BlockVisibilityHandlerConfig blockConfig,
         }
 
         @Override
-        public @NotNull ConfigFactory<VisibilityHandlersConfig> setDefaults(ConfigurationNode config) {
+        public @NotNull ConfigFactory<VisibilityHandlersConfig> setDefaults(FileConfiguration config) {
             blockFactory.setDefaults(config);
             entityFactory.setDefaults(config);
             tileEntityFactory.setDefaults(config);

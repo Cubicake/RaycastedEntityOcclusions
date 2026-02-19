@@ -1,8 +1,7 @@
 package games.cubi.raycastedAntiESP.config.engine;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,13 +19,13 @@ public class SimpleEngineConfig extends EngineConfig {
         }
 
         @Override
-        public @NotNull SimpleEngineConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull SimpleEngineConfig getFromConfig(FileConfiguration config) {
             return new SimpleEngineConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<SimpleEngineConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getFullPath(), null);
+        public @NotNull ConfigFactory<SimpleEngineConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath(), null);
             return this;
         }
     }

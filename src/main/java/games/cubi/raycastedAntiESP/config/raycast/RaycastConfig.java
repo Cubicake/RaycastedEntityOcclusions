@@ -1,9 +1,8 @@
 package games.cubi.raycastedAntiESP.config.raycast;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,23 +84,23 @@ public class RaycastConfig implements Config {
             return path;
         }
 
-        public @NotNull RaycastConfig getFromConfig(ConfigurationNode config, @NotNull RaycastConfig defaults) {
+        public @NotNull RaycastConfig getFromConfig(FileConfiguration config, @NotNull RaycastConfig defaults) {
             return new RaycastConfig(
-                    ConfigNodeUtil.getInt(config, path+".max-occluding-count", defaults.getMaxOccludingCount()),
-                    ConfigNodeUtil.getInt(config, path+".always-show-radius", defaults.getAlwaysShowRadius()),
-                    ConfigNodeUtil.getInt(config, path+".raycast-radius", defaults.getRaycastRadius()),
-                    ConfigNodeUtil.getInt(config, path+".visible-recheck-interval", defaults.getRawVisibleRecheckInterval()),
-                    ConfigNodeUtil.getBoolean(config, path+".enabled", defaults.isEnabled())
+                    config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
+                    config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
+                    config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
+                    config.getInt(path+".visible-recheck-interval", defaults.getRawVisibleRecheckInterval()),
+                    config.getBoolean(path+".enabled", defaults.isEnabled())
             );
         }
 
-        public @NotNull ConfigFactory<T> setDefaults(ConfigurationNode config, @Nullable RaycastConfig defaults) {
+        public @NotNull ConfigFactory<T> setDefaults(FileConfiguration config, @Nullable RaycastConfig defaults) {
             RaycastConfig fallback = defaults != null ? defaults : DEFAULTS;
-            ConfigNodeUtil.addDefault(config, path+".enabled", fallback.isEnabled());
-            ConfigNodeUtil.addDefault(config, path+".max-occluding-count", fallback.getMaxOccludingCount());
-            ConfigNodeUtil.addDefault(config, path+".always-show-radius", fallback.getAlwaysShowRadius());
-            ConfigNodeUtil.addDefault(config, path+".raycast-radius", fallback.getRaycastRadius());
-            ConfigNodeUtil.addDefault(config, path+".visible-recheck-interval", fallback.getRawVisibleRecheckInterval());
+            config.addDefault(path+".enabled", fallback.isEnabled());
+            config.addDefault(path+".max-occluding-count", fallback.getMaxOccludingCount());
+            config.addDefault(path+".always-show-radius", fallback.getAlwaysShowRadius());
+            config.addDefault(path+".raycast-radius", fallback.getRaycastRadius());
+            config.addDefault(path+".visible-recheck-interval", fallback.getRawVisibleRecheckInterval());
             return this;
         }
     }

@@ -20,6 +20,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import org.bukkit.entity.Player;
@@ -51,9 +52,10 @@ public class CommandsManager {
                     //dynamic config values
                     sender.sendMessage("[RaycastedAntiESP] Config values: ");
 
-                    for (var entry : config.getConfigValues().entrySet()) {
-                        String path = entry.getKey();
-                        Object val = entry.getValue();
+                    ConfigurationSection root = config.getConfigFile().getConfigurationSection("");
+                    for (String path : root.getKeys(true)) {
+                        Object val = config.getConfigFile().get(path);
+                        if (val instanceof ConfigurationSection) continue;
                         sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
                     }
                     return Command.SINGLE_SUCCESS;

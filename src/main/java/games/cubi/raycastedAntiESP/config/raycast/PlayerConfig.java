@@ -1,7 +1,6 @@
 package games.cubi.raycastedAntiESP.config.raycast;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,16 +40,16 @@ public class PlayerConfig extends RaycastConfig {
         }
 
         @Override
-        public @NotNull PlayerConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull PlayerConfig getFromConfig(FileConfiguration config) {
             return new PlayerConfig(
                     super.getFromConfig(config, DEFAULT),
-                    ConfigNodeUtil.getBoolean(config, PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking()));
+                    config.getBoolean(PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking()));
         }
 
         @Override
-        public @NotNull Factory setDefaults(ConfigurationNode config) {
+        public @NotNull Factory setDefaults(FileConfiguration config) {
             super.setDefaults(config, DEFAULT);
-            ConfigNodeUtil.addDefault(config, PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking());
+            config.addDefault(PATH+".only-cull-while-sneaking", DEFAULT.onlyCullWhileSneaking());
             return this;
         }
     }

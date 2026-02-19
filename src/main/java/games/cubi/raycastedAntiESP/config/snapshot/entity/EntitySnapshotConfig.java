@@ -1,11 +1,10 @@
 package games.cubi.raycastedAntiESP.config.snapshot.entity;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public class EntitySnapshotConfig implements Config {
@@ -32,9 +31,9 @@ public class EntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull EntitySnapshotConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull EntitySnapshotConfig getFromConfig(FileConfiguration config) {
             EntitySnapshotConfig fallback = DEFAULT;
-            String modeName = ConfigNodeUtil.getString(config, getFullPath()+".mode", fallback.getMode().getName());
+            String modeName = config.getString(getFullPath()+".mode", fallback.getMode().getName());
             EntityMode mode = EntityMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid entity snapshot mode in config, defaulting to " + fallback.getMode().getName(), Logger.Frequency.CONFIG_LOAD.value);
@@ -54,8 +53,8 @@ public class EntitySnapshotConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<EntitySnapshotConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getFullPath()+".mode", DEFAULT.getMode().getName());
+        public @NotNull ConfigFactory<EntitySnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath()+".mode", DEFAULT.getMode().getName());
             new BukkitEntitySnapshotConfig.Factory().setDefaults(config);
             new PacketEventsEntitySnapshotConfig.Factory().setDefaults(config);
             return this;

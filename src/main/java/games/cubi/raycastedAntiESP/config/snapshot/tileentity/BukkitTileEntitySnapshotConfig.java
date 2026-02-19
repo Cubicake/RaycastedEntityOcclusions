@@ -3,7 +3,7 @@ package games.cubi.raycastedAntiESP.config.snapshot.tileentity;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,12 +24,12 @@ public class BukkitTileEntitySnapshotConfig extends TileEntitySnapshotConfig {
         }
 
         @Override
-        public @NotNull BukkitTileEntitySnapshotConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull BukkitTileEntitySnapshotConfig getFromConfig(FileConfiguration config) {
             return new BukkitTileEntitySnapshotConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitTileEntitySnapshotConfig> setDefaults(ConfigurationNode config) {
+        public @NotNull ConfigFactory<BukkitTileEntitySnapshotConfig> setDefaults(FileConfiguration config) {
             return this;
         }
     }

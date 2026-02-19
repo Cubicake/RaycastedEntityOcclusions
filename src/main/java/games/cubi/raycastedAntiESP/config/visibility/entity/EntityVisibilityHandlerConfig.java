@@ -1,11 +1,10 @@
 package games.cubi.raycastedAntiESP.config.visibility.entity;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +43,7 @@ public class EntityVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull EntityVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull EntityVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
             EntityVisibilityHandlerMode mode = readMode(config);
             return switch (mode) {
                 case BUKKIT -> bukkitFactory.getFromConfig(config);
@@ -53,8 +52,8 @@ public class EntityVisibilityHandlerConfig implements Config {
             };
         }
 
-        private EntityVisibilityHandlerMode readMode(ConfigurationNode config) {
-            String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", EntityVisibilityHandlerConfig.DEFAULT.getName());
+        private EntityVisibilityHandlerMode readMode(FileConfiguration config) {
+            String modeName = config.getString(getFullPath() + ".mode", EntityVisibilityHandlerConfig.DEFAULT.getName());
             EntityVisibilityHandlerMode mode = EntityVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid entity visibility handler mode in config, defaulting to " + EntityVisibilityHandlerConfig.DEFAULT.getName(), 3);
@@ -64,9 +63,9 @@ public class EntityVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<EntityVisibilityHandlerConfig> setDefaults(ConfigurationNode config) {
+        public @NotNull ConfigFactory<EntityVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
             EntityVisibilityHandlerConfig fallback = DEFAULT;
-            ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", fallback.getName());
+            config.addDefault(getFullPath() + ".mode", fallback.getName());
             EntityVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
                 case BUKKIT -> bukkitFactory.setDefaults(config);

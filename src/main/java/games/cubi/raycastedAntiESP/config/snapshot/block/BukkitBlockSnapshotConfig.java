@@ -1,9 +1,8 @@
 package games.cubi.raycastedAntiESP.config.snapshot.block;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
@@ -41,9 +40,9 @@ public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
         }
 
         @Override
-        public @NotNull BukkitBlockSnapshotConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull BukkitBlockSnapshotConfig getFromConfig(FileConfiguration config) {
             String fullPath = getFullPath();
-            int snapshotRate = ConfigNodeUtil.getInt(config, fullPath + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
+            int snapshotRate = config.getInt(fullPath + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
 
             if (snapshotRate < 1) {
                 snapshotRate = DEFAULT.getRefreshRateSeconds();
@@ -53,9 +52,9 @@ public class BukkitBlockSnapshotConfig extends BlockSnapshotConfig {
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitBlockSnapshotConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getPathUpToBlock() + BlockMode.SYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
-            ConfigNodeUtil.addDefault(config, getPathUpToBlock() + BlockMode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
+        public @NotNull ConfigFactory<BukkitBlockSnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getPathUpToBlock() + BlockMode.SYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
+            config.addDefault(getPathUpToBlock() + BlockMode.UNSAFE_ASYNC_BUKKIT.getPathName() + ".refresh-interval", DEFAULT.getRefreshRateSeconds());
             return this;
         }
     }

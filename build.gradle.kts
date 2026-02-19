@@ -13,8 +13,6 @@ repositories {
 dependencies {
     paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.8.0")
-    compileOnly("org.spongepowered:configurate-core:4.2.0")
-    compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 }
 
 java {

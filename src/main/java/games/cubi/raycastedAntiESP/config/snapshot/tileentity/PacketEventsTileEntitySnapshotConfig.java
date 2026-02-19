@@ -1,10 +1,9 @@
 package games.cubi.raycastedAntiESP.config.snapshot.tileentity;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,13 +24,13 @@ public class PacketEventsTileEntitySnapshotConfig extends TileEntitySnapshotConf
         }
 
         @Override
-        public @NotNull PacketEventsTileEntitySnapshotConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull PacketEventsTileEntitySnapshotConfig getFromConfig(FileConfiguration config) {
             return new PacketEventsTileEntitySnapshotConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<PacketEventsTileEntitySnapshotConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getFullPath(), null);
+        public @NotNull ConfigFactory<PacketEventsTileEntitySnapshotConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath(), null);
             return this;
         }
     }

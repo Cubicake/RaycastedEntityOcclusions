@@ -1,9 +1,8 @@
 package games.cubi.raycastedAntiESP.config.raycast;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import org.bukkit.Material;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,19 +57,19 @@ public class TileEntityConfig extends RaycastConfig {
         }
 
         @Override
-        public @NotNull TileEntityConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull TileEntityConfig getFromConfig(FileConfiguration config) {
             return new TileEntityConfig(super.getFromConfig(config, DEFAULT), getMaterialList(config));
         }
 
         @Override
-        public @NotNull Factory setDefaults(ConfigurationNode config) {
+        public @NotNull Factory setDefaults(FileConfiguration config) {
             super.setDefaults(config, DEFAULT);
-            ConfigNodeUtil.addDefault(config, EXEMPTED_BLOCKS_PATH, DEFAULT.getExemptedBlocks().stream().map(Material::name).toList());
+            config.addDefault(EXEMPTED_BLOCKS_PATH, DEFAULT.getExemptedBlocks().stream().map(Material::name).toList());
             return this;
         }
 
-        private List<Material> getMaterialList(ConfigurationNode config) {
-            List<String> materialNames = ConfigNodeUtil.getStringList(config, EXEMPTED_BLOCKS_PATH);
+        private List<Material> getMaterialList(FileConfiguration config) {
+            List<String> materialNames = config.getStringList(EXEMPTED_BLOCKS_PATH);
 
             ArrayList<Material> materials = new ArrayList<>();
 

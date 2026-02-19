@@ -1,9 +1,8 @@
 package games.cubi.raycastedAntiESP.config.visibility.block;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 public class BukkitBlockVisibilityHandlerConfig extends BlockVisibilityHandlerConfig {
@@ -27,13 +26,13 @@ public class BukkitBlockVisibilityHandlerConfig extends BlockVisibilityHandlerCo
         }
 
         @Override
-        public @NotNull BukkitBlockVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
+        public @NotNull BukkitBlockVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
             return new BukkitBlockVisibilityHandlerConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitBlockVisibilityHandlerConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getFullPath(), null);
+        public @NotNull ConfigFactory<BukkitBlockVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath(), null);
             return this;
         }
     }

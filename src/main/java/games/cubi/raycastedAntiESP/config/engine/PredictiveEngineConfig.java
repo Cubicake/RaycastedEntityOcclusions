@@ -1,10 +1,9 @@
 package games.cubi.raycastedAntiESP.config.engine;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import org.bukkit.configuration.InvalidConfigurationException;
-import org.spongepowered.configurate.ConfigurationNode;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,8 +29,8 @@ public class PredictiveEngineConfig extends EngineConfig {
         }
 
         @Override
-        public @NotNull PredictiveEngineConfig getFromConfig(ConfigurationNode config) {
-            int leniency = ConfigNodeUtil.getInt(config, getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
+        public @NotNull PredictiveEngineConfig getFromConfig(FileConfiguration config) {
+            int leniency = config.getInt(getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
             if (leniency < 0) {
                 leniency = DEFAULT.getLeniencyTicks();
             }
@@ -39,8 +38,8 @@ public class PredictiveEngineConfig extends EngineConfig {
         }
 
         @Override
-        public @NotNull ConfigFactory<PredictiveEngineConfig> setDefaults(ConfigurationNode config) {
-            ConfigNodeUtil.addDefault(config, getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
+        public @NotNull ConfigFactory<PredictiveEngineConfig> setDefaults(FileConfiguration config) {
+            config.addDefault(getFullPath() + ".leniency", DEFAULT.getLeniencyTicks());
             return this;
         }
     }
