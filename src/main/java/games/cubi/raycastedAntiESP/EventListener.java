@@ -2,7 +2,6 @@ package games.cubi.raycastedAntiESP;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
-import games.cubi.raycastedAntiESP.engine.Engine;
 import games.cubi.raycastedAntiESP.packets.PacketEventsStatus;
 import games.cubi.raycastedAntiESP.packets.PacketProcessor;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
@@ -12,7 +11,6 @@ import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
-import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.player.PlayerTrackEntityEvent;
 import org.bukkit.Bukkit;
@@ -35,7 +33,6 @@ import org.bukkit.event.world.EntitiesLoadEvent;
 import org.bukkit.event.world.EntitiesUnloadEvent;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
