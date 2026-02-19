@@ -14,7 +14,6 @@ public class PredictiveEngineConfig extends EngineConfig {
     public PredictiveEngineConfig(int leniencyTicks) {
         super(EngineMode.PREDICTIVE);
         this.leniencyTicks = leniencyTicks;
-        Logger.warning(new RuntimeException("Predictive Engine not functional"), Logger.Frequency.CONFIG_LOAD.value);
     }
 
     public int getLeniencyTicks() {

@@ -12,6 +12,7 @@ import games.cubi.raycastedAntiESP.config.engine.EngineConfig;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.ConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.BufferedReader;
@@ -45,6 +46,7 @@ public class ConfigManager {
         this.configPath = plugin.getDataFolder().toPath().resolve("config.yml");
         this.loader = YamlConfigurationLoader.builder()
                 .path(configPath)
+                .nodeStyle(NodeStyle.BLOCK)
                 .build();
         load();
     }
@@ -69,18 +71,13 @@ public class ConfigManager {
      */
     public void load() {
         //check that we are on the main bukkit thread to prevent concurrency issues
-        if (isNotOnMainThread()) return;
+        if (isNotOnMainThread()) Logger.warningAndReturn(new RuntimeException("ConfigManager attempted to be loaded off the main thread. Please report this to the plugin developer."), Logger.Frequency.CRITICAL.value);
         ensureConfigFileExists();
         config = loadConfigNode();
 
         ConfigurationNode defaults = loadBundledDefaults();
         if (defaults != null) {
             mergeMissing(defaults, config);
-        }
-        if (!ConfigNodeUtil.contains(config, "configurate-migrated")) {
-            Logger.info("Migrated configuration loading to Configurate YAML.", Logger.Frequency.CONFIG_LOAD.value);
-            ConfigNodeUtil.set(config, "configurate-migrated", true);
-            saveConfigNode();
         }
 
         // Set defaults if they don't exist
