@@ -58,7 +58,11 @@ public class RaycastConfig implements Config {
         return raycastRadius;
     }
 
-    public short getVisibleRecheckInterval() {
+    public short getVisibleRecheckIntervalTicks() {
+        return visibleRecheckInterval;
+    }
+
+    protected short getRawVisibleRecheckInterval() {
         return visibleRecheckInterval;
     }
 
@@ -85,7 +89,7 @@ public class RaycastConfig implements Config {
                     config.getInt(path+".max-occluding-count", defaults.getMaxOccludingCount()),
                     config.getInt(path+".always-show-radius", defaults.getAlwaysShowRadius()),
                     config.getInt(path+".raycast-radius", defaults.getRaycastRadius()),
-                    config.getInt(path+".visible-recheck-interval", defaults.getVisibleRecheckInterval()),
+                    config.getInt(path+".visible-recheck-interval", defaults.getRawVisibleRecheckInterval()),
                     config.getBoolean(path+".enabled", defaults.isEnabled())
             );
         }
@@ -96,7 +100,7 @@ public class RaycastConfig implements Config {
             config.addDefault(path+".max-occluding-count", fallback.getMaxOccludingCount());
             config.addDefault(path+".always-show-radius", fallback.getAlwaysShowRadius());
             config.addDefault(path+".raycast-radius", fallback.getRaycastRadius());
-            config.addDefault(path+".visible-recheck-interval", fallback.getVisibleRecheckInterval());
+            config.addDefault(path+".visible-recheck-interval", fallback.getRawVisibleRecheckInterval());
             return this;
         }
     }

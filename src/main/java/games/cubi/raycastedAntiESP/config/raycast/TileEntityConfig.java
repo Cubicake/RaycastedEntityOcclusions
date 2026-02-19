@@ -38,7 +38,12 @@ public class TileEntityConfig extends RaycastConfig {
 
     @Override
     public int getVisibleRecheckIntervalSeconds() {
-        return super.getVisibleRecheckInterval();
+        return super.getRawVisibleRecheckInterval();
+    }
+
+    @Override
+    public short getVisibleRecheckIntervalTicks() {
+        return (short) (super.getRawVisibleRecheckInterval() * 20);
     }
 
     public List<Material> getExemptedBlocks() {

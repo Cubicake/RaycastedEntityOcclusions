@@ -161,10 +161,10 @@ public class SimpleEngine implements Engine {
         }
     }
 
-    private void forceEntityLocationUpdate() {  //todo: Quite frankly idk if this is needed
-        int recheckInterval = ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
+    private void forceEntityLocationUpdate() {  //todo: Quite frankly idk if this is needed, disabled for now since the config option doesn't even exist
+        int recheckInterval = -1;//ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
         if (recheckInterval <= 0) {
-            bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed
+            //bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed
             return;
         }
 
