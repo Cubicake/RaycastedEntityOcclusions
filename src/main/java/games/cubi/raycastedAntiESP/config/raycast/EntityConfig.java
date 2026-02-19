@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.config.raycast;
 
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,12 +31,12 @@ public class EntityConfig extends RaycastConfig {
         }
 
         @Override
-        public @NotNull EntityConfig getFromConfig(FileConfiguration config) {
+        public @NotNull EntityConfig getFromConfig(ConfigurationNode config) {
             return new EntityConfig(super.getFromConfig(config, DEFAULT));
         }
 
         @Override
-        public @NotNull Factory setDefaults(FileConfiguration config) {
+        public @NotNull Factory setDefaults(ConfigurationNode config) {
             super.setDefaults(config, DEFAULT);
             return this;
         }

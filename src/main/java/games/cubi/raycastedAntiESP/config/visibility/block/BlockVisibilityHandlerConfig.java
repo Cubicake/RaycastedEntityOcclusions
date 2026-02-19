@@ -1,10 +1,11 @@
 package games.cubi.raycastedAntiESP.config.visibility.block;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +44,7 @@ public class BlockVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull BlockVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
+        public @NotNull BlockVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
             BlockVisibilityHandlerMode mode = readMode(config);
             return switch (mode) {
                 case BUKKIT -> bukkitFactory.getFromConfig(config);
@@ -51,8 +52,8 @@ public class BlockVisibilityHandlerConfig implements Config {
             };
         }
 
-        private BlockVisibilityHandlerMode readMode(FileConfiguration config) {
-            String modeName = config.getString(getFullPath() + ".mode", BlockVisibilityHandlerConfig.DEFAULT.getName());
+        private BlockVisibilityHandlerMode readMode(ConfigurationNode config) {
+            String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", BlockVisibilityHandlerConfig.DEFAULT.getName());
             BlockVisibilityHandlerMode mode = BlockVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid block visibility handler mode in config, defaulting to " + BlockVisibilityHandlerConfig.DEFAULT.getName(), 3);
@@ -62,9 +63,9 @@ public class BlockVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<BlockVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
+        public @NotNull ConfigFactory<BlockVisibilityHandlerConfig> setDefaults(ConfigurationNode config) {
             BlockVisibilityHandlerConfig fallback = DEFAULT;
-            config.addDefault(getFullPath() + ".mode", fallback.getName());
+            ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", fallback.getName());
             BlockVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
                 case BUKKIT -> bukkitFactory.setDefaults(config);

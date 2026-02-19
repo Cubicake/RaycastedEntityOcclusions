@@ -1,10 +1,11 @@
 package games.cubi.raycastedAntiESP.config.visibility.tileentity;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +42,7 @@ public class TileEntityVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull TileEntityVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
+        public @NotNull TileEntityVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
             TileEntityVisibilityHandlerMode mode = readMode(config);
             return switch (mode) {
                 case BUKKIT -> bukkitFactory.getFromConfig(config);
@@ -49,8 +50,8 @@ public class TileEntityVisibilityHandlerConfig implements Config {
             };
         }
 
-        private TileEntityVisibilityHandlerMode readMode(FileConfiguration config) {
-            String modeName = config.getString(getFullPath() + ".mode", TileEntityVisibilityHandlerConfig.DEFAULT.getName());
+        private TileEntityVisibilityHandlerMode readMode(ConfigurationNode config) {
+            String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", TileEntityVisibilityHandlerConfig.DEFAULT.getName());
             TileEntityVisibilityHandlerMode mode = TileEntityVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
                 Logger.warning("Invalid tile entity visibility handler mode in config, defaulting to " + TileEntityVisibilityHandlerConfig.DEFAULT.getName(), 3);
@@ -60,9 +61,9 @@ public class TileEntityVisibilityHandlerConfig implements Config {
         }
 
         @Override
-        public @NotNull ConfigFactory<TileEntityVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
+        public @NotNull ConfigFactory<TileEntityVisibilityHandlerConfig> setDefaults(ConfigurationNode config) {
             TileEntityVisibilityHandlerConfig fallback = DEFAULT;
-            config.addDefault(getFullPath() + ".mode", fallback.getName());
+            ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", fallback.getName());
             TileEntityVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
                 case BUKKIT -> bukkitFactory.setDefaults(config);

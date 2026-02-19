@@ -1,8 +1,9 @@
 package games.cubi.raycastedAntiESP.config.visibility.tileentity;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 
 public class BukkitTileEntityVisibilityHandlerConfig extends TileEntityVisibilityHandlerConfig {
@@ -27,13 +28,13 @@ public class BukkitTileEntityVisibilityHandlerConfig extends TileEntityVisibilit
         }
 
         @Override
-        public @NotNull BukkitTileEntityVisibilityHandlerConfig getFromConfig(FileConfiguration config) {
+        public @NotNull BukkitTileEntityVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
             return new BukkitTileEntityVisibilityHandlerConfig();
         }
 
         @Override
-        public @NotNull ConfigFactory<BukkitTileEntityVisibilityHandlerConfig> setDefaults(FileConfiguration config) {
-            config.addDefault(getFullPath(), null);
+        public @NotNull ConfigFactory<BukkitTileEntityVisibilityHandlerConfig> setDefaults(ConfigurationNode config) {
+            ConfigNodeUtil.addDefault(config, getFullPath(), null);
             return this;
         }
     }

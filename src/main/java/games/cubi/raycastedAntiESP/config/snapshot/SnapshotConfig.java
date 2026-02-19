@@ -6,7 +6,7 @@ import games.cubi.raycastedAntiESP.config.snapshot.block.BlockSnapshotConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.block.BukkitBlockSnapshotConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.entity.EntitySnapshotConfig;
 import games.cubi.raycastedAntiESP.config.snapshot.tileentity.TileEntitySnapshotConfig;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +39,7 @@ public record SnapshotConfig(BlockSnapshotConfig blockSnapshotConfig, EntitySnap
         }
 
         @Override
-        public @NotNull SnapshotConfig getFromConfig(FileConfiguration config) {
+        public @NotNull SnapshotConfig getFromConfig(ConfigurationNode config) {
             BlockSnapshotConfig blockSnapshotConfig = blockSnapshotConfigFactory.getFromConfig(config);
             EntitySnapshotConfig entitySnapshotConfig = entitySnapshotConfigFactory.getFromConfig(config);
             TileEntitySnapshotConfig tileEntitySnapshotConfig = tileEntitySnapshotConfigFactory.getFromConfig(config);
@@ -48,7 +48,7 @@ public record SnapshotConfig(BlockSnapshotConfig blockSnapshotConfig, EntitySnap
         }
 
         @Override
-        public @NotNull ConfigFactory<SnapshotConfig> setDefaults(FileConfiguration config) {
+        public @NotNull ConfigFactory<SnapshotConfig> setDefaults(ConfigurationNode config) {
             blockSnapshotConfigFactory.setDefaults(config);
             entitySnapshotConfigFactory.setDefaults(config);
             tileEntitySnapshotConfigFactory.setDefaults(config);
