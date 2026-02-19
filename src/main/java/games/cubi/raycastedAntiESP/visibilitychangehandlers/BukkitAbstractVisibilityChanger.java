@@ -21,14 +21,14 @@ public abstract class BukkitAbstractVisibilityChanger extends AbstractEntityCach
      * @param entityUUID While player UUIDs will be accepted since this method does not use instanceof checks for performance reasons, you must only pass non-player entities here.
      */
     //TODO: Find out if performance is actually a concern here, if not we can do instanceof checks to prevent misuse
-    public void showAbstractEntityToPlayer(UUID playerUUID, UUID entityUUID) {
-        if (DataHolder.players().getPlayerData(playerUUID).compareAndSetEntityVisibility(entityUUID, true)) {
+    public void showAbstractEntityToPlayer(UUID playerUUID, UUID entityUUID, int currentTick) {
+        if (DataHolder.players().getPlayerData(playerUUID).entityVisibility().compareAndSetVisibility(entityUUID, true, currentTick)) {
             addEntityToShowCache(playerUUID, entityUUID); // Only process entity visibility changes if there was an actual change
         }
     }
 
-    public void hideAbstractEntityFromPlayer(UUID playerUUID, UUID entityUUID) {
-        if (DataHolder.players().getPlayerData(playerUUID).compareAndSetEntityVisibility(entityUUID, false)) {
+    public void hideAbstractEntityFromPlayer(UUID playerUUID, UUID entityUUID, int currentTick) {
+        if (DataHolder.players().getPlayerData(playerUUID).entityVisibility().compareAndSetVisibility(entityUUID, false, currentTick)) {
             addEntityToHideCache(playerUUID, entityUUID);
         }
     }

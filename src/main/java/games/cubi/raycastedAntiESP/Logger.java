@@ -28,7 +28,7 @@ public class Logger {
     public enum Frequency {
         ONCE_PER_TICK(9),
         MULTI_PER_TICK(10),
-        CONFIG_LOAD(3),
+        CONFIG_LOAD(3), //flawed premise until config loads before
         ;
         public final int value;
 
@@ -63,6 +63,11 @@ public class Logger {
 
     public static void warning(Throwable throwable, @Range(from = 1, to = 10) int level) {
         warning(processThrowable(throwable), level);
+    }
+
+    @Deprecated
+    public static void debug(String message) {
+        forwardLog(message, Level.INFO, 1);
     }
 
     public static void error(Throwable throwable, @Range(from = 1, to = 10) int level) {

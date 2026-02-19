@@ -5,13 +5,25 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.raycastedAntiESP.data.DataHolder;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
+import games.cubi.raycastedAntiESP.utils.TileEntityVisibilityTracker;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
+import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
+import org.bukkit.entity.Player;
 
 @SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
@@ -90,6 +102,22 @@ public class CommandsManager {
                         return Command.SINGLE_SUCCESS;
                     })
             )
+            .then(Commands.argument("arg", ArgumentTypes.blockPosition())
+                    .executes(ctx -> {
+                        final BlockPositionResolver blockPositionResolver = ctx.getArgument("arg", BlockPositionResolver.class);
+                        final BlockPosition blockPosition = blockPositionResolver.resolve(ctx.getSource());
+
+                        BlockLocation location = new BlockLocation(ctx.getSource().getLocation().getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z());
+
+                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
+                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ()).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
+                        Player player = (Player) ctx.getSource().getSender();
+                        TileEntityVisibilityTracker tileEntityVisibilityTracker = DataHolder.players().getPlayerData(player.getUniqueId()).tileVisibility();
+                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1);
+                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1);
+
+                        return Command.SINGLE_SUCCESS;
+                        }))
             .build();
     }
 

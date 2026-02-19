@@ -8,14 +8,15 @@ import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
+import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.raycast.RaycastUtil;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
 import games.cubi.raycastedAntiESP.snapshot.entity.EntitySnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.snapshot.tileentity.TileEntitySnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.EntityVisibilityChanger;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.player.PlayerVisibilityChanger;
@@ -29,6 +30,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 public class SimpleEngine implements Engine {
@@ -50,8 +52,27 @@ public class SimpleEngine implements Engine {
         flushLogCache(null);
     }
 
+    public final ConcurrentLinkedQueue<AbstractBlockLocation> recheckQueue = new ConcurrentLinkedQueue<>();
+
+    public void syncRecheck() {
+        while (!recheckQueue.isEmpty()) {
+            AbstractBlockLocation location = recheckQueue.poll();
+
+            World world = Bukkit.getWorld(location.world());
+            if (world == null) continue;
+
+            ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).snapshotChunk(world.getChunkAt(location.blockX() >> 4, location.blockZ() >> 4));
+        }
+    }
+
+    @Override
+    public void tick() {
+        distributeTick();
+    }
+
     //run async
-    public void distributeTick() {
+    private void distributeTick() {
+        final int currentTick = DataHolder.getTick();
         Collection<PlayerData> allPlayers = DataHolder.players().getAllPlayerData();
         int threads = 1; //TODO Don't hardcode
         if (threads < 1) threads = 1;
@@ -72,93 +93,76 @@ public class SimpleEngine implements Engine {
         DebugConfig debugConfig = config.getDebugConfig();
         BlockSnapshotManager blockSnapshotManager = SnapshotManager.getBlockSnapshotManager();
         EntitySnapshotManager entitySnapshotManager = SnapshotManager.getEntitySnapshotManager();
-        TileEntitySnapshotManager tileEntitySnapshotManager = SnapshotManager.getTileEntitySnapshotManager();
 
-        int maxRadius = Bukkit.getViewDistance() * 16;
-        int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), maxRadius)+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
+        int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), Bukkit.getViewDistance())+15)/16; //Fine to precompute this stuff cos a single division per tick is negligible
 
         for (int i = 0; i < batches.size(); i++) {
             int finalI = i;
             List<PlayerData> batch = batches.get(i);
             plugin.getServer().getAsyncScheduler().runNow(plugin, task -> {
                 Thread.currentThread().setName("RaycastedAntiESP Engine TickProcessor "+ finalI + " - Folia Async Pool");
-                processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), blockSnapshotManager, entitySnapshotManager, tileEntitySnapshotManager);
+                processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), blockSnapshotManager, entitySnapshotManager, currentTick);
                 task.cancel();
             });
         }
     }
 
-    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig, int tileEntityRadius, boolean debugParticles, BlockSnapshotManager blockSnapshotManager, EntitySnapshotManager entitySnapshotManager, TileEntitySnapshotManager tileEntitySnapshotManager) {
+    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig, int tileEntityRadius,
+                                       boolean debugParticles, BlockSnapshotManager blockSnapshotManager, EntitySnapshotManager entitySnapshotManager, int currentTick) {
+
         for (PlayerData playerData : playerDataList) {
             if (playerData.hasBypassPermission()) continue;
 
             Locatable playerLocation = entitySnapshotManager.getLocation(playerData.getPlayerUUID());
             if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"), 3);
 
-            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, entitySnapshotManager, blockSnapshotManager);
-            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, entitySnapshotManager, blockSnapshotManager);
-            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, tileEntityRadius, debugParticles, tileEntitySnapshotManager, blockSnapshotManager);
+            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);
+            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);
+            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, tileEntityRadius, debugParticles, blockSnapshotManager, currentTick);
         }
     }
 //TODO: Make sure player.getEntitiesNeedingRecheck is actually implemented
-    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, EntitySnapshotManager entitySnapshotManager, BlockSnapshotManager blockSnapshotManager) {
+    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, EntitySnapshotManager entitySnapshotManager, BlockSnapshotManager blockSnapshotManager, int currentTick) {
         EntityVisibilityChanger entityVisibilityChanger = VisibilityChangeHandlers.getEntity();
 
-        for (UUID entityUUID : player.getEntitiesNeedingRecheck(entityConfig.getVisibleRecheckInterval())) { //todo: current issue is code not entering this loop
+        for (UUID entityUUID : player.entityVisibility().getNeedingRecheck(entityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             Locatable entityLocation = entitySnapshotManager.getLocation(entityUUID);
             if (entityLocation == null) {
                 return;
                 //todo: add loggers to figure out why
             }
             boolean canSee = RaycastUtil.raycast(playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee);
+            entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee, currentTick);
         }
     }
 
-    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, EntitySnapshotManager entitySnapshotManager, BlockSnapshotManager blockSnapshotManager) {
+    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, EntitySnapshotManager entitySnapshotManager, BlockSnapshotManager blockSnapshotManager, int currentTick) {
         PlayerVisibilityChanger playerVisibilityChanger = VisibilityChangeHandlers.getPlayer();
 
-        for (UUID otherPlayerUUID : player.getPlayersNeedingRecheck(playerConfig.getVisibleRecheckInterval())) {
+        for (UUID otherPlayerUUID : player.playerVisibility().getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             Locatable otherPlayerLocation = entitySnapshotManager.getLocation(otherPlayerUUID);
             boolean canSee = RaycastUtil.raycast(playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee);
+            playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee, currentTick);
         }
     }
 
-    private void checkTileEntities(PlayerData player, Locatable playerLocation, TileEntityConfig tileEntityConfig, int chunkRadius, boolean debugParticles, TileEntitySnapshotManager tileSnapshotManager, BlockSnapshotManager blockSnapshotManager) {
+    private void checkTileEntities(PlayerData player, Locatable playerLocation, TileEntityConfig tileEntityConfig, int chunkRadius, boolean debugParticles, BlockSnapshotManager blockSnapshotManager, int currentTick) {
         //todo: How to get tile entities around player? Just chunkscan?
         TileEntityVisibilityChanger tileEntityVisibilityChanger = VisibilityChangeHandlers.getTileEntity();
         int chunkX = playerLocation.blockX() >> 4;
         int chunkZ = playerLocation.blockZ() >> 4;
 
-        HashSet<BlockLocation> tileEntities = new HashSet<>();
-        for (int x = chunkX-chunkRadius; x <= chunkRadius+chunkX; x++) {
-            for (int z = chunkZ-chunkRadius; z <= chunkRadius+chunkZ; z++) {
-                tileEntities.addAll(tileSnapshotManager.getTileEntitiesInChunk(playerLocation.world(), x, z));
-            }
-        }
-        for (BlockLocation tileEntityLocation : tileEntities) {
-            int timeSinceLastCheck = tileSnapshotManager.getTicksSincePlayerSawTileEntity(player.getPlayerUUID(), tileEntityLocation);
-            if ((timeSinceLastCheck > -1) && (timeSinceLastCheck < tileEntityConfig.getVisibleRecheckInterval())) continue;
+        Set<BlockLocation> tileEntitiesToCheck = player.tileVisibility().getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick, playerLocation.world(), chunkX, chunkZ, chunkRadius, blockSnapshotManager);
+
+        for (BlockLocation tileEntityLocation : tileEntitiesToCheck) {
+            if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
             boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
-            tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee);
-            if (canSee) {
-                tileSnapshotManager.addOrUpdateTileEntityLastSeenMap(tileEntityLocation, player.getPlayerUUID(), DataHolder.getTick(), true);
-                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().showTileEntityToPlayer(player.getPlayerUUID(), tileEntityLocation);
-            }
-            else {
-                tileSnapshotManager.removeFromTileEntityLastSeenMap(tileEntityLocation);
-                if (VisibilityChangeHandlers.getTileEntity().getType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().hideTileEntityFromPlayer(player.getPlayerUUID(), tileEntityLocation);
-            }
+            tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
         }
     }
 
-
-
-
-    private void forceEntityLocationUpdate() { //todo is this needed?
-        int recheckInterval = -1;//ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
-
+    private void forceEntityLocationUpdate() {  //todo: Quite frankly idk if this is needed
+        int recheckInterval = ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
         if (recheckInterval <= 0) {
             bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed
             return;

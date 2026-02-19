@@ -12,7 +12,6 @@ import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
 import games.cubi.raycastedAntiESP.snapshot.entity.BukkitESM;
-import games.cubi.raycastedAntiESP.snapshot.tileentity.BukkitTSM;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.entity.BukkitEVC;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.player.BukkitPVC;
@@ -70,7 +69,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
         initialiseCommands();
 
-        SnapshotManager.initialise(new BukkitBSM(this, config), new BukkitESM(), new BukkitTSM());
+        SnapshotManager.initialise(new BukkitBSM(this, config), new BukkitESM());
         VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
 
         //bStats

@@ -50,6 +50,14 @@ public interface Locatable extends Position {
     @SuppressWarnings("UnstableApiUsage") double y();
     @SuppressWarnings("UnstableApiUsage") double z();
 
+    default int chunkX() {
+        return blockX() >> 4;
+    }
+
+    default int chunkZ() {
+        return blockZ() >> 4;
+    }
+
     @Override @SuppressWarnings("UnstableApiUsage")
     default int blockX() {
         return (int) Math.floor(x());

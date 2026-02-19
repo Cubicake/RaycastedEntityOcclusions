@@ -13,24 +13,24 @@ public interface PlayerVisibilityChanger {
      * @param player
      * @param otherPlayer
      */
-    void showPlayerToPlayer(UUID player, UUID otherPlayer);
+    void showPlayerToPlayer(UUID player, UUID otherPlayer, int currentTick);
     /**
      * First UUID is player receiving visibility change, second is the player which will become hidden
      * @param player
      * @param otherPlayer
      */
-    void hidePlayerFromPlayer(UUID player, UUID otherPlayer);
+    void hidePlayerFromPlayer(UUID player, UUID otherPlayer, int currentTick);
 
     /**
      * First UUID is player receiving visibility change, second is the player which will become hidden
      * @param player
      * @param otherPlayer
      */
-    default void setPlayerVisibilityForPlayer(UUID player, UUID otherPlayer, boolean visible) {
+    default void setPlayerVisibilityForPlayer(UUID player, UUID otherPlayer, boolean visible, int currentTick) {
         if (visible) {
-            showPlayerToPlayer(player, otherPlayer);
+            showPlayerToPlayer(player, otherPlayer, currentTick);
         } else {
-            hidePlayerFromPlayer(player, otherPlayer);
+            hidePlayerFromPlayer(player, otherPlayer, currentTick);
         }
     }
 

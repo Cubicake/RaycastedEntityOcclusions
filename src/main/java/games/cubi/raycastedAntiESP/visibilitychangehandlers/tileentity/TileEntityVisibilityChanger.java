@@ -6,13 +6,13 @@ import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHand
 import java.util.UUID;
 
 public interface TileEntityVisibilityChanger {
-    void showTileEntityToPlayer(UUID player, BlockLocation tileEntity);
-    void hideTileEntityFromPlayer(UUID player, BlockLocation tileEntity);
-    default void setTileEntityVisibilityForPlayer(UUID player, BlockLocation tileEntity, boolean visible) {
+    void showTileEntityToPlayer(UUID player, BlockLocation tileEntity, int currentTick);
+    void hideTileEntityFromPlayer(UUID player, BlockLocation tileEntity, int currentTick);
+    default void setTileEntityVisibilityForPlayer(UUID player, BlockLocation tileEntity, boolean visible, int currentTick) {
         if (visible) {
-            showTileEntityToPlayer(player, tileEntity);
+            showTileEntityToPlayer(player, tileEntity, currentTick);
         } else {
-            hideTileEntityFromPlayer(player, tileEntity);
+            hideTileEntityFromPlayer(player, tileEntity, currentTick);
         }
     }
 
