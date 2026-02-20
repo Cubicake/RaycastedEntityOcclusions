@@ -1,6 +1,6 @@
 Latest stable version: v1.6.5 | Latest beta version: v2.0.0-beta-1
 
-The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-entity-occlusions/
+The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/
 
 The latest beta version can be found on the [discord](https://discord.cubi.games).
 
