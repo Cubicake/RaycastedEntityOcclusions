@@ -25,6 +25,8 @@ import org.bukkit.configuration.ConfigurationSection;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 @SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
 
@@ -110,7 +112,7 @@ public class CommandsManager {
                         BlockLocation location = new BlockLocation(ctx.getSource().getLocation().getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z());
 
                         Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
-                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ()).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
+                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
                         Player player = (Player) ctx.getSource().getSender();
                         TileEntityVisibilityTracker tileEntityVisibilityTracker = DataHolder.players().getPlayerData(player.getUniqueId()).tileVisibility();
                         Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1);

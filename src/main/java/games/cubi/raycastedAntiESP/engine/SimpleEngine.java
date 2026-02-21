@@ -128,7 +128,7 @@ public class SimpleEngine implements Engine {
                 return;
                 //todo: add loggers to figure out why
             }
-            boolean canSee = RaycastUtil.raycast(playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee, currentTick);
         }
     }
@@ -138,7 +138,7 @@ public class SimpleEngine implements Engine {
 
         for (UUID otherPlayerUUID : player.playerVisibility().getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             Locatable otherPlayerLocation = entitySnapshotManager.getLocation(otherPlayerUUID);
-            boolean canSee = RaycastUtil.raycast(playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee, currentTick);
         }
     }
@@ -153,7 +153,7 @@ public class SimpleEngine implements Engine {
 
         for (BlockLocation tileEntityLocation : tileEntitiesToCheck) {
             if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
-            boolean canSee = RaycastUtil.raycast(playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
         }
     }

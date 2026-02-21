@@ -3,7 +3,6 @@ package games.cubi.raycastedAntiESP.utils;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 
 import java.util.HashSet;
@@ -14,6 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlockLocation> {
     private final ConcurrentHashMap<AbstractBlockLocation, PlayerData.VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
     private final Set<Long> loadedChunks = ConcurrentHashMap.newKeySet();
+    private final PlayerData player;
+
+    public TileEntityVisibilityTracker(PlayerData player) {
+        this.player = player;
+    }
 
     @Override
     protected ConcurrentHashMap<AbstractBlockLocation, PlayerData.VisibilityAndLastCheckTime> getMap() {
@@ -26,12 +30,12 @@ public class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlock
         return null;
     }
 
-    public Set<BlockLocation> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
-        HashSet<BlockLocation> recheckList = new HashSet<>();
+    public Set<AbstractBlockLocation> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
+        HashSet<AbstractBlockLocation> recheckList = new HashSet<>();
 
         for (int x = chunkX-chunkRadius; x <= chunkRadius+chunkX; x++) {
             for (int z = chunkZ-chunkRadius; z <= chunkRadius+chunkZ; z++) {
-                recheckList.addAll(blockSnapshotManager.getTileEntitiesInChunk(world, x, z));
+                recheckList.addAll(blockSnapshotManager.getTileEntitiesInChunk(world, x, z, player));
             }
         }
 

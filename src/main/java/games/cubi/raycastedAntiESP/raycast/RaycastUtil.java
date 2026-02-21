@@ -6,6 +6,7 @@ import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.utils.LocationPair;
 
+import games.cubi.raycastedAntiESP.utils.PlayerData;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -76,7 +77,7 @@ public class RaycastUtil {
     }
 
 //True: Has line-of-sight
-    public static boolean raycast(Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, BlockSnapshotManager snap, int stepSize) {
+    public static boolean raycast(PlayerData player, Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, BlockSnapshotManager snap, int stepSize) {
         if (!start.world().equals(end.world())) return false;
 
         Locatable clonedEnd = end.clonePlainAndCentreIfBlockLocation();
@@ -105,7 +106,7 @@ public class RaycastUtil {
             current.add(dir);
             if (debug) currentLocation.set(current.x(), current.y(), current.z());
 
-            if (snap.isBlockOccluding(current)) {//This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
+            if (snap.isBlockOccluding(current, player)) {//This works as MutableBlockVector resolves to a block location in #equals and #hashCode, and thus works fine as a key in the snapshot manager
                 maxOccluding--;
                 if (debug) world.spawnParticle(Particle.DUST, currentLocation, 1, dustRed);
                 if (maxOccluding < 1) return false;

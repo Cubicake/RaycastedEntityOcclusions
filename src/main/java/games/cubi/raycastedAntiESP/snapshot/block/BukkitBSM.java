@@ -8,6 +8,7 @@ import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.utils.PlayerData;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -201,7 +202,8 @@ public class BukkitBSM implements BlockSnapshotManager {
         return chunkData.snapshot.getBlockType(x, y, z);
     }
 
-    public boolean isBlockOccluding(AbstractBlockLocation locatable) {
+    @Override
+    public boolean isBlockOccluding(AbstractBlockLocation locatable, PlayerData player) {
         Material m = getMaterialAt(locatable);
         if (m == null) {
             return false;
@@ -239,7 +241,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z) {
+    public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z, PlayerData player) {
         return getTileEntitiesInChunk(Bukkit.getWorld(world), x, z);
     }
 }

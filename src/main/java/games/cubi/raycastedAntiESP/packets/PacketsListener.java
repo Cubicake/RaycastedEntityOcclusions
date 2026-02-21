@@ -19,6 +19,10 @@ public class PacketsListener implements PacketListener {
             initializePacketProcessor();
             packetProcessor.processPlayerInfoRemovePacket(event);
         }
+        if (event.getPacketType() == PacketType.Play.Server.BLOCK_ENTITY_DATA) {
+            initializePacketProcessor();
+
+        }
     }
 
     private void initializePacketProcessor() {

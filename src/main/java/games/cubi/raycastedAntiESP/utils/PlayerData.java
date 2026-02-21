@@ -28,7 +28,7 @@ public class PlayerData {
         }
     }
 
-    private final TileEntityVisibilityTracker tileEntityVisibilityTracker = new TileEntityVisibilityTracker();
+    private final TileEntityVisibilityTracker tileEntityVisibilityTracker = new TileEntityVisibilityTracker(this);
     private final EntityVisibilityTracker entityVisibilityTracker = new EntityVisibilityTracker();
     private final PlayerVisibilityTracker playerVisibilityTracker = new PlayerVisibilityTracker();
 

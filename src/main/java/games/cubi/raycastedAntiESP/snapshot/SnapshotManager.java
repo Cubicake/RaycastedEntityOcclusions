@@ -15,6 +15,7 @@ public class SnapshotManager {
 
     public enum BlockSnapshotManagerType {
         BUKKIT,
+        PACKETEVENTS,
     }
 
     private static EntitySnapshotManagerType entitySnapshotManagerType;
