@@ -55,6 +55,12 @@ public class BukkitBSM implements BlockSnapshotManager {
             }
         }
 
+        int refreshInterval = 60*2;
+
+        if (cfg.getSnapshotConfig().getBukkitBlockSnapshotConfig() != null) {
+            refreshInterval = cfg.getSnapshotConfig().getBukkitBlockSnapshotConfig().getRefreshRateSeconds() * 2;
+        }
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -62,7 +68,10 @@ public class BukkitBSM implements BlockSnapshotManager {
                 int chunksRefreshed = 0;
                 int chunksToRefreshMaximum = getNumberOfCachedChunks() / 3;
                 for (Map.Entry<String, ChunkData> e : dataMap.entrySet()) {
-                    if (now - e.getValue().lastRefresh >= cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
+                    if (cfg.getSnapshotConfig().getBukkitBlockSnapshotConfig() == null) {
+                        return;
+                    }
+                    if (now - e.getValue().lastRefresh >= cfg.getSnapshotConfig().getBukkitBlockSnapshotConfig().getRefreshRateSeconds() * 1000L && chunksRefreshed < chunksToRefreshMaximum) {
                         chunksRefreshed++;
                         String key = e.getKey();
                         snapshotChunk(key);
@@ -70,7 +79,7 @@ public class BukkitBSM implements BlockSnapshotManager {
                 }
                 Logger.info("BukkitBSM: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", Logger.Frequency.ONCE_PER_TICK.value);
             }
-        }.runTaskTimerAsynchronously(plugin, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L, cfg.getSnapshotConfig().getWorldSnapshotRefreshInterval() * 2L /* This runs 10 times per refreshInterval, spreading out the refreshes */);
+        }.runTaskTimerAsynchronously(plugin, refreshInterval, refreshInterval /* This runs 10 times per getRefreshRateSeconds, spreading out the refreshes */);
     }
 
     public void onChunkLoad(Chunk c) {

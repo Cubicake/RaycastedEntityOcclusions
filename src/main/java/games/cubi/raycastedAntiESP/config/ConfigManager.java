@@ -1,17 +1,36 @@
 package games.cubi.raycastedAntiESP.config;
 
+import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
+import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
+import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
+import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
+import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
+import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
+import games.cubi.raycastedAntiESP.config.engine.EngineConfig;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.loader.ConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ConfigManager {
     private static ConfigManager instance;
 
     private final RaycastedAntiESP plugin;
-    private FileConfiguration config;
+    private final Path configPath;
+    private final YamlConfigurationLoader loader;
+    private ConfigurationNode config;
 
     // Config objects
     private PlayerConfig playerConfig;
@@ -19,18 +38,16 @@ public class ConfigManager {
     private TileEntityConfig tileEntityConfig;
     private SnapshotConfig snapshotConfig;
     private DebugConfig debugConfig;
-
-    // Default config objects TODO: Keep these here or move into individual config classes?
-    private static final PlayerConfig DEFAULT_PLAYER_CONFIG = new PlayerConfig(1, 3, 16, 48, 50, true, true);
-    private static final EntityConfig DEFAULT_ENTITY_CONFIG = new EntityConfig( 1, 3, 16, 48, 50, true);
-    private static final TileEntityConfig DEFAULT_TILE_ENTITY_CONFIG = new TileEntityConfig(1, 3, 16, 48, 0, true, List.of(Material.BEACON));
-    private static final SnapshotConfig DEFAULT_SNAPSHOT_CONFIG = new SnapshotConfig(60, 0, false);
-    private static final DebugConfig DEFAULT_DEBUG_CONFIG = new DebugConfig(5, 5, 5, false, false, false);
-
-    private int maxEngineMode;
+    private EngineConfig engineConfig;
+    private VisibilityHandlersConfig visibilityHandlersConfig;
 
     private ConfigManager(RaycastedAntiESP plugin) {
         this.plugin = plugin;
+        this.configPath = plugin.getDataFolder().toPath().resolve("config.yml");
+        this.loader = YamlConfigurationLoader.builder()
+                .path(configPath)
+                .nodeStyle(NodeStyle.BLOCK)
+                .build();
         load();
     }
 
@@ -54,43 +71,66 @@ public class ConfigManager {
      */
     public void load() {
         //check that we are on the main bukkit thread to prevent concurrency issues
-        if (isNotOnMainThread()) return;
-        plugin.saveDefaultConfig();
-        plugin.reloadConfig();
-        config = plugin.getConfig();
+        if (isNotOnMainThread()) Logger.warningAndReturn(new RuntimeException("ConfigManager attempted to be loaded off the main thread. Please report this to the plugin developer."), Logger.Frequency.CRITICAL.value);
+        ensureConfigFileExists();
+        config = loadConfigNode();
+
+        ConfigurationNode defaults = loadBundledDefaults();
+        if (defaults != null) {
+            mergeMissing(defaults, config);
+        }
 
         // Set defaults if they don't exist
-        setDefaults();
+        ConfigFactory<?>[] factories = setDefaults();
 
         // Load config objects
-        playerConfig = PlayerConfig.getFromConfig(config, getDefaultPlayerConfig());
-        entityConfig = EntityConfig.getFromConfig(config, getDefaultEntityConfig());
-        tileEntityConfig = TileEntityConfig.getFromConfig(config, getDefaultTileEntityConfig());
-        snapshotConfig = SnapshotConfig.getFromConfig(config, getDefaultSnapshotConfig());
-        debugConfig = DebugConfig.getFromConfig(config, getDefaultDebugConfig());
+        playerConfig = ((PlayerConfig.Factory) factories[0]).getFromConfig(config);
+        entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config);
+        tileEntityConfig = ((TileEntityConfig.Factory) factories[2]).getFromConfig(config);
+        snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config);
+        debugConfig = ((DebugConfig.Factory) factories[4]).getFromConfig(config);
+        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config);
+        engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config);
 
-        // Save any new defaults that were added
-        plugin.saveConfig();
+        // Persist the config tree after load/default initialization
+        saveConfigNode();
 
-        maxEngineMode = calculateMaxEngineMode();
     }
 
     /**
      * Set default values in the configuration file if they don't exist
      */
-    private void setDefaults() {
-        config.addDefault("config-version", "1.0");
+    private ConfigFactory<?>[] setDefaults() {
+        ConfigNodeUtil.addDefault(config, "config-version", "1.0");
 
-        PlayerConfig.setDefaults(config, getDefaultPlayerConfig());
-        EntityConfig.setDefaults(config, getDefaultEntityConfig());
-        TileEntityConfig.setDefaults(config, getDefaultTileEntityConfig());
+        PlayerConfig.Factory playerFactory = new PlayerConfig.Factory();
+        EntityConfig.Factory entityFactory = new EntityConfig.Factory();
+        TileEntityConfig.Factory tileEntityFactory = new TileEntityConfig.Factory();
+        SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
+        DebugConfig.Factory debugFactory = new DebugConfig.Factory();
+        VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
+        EngineConfig.Factory engineFactory = new EngineConfig.Factory();
 
-        SnapshotConfig.setDefaults(config, getDefaultSnapshotConfig());
+        ConfigFactory<?>[] factories = new ConfigFactory<?>[] {
+            playerFactory,
+            entityFactory,
+            tileEntityFactory,
+            snapshotFactory,
+            debugFactory,
+            visibilityFactory,
+            engineFactory,
+        };
 
-        DebugConfig.setDefaults(config, getDefaultDebugConfig());
+        playerFactory.setDefaults(config);
+        entityFactory.setDefaults(config);
+        tileEntityFactory.setDefaults(config);
 
-        config.options().copyDefaults(true);
-        plugin.saveConfig();
+        snapshotFactory.setDefaults(config);
+        debugFactory.setDefaults(config);
+        visibilityFactory.setDefaults(config);
+        engineFactory.setDefaults(config);
+
+        return factories;
     }
 
     /**
@@ -100,50 +140,55 @@ public class ConfigManager {
      * @return 1 for success, 0 for out of range, -1 for invalid input  TODO: This is currently broken, and even if it worked it doesn't handle setting lists
      */
     public int setConfigValue(String path, String rawValue) {
-        if (!config.contains(path)) {
+        if (!ConfigNodeUtil.contains(config, path)) {
             return -1; // Path doesn't exist
         }
 
-        Object currentValue = config.get(path);
-        Object parsedValue;
+        Object currentValue = ConfigNodeUtil.get(config, path);
+        Object parsedValue = null;
 
         try {
-            if (currentValue instanceof Boolean) {
-                String lower = rawValue.toLowerCase();
-                if (!lower.equals("true") && !lower.equals("false")) {
+            switch (currentValue) {
+                case Boolean ignored -> {
+                    String lower = rawValue.toLowerCase();
+                    if (!lower.equals("true") && !lower.equals("false")) {
+                        return -1;
+                    }
+                    parsedValue = Boolean.parseBoolean(lower);
+                }
+                case Integer ignored -> parsedValue = Integer.parseInt(rawValue);
+                case Double ignored -> parsedValue = Double.parseDouble(rawValue);
+                case String ignored -> {
+                    //use ConfigEnum.getAllValues(); to validate that the string is an enum
+                    String[] enums = ConfigEnum.getAllValues(); //they are already formatted correctly
+                    boolean found = false;
+                    for (String enumVal : enums) {
+                        if (enumVal.equalsIgnoreCase(rawValue)) {
+                            parsedValue = enumVal;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        return -1;
+                    }
+                }
+                case null, default -> {
                     return -1;
                 }
-                parsedValue = Boolean.parseBoolean(lower);
-            } else if (currentValue instanceof Integer) {
-                int intVal = Integer.parseInt(rawValue);
-                if (intVal < 0 || intVal > 255) {
-                    return 0;
-                }
-                parsedValue = intVal;
-            } else {
-                return -1;
             }
         } catch (NumberFormatException e) {
             return -1;
         }
 
         // Update the config file
-        config.set(path, parsedValue);
-        plugin.saveConfig();
+        ConfigNodeUtil.set(config, path, parsedValue);
+        saveConfigNode();
 
         // Reload to update the config objects
         load();
 
         return 1;
-    }
-
-    private int calculateMaxEngineMode() {
-        //return the highest engine mode listed
-        int maxMode = 0;
-        if (playerConfig.getEngineMode() > maxMode) maxMode = playerConfig.getEngineMode();
-        if (entityConfig.getEngineMode() > maxMode) maxMode = entityConfig.getEngineMode();
-        if (tileEntityConfig.getEngineMode() > maxMode) maxMode = tileEntityConfig.getEngineMode();
-        return maxMode;
     }
 
     private static boolean isNotOnMainThread() {
@@ -152,26 +197,6 @@ public class ConfigManager {
         }
         Logger.error(new RuntimeException("ConfigManager attempted to be accessed off the main thread. Please report this to the plugin developer."), 2);
         return true;
-    }
-
-    public static PlayerConfig getDefaultPlayerConfig() {
-        return DEFAULT_PLAYER_CONFIG;
-    }
-
-    public static EntityConfig getDefaultEntityConfig() {
-        return DEFAULT_ENTITY_CONFIG;
-    }
-
-    public static TileEntityConfig getDefaultTileEntityConfig() {
-        return DEFAULT_TILE_ENTITY_CONFIG;
-    }
-
-    public static SnapshotConfig getDefaultSnapshotConfig() {
-        return DEFAULT_SNAPSHOT_CONFIG;
-    }
-
-    public static DebugConfig getDefaultDebugConfig() {
-        return DEFAULT_DEBUG_CONFIG;
     }
 
     // Getters for current config objects
@@ -195,11 +220,99 @@ public class ConfigManager {
         return debugConfig;
     }
 
-    public FileConfiguration getConfigFile() {
+    public VisibilityHandlersConfig getVisibilityHandlersConfig() {
+        return visibilityHandlersConfig;
+    }
+
+    public ConfigurationNode getConfigFile() {
         return config;
     }
 
-    public int getEngineMode() {
-        return maxEngineMode;
+    public EngineConfig getEngineConfig() {
+        return engineConfig;
+    }
+
+    public Map<String, Object> getConfigValues() {
+        Map<String, Object> values = new LinkedHashMap<>();
+        collectConfigValues(config, "", values);
+        return values;
+    }
+
+    private void collectConfigValues(ConfigurationNode node, String path, Map<String, Object> values) {
+        if (node.childrenMap().isEmpty()) {
+            if (!path.isEmpty() && !node.virtual()) {
+                values.put(path, node.raw());
+            }
+            return;
+        }
+
+        for (Map.Entry<Object, ? extends ConfigurationNode> entry : node.childrenMap().entrySet()) {
+            String key = String.valueOf(entry.getKey());
+            String nextPath = path.isEmpty() ? key : path + "." + key;
+            collectConfigValues(entry.getValue(), nextPath, values);
+        }
+    }
+
+    private void ensureConfigFileExists() {
+        try {
+            Files.createDirectories(plugin.getDataFolder().toPath());
+            if (!Files.exists(configPath)) {
+                try (InputStream resource = plugin.getResource("config.yml")) {
+                    if (resource != null) {
+                        Files.copy(resource, configPath);
+                    } else {
+                        Files.createFile(configPath);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create config.yml", e);
+        }
+    }
+
+    private ConfigurationNode loadConfigNode() {
+        try {
+            return loader.load();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to load config.yml", e);
+        }
+    }
+
+    private void saveConfigNode() {
+        try {
+            loader.save(config);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save config.yml", e);
+        }
+    }
+
+    private ConfigurationNode loadBundledDefaults() {
+        try (InputStream resource = plugin.getResource("config.yml")) {
+            if (resource == null) return null;
+            ConfigurationLoader<? extends ConfigurationNode> resourceLoader = YamlConfigurationLoader.builder()
+                    .source(() -> new BufferedReader(new InputStreamReader(resource)))
+                    .build();
+            return resourceLoader.load();
+        } catch (IOException e) {
+            Logger.warning("Failed to read bundled config defaults: " + e.getMessage(), Logger.Frequency.CONFIG_LOAD.value);
+            return null;
+        }
+    }
+
+    private void mergeMissing(ConfigurationNode defaults, ConfigurationNode target) {
+        if (defaults.childrenMap().isEmpty()) {
+            if (target.virtual() && defaults.raw() != null) {
+                try {
+                    target.set(defaults.raw());
+                } catch (SerializationException e) {
+                    throw new RuntimeException("Failed to merge config defaults", e);
+                }
+            }
+            return;
+        }
+
+        for (Map.Entry<Object, ? extends ConfigurationNode> entry : defaults.childrenMap().entrySet()) {
+            mergeMissing(entry.getValue(), target.node(entry.getKey()));
+        }
     }
 }

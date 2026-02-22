@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP;
 
+import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.config.DebugConfig;
 import games.cubi.raycastedAntiESP.utils.CheckPreviousLogForError;
 import org.jetbrains.annotations.Nullable;
@@ -26,8 +27,11 @@ public class Logger {
 
     public enum Frequency {
         ONCE_PER_TICK(9),
-        MULTI_PER_TICK(10);
-
+        MULTI_PER_TICK(10),
+        CONFIG_LOAD(3), //flawed premise until config loads before
+        /**For use where if the error logger is reached, something has gone catastrophically wrong and the plugin likely cannot function properly. This should be used very sparingly, and only for the most severe errors, as it will be logged even at the lowest log level settings.**/
+        CRITICAL(1),
+        ;
         public final int value;
 
         Frequency(int i) {
@@ -54,9 +58,13 @@ public class Logger {
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the warning message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    public static void warningAndReturn(Throwable throwable) {
-        warning(processThrowable(throwable), 1);
+    public static void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
+        warning(processThrowable(throwable), level);
         throw earlyReturn;
+    }
+
+    public static void warning(Throwable throwable, @Range(from = 1, to = 10) int level) {
+        warning(processThrowable(throwable), level);
     }
 
     @Deprecated
@@ -65,7 +73,7 @@ public class Logger {
     }
 
     public static void error(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        error(processThrowable(throwable), 1);
+        error(processThrowable(throwable), level);
     }
 
     public static void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level) {
@@ -116,13 +124,17 @@ public class Logger {
     }
 
     private static void forwardLog(String message, Level severity, int level) {
-        DebugConfig debug = RaycastedAntiESP.getConfigManager().getDebugConfig();
+        ConfigManager configManager = RaycastedAntiESP.getConfigManager();
+        if (configManager != null && configManager.getDebugConfig() != null) {
+            DebugConfig debug = configManager.getDebugConfig();
 
-        if (debug.logToFile()) logToFile(message);
+            if (debug.logToFile()) logToFile(message);
 
-        if (getLevel(severity, debug) < level) {
-            return;
+            if (getLevel(severity, debug) < level) {
+                return;
+            }
         }
+
         switch (severity) {
             case INFO:
                 RaycastedAntiESP.logger().info(message);
