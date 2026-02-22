@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityChanger {
     @Override
-    public void showTileEntityToPlayer(UUID player, BlockLocation tileEntity, int currentTick) {
+    public void showTileEntityToPlayer(UUID player, AbstractBlockLocation tileEntity, int currentTick) {
         if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, true, currentTick)) return;
 
         addToTileEntityCache(player, tileEntity);
@@ -37,7 +37,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
 
     @Override
-    public void hideTileEntityFromPlayer(UUID player, BlockLocation tileEntity, int currentTick) {
+    public void hideTileEntityFromPlayer(UUID player, AbstractBlockLocation tileEntity, int currentTick) {
 
         if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, false, currentTick)) {
             return; // Already hidden
