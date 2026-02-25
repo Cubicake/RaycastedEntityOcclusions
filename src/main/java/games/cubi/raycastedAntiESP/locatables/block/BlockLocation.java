@@ -81,17 +81,17 @@ public class BlockLocation implements AbstractBlockLocation {
         return z;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double x() {
         return x;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double y() {
         return y;
     }
 
-    @Override @SuppressWarnings("UnstableApiUsage")
+    @Override
     public double z() {
         return z;
     }

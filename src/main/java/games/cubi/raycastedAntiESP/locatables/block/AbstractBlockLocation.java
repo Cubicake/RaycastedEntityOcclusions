@@ -6,8 +6,7 @@ import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-@SuppressWarnings("UnstableApiUsage")
-public interface AbstractBlockLocation extends BlockPosition, Locatable {
+public interface AbstractBlockLocation extends Locatable {
 
     default Location toCentredLocation() {
         return new Location(Bukkit.getWorld(world()), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
@@ -50,4 +49,13 @@ public interface AbstractBlockLocation extends BlockPosition, Locatable {
     default double z() {
         return blockZ();
     }
+
+    @Override
+    int blockX();
+
+    @Override
+    int blockY();
+
+    @Override
+    int blockZ();
 }

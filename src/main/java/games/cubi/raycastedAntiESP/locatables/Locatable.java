@@ -11,8 +11,32 @@ import org.bukkit.Location;
 import java.util.UUID;
 
 // A vector-like interface representing a location in a 3D space within a specific world.
-@SuppressWarnings("UnstableApiUsage")
-public interface Locatable extends Position {
+public interface Locatable {
+
+    double x();
+    double y();
+    double z();
+    UUID world();
+
+    default int blockX() {
+        return (int) Math.floor(x());
+    }
+
+    default int blockY() {
+        return (int) Math.floor(y());
+    }
+
+    default int blockZ() {
+        return (int) Math.floor(z());
+    }
+
+    default int chunkX() {
+        return blockX() >> 4;
+    }
+
+    default int chunkZ() {
+        return blockZ() >> 4;
+    }
 
     default Location toBukkitLocation(){
         return new Location(Bukkit.getWorld(world()), x(), y(), z());
@@ -46,40 +70,11 @@ public interface Locatable extends Position {
         return scalarMultiply(1.0 / length);
     }
 
-    @SuppressWarnings("UnstableApiUsage") double x();
-    @SuppressWarnings("UnstableApiUsage") double y();
-    @SuppressWarnings("UnstableApiUsage") double z();
-
-    default int chunkX() {
-        return blockX() >> 4;
-    }
-
-    default int chunkZ() {
-        return blockZ() >> 4;
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default int blockX() {
-        return (int) Math.floor(x());
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default int blockY() {
-        return (int) Math.floor(y());
-    }
-
-    @Override @SuppressWarnings("UnstableApiUsage")
-    default int blockZ() {
-        return (int) Math.floor(z());
-    }
-
     Locatable add(Locatable locatable);
 
     Locatable subtract(Locatable locatable);
 
     Locatable scalarMultiply(double factor);
-
-    UUID world();
 
     LocatableType getType();
 

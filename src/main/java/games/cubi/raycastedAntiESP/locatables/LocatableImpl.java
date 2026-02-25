@@ -1,11 +1,7 @@
 package games.cubi.raycastedAntiESP.locatables;
 
-import io.papermc.paper.math.BlockPosition;
-import io.papermc.paper.math.FinePosition;
-import io.papermc.paper.math.Position;
-
 import java.util.UUID;
-@SuppressWarnings("UnstableApiUsage")
+
 public class LocatableImpl implements Locatable {
     private double x;
     private double y;
@@ -66,31 +62,6 @@ public class LocatableImpl implements Locatable {
     @Override
     public double z() {
         return z;
-    }
-
-    @Override
-    public boolean isBlock() {
-        return false;
-    }
-
-    @Override
-    public boolean isFine() {
-        return true;
-    }
-
-    @Override
-    public Position offset(int x, int y, int z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
-    public FinePosition offset(double x, double y, double z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
-    public BlockPosition toBlock() {
-        throw new RuntimeException("Unimplemented");
     }
 
     @Override

@@ -74,16 +74,6 @@ public class MutableBlockVector implements AbstractBlockLocation {
     }
 
     @Override
-    public BlockPosition offset(int x, int y, int z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
-    public FinePosition offset(double x, double y, double z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
     public UUID world() {
         return world;
     }
