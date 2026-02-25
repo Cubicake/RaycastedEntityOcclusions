@@ -83,6 +83,34 @@ public interface Locatable extends Position {
 
     LocatableType getType();
 
+    default boolean isEqualTo(Object thatOne) {
+        if (this == thatOne) return true;
+        if (!(thatOne instanceof Locatable that)) return false;
+        if (!(this.world().equals(that.world()))) return false;
+
+        if (Double.doubleToLongBits(this.x()) != Double.doubleToLongBits(that.x())) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.y()) != Double.doubleToLongBits(that.y())) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.z()) != Double.doubleToLongBits(that.z())) {
+            return false;
+        }
+
+        return true;
+    }
+
+    default int makeHash() {
+        int hash = 3;
+
+        hash = 19 * hash + this.world().hashCode();
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.x()) ^ (Double.doubleToLongBits(this.x()) >>> 32));
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.y()) ^ (Double.doubleToLongBits(this.y()) >>> 32));
+        hash = 19 * hash + (int) (Double.doubleToLongBits(this.z()) ^ (Double.doubleToLongBits(this.z()) >>> 32));
+        return hash;
+    }
+
     default String toStringForm() {
         return getType()+
                 "{" +
@@ -132,34 +160,6 @@ public interface Locatable extends Position {
 
     static Locatable convertLocatable(Location from, LocatableType to, boolean clone) {
         return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to, clone);
-    }
-
-    default boolean isEqualTo(Object thatOne) {
-        if (this == thatOne) return true;
-        if (!(thatOne instanceof Locatable that)) return false;
-        if (!(this.world().equals(that.world()))) return false;
-
-        if (Double.doubleToLongBits(this.x()) != Double.doubleToLongBits(that.x())) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.y()) != Double.doubleToLongBits(that.y())) {
-            return false;
-        }
-        if (Double.doubleToLongBits(this.z()) != Double.doubleToLongBits(that.z())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    default int makeHash() {
-        int hash = 3;
-
-        hash = 19 * hash + this.world().hashCode();
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.x()) ^ (Double.doubleToLongBits(this.x()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.y()) ^ (Double.doubleToLongBits(this.y()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.z()) ^ (Double.doubleToLongBits(this.z()) >>> 32));
-        return hash;
     }
 
     static Locatable copyOf(Locatable locatable) {
