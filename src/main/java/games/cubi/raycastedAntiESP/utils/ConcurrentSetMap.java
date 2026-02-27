@@ -1,5 +1,6 @@
 package games.cubi.raycastedAntiESP.utils;
 
+import org.jetbrains.annotations.Blocking;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -27,6 +28,7 @@ public class ConcurrentSetMap<K, V>  {
     }
 
     /**
+     * Using this is <strong>NOT</strong> recommended, as it allows for creation of keys not associated with concurrent sets. Wherever possible, use the methods provided by ConcurrentSetMap to ensure that all sets are concurrent and thread safe. This is only provided for cases where you need to perform operations on the backing map that are not exposed by ConcurrentSetMap, but you should be careful when doing so.
      * @return The actual backing ConcurrentHashMap. Any modifications to this map will affect the ConcurrentSetMap, and vice versa. This is not a copy.
      */
     public ConcurrentHashMap<K, Set<V>> asActualConcurrentMap() {
