@@ -4,7 +4,6 @@ package games.cubi.raycastedAntiESP.locatables;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.*;
 
-import io.papermc.paper.math.Position;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
@@ -125,6 +124,7 @@ public interface Locatable {
         Bukkit,
         MutableBlockVector,
         ImmutableBlockLocation,
+        Immutable,
         Plain,
     }
 
@@ -187,7 +187,7 @@ public interface Locatable {
                 return new BlockLocation(world, x, y, z);
             }
             case Immutable -> {
-                return new ImmutableLocatableImpl(world, x, y, z);
+                return new ImmutableLocatable(world, x, y, z);
             }
             default -> {
                 Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type),2);
