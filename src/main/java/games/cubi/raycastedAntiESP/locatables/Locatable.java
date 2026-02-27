@@ -65,15 +65,19 @@ public interface Locatable {
         return convertLocatable(this, LocatableType.Plain, true);
     }
 
+    /**@return The same Locatable, with the same direction but a length of 1. If the implementation is immutable, this will throw an error.*/
     default Locatable normalize() {
         double length = length();
         return scalarMultiply(1.0 / length);
     }
 
+    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
     Locatable add(Locatable locatable);
 
+    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
     Locatable subtract(Locatable locatable);
 
+    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
     Locatable scalarMultiply(double factor);
 
     LocatableType getType();
@@ -178,6 +182,12 @@ public interface Locatable {
             }
             case Plain -> {
                 return new LocatableImpl(world, x, y, z);
+            }
+            case ImmutableBlockLocation -> {
+                return new BlockLocation(world, x, y, z);
+            }
+            case Immutable -> {
+                return new ImmutableLocatableImpl(world, x, y, z);
             }
             default -> {
                 Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type),2);
