@@ -8,7 +8,7 @@ import org.bukkit.Location;
 import java.util.UUID;
 @SuppressWarnings("UnstableApiUsage")
 public class MutableBlockVector implements AbstractBlockLocation {
-    private final UUID world;
+    private UUID world;
     private double mutableX;
     private double mutableY;
     private double mutableZ;
@@ -141,5 +141,10 @@ public class MutableBlockVector implements AbstractBlockLocation {
         this.mutableX = x;
         this.mutableY = y;
         this.mutableZ = z;
+    }
+
+    @Override
+    public void setWorld(UUID world) {
+        this.world = world;
     }
 }

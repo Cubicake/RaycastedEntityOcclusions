@@ -17,6 +17,9 @@ public interface Locatable {
     double z();
     UUID world();
 
+
+    void setWorld(UUID world);
+
     default int blockX() {
         return (int) Math.floor(x());
     }
@@ -38,7 +41,7 @@ public interface Locatable {
     }
 
     default Location toBukkitLocation(){
-        return new Location(Bukkit.getWorld(world()), x(), y(), z());
+        return new Location(LocatableType.Bukkit.getWorld(world()), x(), y(), z());
     }
 
     default double length() {

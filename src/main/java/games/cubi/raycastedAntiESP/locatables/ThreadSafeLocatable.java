@@ -1,51 +1,40 @@
 package games.cubi.raycastedAntiESP.locatables;
 
-import com.google.common.base.Preconditions;
-import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;
 import io.papermc.paper.math.Position;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.util.Vector;
 
+import org.bukkit.util.Vector;
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 
 @SuppressWarnings("UnstableApiUsage")
 public class ThreadSafeLocatable implements Locatable /*TBH I still don't even know if this is needed */ {
     private volatile UUID world;
-    private final Vector vector1;
-    private final Vector vector2;
-    private volatile byte pointer = 1;
-//    private final AtomicBoolean writeLock = new AtomicBoolean(false);
+
+    private double x, y, z;
 
     private final StampedLock lock = new StampedLock();
 
 
     public ThreadSafeLocatable(Vector vec, UUID world) {
-        writeLock.set(true);
         this.world = world;
-        vector1 = vec.clone(); //clone to ensure a new vector
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this.x = vec.getX();
+        this.y = vec.getY();
+        this.z = vec.getZ();
     }
 
     public ThreadSafeLocatable(World world, double x, double y, double z) {
-        writeLock.set(true);
         this.world = world.getUID();
-        vector1 = new Vector(x, y, z);
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this.x = x; this.y = y; this.z = z;
     }
 
     public ThreadSafeLocatable(UUID world, double x, double y, double z) {
-        writeLock.set(true);
         this.world = world;
-        vector1 = new Vector(x, y, z);
-        writeLock.set(false);
-        vector2 = vector1.clone();
+        this.x = x; this.y = y; this.z = z;
     }
 
     public ThreadSafeLocatable(Location loc) {
@@ -60,105 +49,58 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
         this(new Vector(loc.realX(), loc.realY(), loc.realZ()), loc.world());
     }*/
 
-    /**This returns the actual vector, so make sure it is cloned before use*/
-    private Vector getPointedVector() {
-        if (pointer == 1) return vector1;
-        return vector2;
-    }
 
-    public Vector getPointedVectorClone() {
-        return getPointedVector().clone();
-    }
-
-    /**Returns a clone of the vector*/
-    public Vector read() {
-        return getPointedVector().clone();
-    }
     /**Returns the X value of the vector*/
     public double readX() {
         long stamp = lock.tryOptimisticRead();
-        double x = vector1.getX();
+        double val = this.x;
         if (!lock.validate(stamp)) {
             stamp = lock.readLock();
             try {
-                x = vector1.getX();
+                val = this.x;
             }
             finally {
                 lock.unlockRead(stamp);
             }
         }
-        return x;
+        return val;
     }
     /**Returns the Y value of the vector*/
     public double readY() {
         long stamp = lock.tryOptimisticRead();
-        double y = vector1.getY();
+        double val = this.y;
         if (!lock.validate(stamp)) {
             stamp = lock.readLock();
             try {
-                y = vector1.getY();
+                val = this.y;
             }
             finally {
                 lock.unlockRead(stamp);
             }
         }
-        return y;
+        return val;
     }
     /**Returns the Z value of the vector*/
     public double readZ() {
         long stamp = lock.tryOptimisticRead();
-        double z = vector1.getZ();
+        double val = this.z;
         if (!lock.validate(stamp)) {
             stamp = lock.readLock();
             try {
-                z = vector1.getZ();
+                val = this.z;
             }
             finally {
                 lock.unlockRead(stamp);
             }
         }
-        return z;
+        return val;
     }
     public UUID readWorld() { return world; }
 
-    public boolean update(Vector newVec) {
-        if (writeLock.compareAndSet(false, true)) {
-            try {
-                pointer = 2;
-                overwriteVector(vector1, newVec);
-                pointer = 1;
-                overwriteVector(vector2, vector1);
-                return true;
-            } finally {
-                boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
-            }
-        }
-        else return false;
-    }
 
-    public boolean updateDelta(Vector delta) {
-        if (writeLock.compareAndSet(false, true)) {
-            try {
-                pointer = 2;
-                vector1.add(delta);
-                pointer = 1;
-                overwriteVector(vector2, vector1);
-                return true;
-            } finally {
-                boolean sanityCheck = writeLock.compareAndSet(true, false);
-                if (!sanityCheck) Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
-            }
-        }
-        else return false;
-    }
 
     /**
-     * Runs a write operation on vector1 in a safe double-buffer swap.
-     * The lambda must mutate only vector1.
-     * The method handles pointer flips and sync to vector2.
-     *
-     * In other words, this method can be used so that writing code to ThreadSafeLocations is as easy as writing to a normal Vector.
+     * Runs a write operation on x, y, z fields under a write lock.
      */
     private void withWriteLock(Runnable body) {
         long stamp = lock.writeLock();
@@ -170,18 +112,6 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
     }
 
 
-
-    /**
-     * Overwrites the first object with the x,y,z values of the second object to avoid creating new vector objects
-     @param object the vector being overwritten
-     @param newVec the source of the x,y,z values
-     @return the overwritten vector (same as object param)
-     * **/
-    @SuppressWarnings("UnusedReturnValue")
-    private Vector overwriteVector(Vector object, Vector newVec) {
-        object.setX(newVec.getX()).setY(newVec.getY()).setZ(newVec.getZ());
-        return object;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -205,12 +135,15 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
 
     @Override
     public double length() {
-        return getPointedVector().length();
+        return Math.sqrt(lengthSquared());
     }
 
     @Override
     public double lengthSquared() {
-        return getPointedVector().lengthSquared();
+        double x=readX();
+        double y=readY();
+        double z=readZ();
+        return x*x + y*y + z*z;
     }
 
     /**
@@ -218,16 +151,19 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
      */
     @Override
     public Locatable normalize() {
-        withWriteLock(vector1::normalize);
+        withWriteLock(() -> {
+            double len = Math.sqrt(x*x + y*y + z*z);
+            x /= len; y /= len; z /= len;
+        });
         return this;
     }
 
     @Override
     public Locatable add(Locatable locatable) {
         withWriteLock(() -> {
-            vector1.setX(vector1.getX() + locatable.x());
-            vector1.setY(vector1.getY() +  locatable.y());
-            vector1.setZ(vector1.getZ() + locatable.z());
+            x += locatable.x();
+            y += locatable.y();
+            z += locatable.z();
         });
         return this;
     }
@@ -235,16 +171,16 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
     @Override
     public Locatable subtract(Locatable locatable) {
         withWriteLock(() -> {
-            vector1.setX(vector1.getX() - locatable.x());
-            vector1.setY(vector1.getY() -  locatable.y());
-            vector1.setZ(vector1.getZ() - locatable.z());
+            x -= locatable.x();
+            y -= locatable.y();
+            z -= locatable.z();
         });
         return this;
     }
 
     @Override
     public Locatable scalarMultiply(double factor) {
-        withWriteLock(() -> vector1.multiply(factor));
+        withWriteLock(() -> { x *= factor; y *= factor; z *= factor; });
         return this;
     }
 
