@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.snapshot.entity;
 
-import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
+import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.EntityLocationPair;
 import org.bukkit.Location;
@@ -29,18 +29,19 @@ public class BukkitESM implements EntitySnapshotManager {
         entityLocationMap.remove(entityUUID);
     }
 
-    private volatile ConcurrentHashMap<UUID, ThreadSafeLocation> entityLocationMap = new ConcurrentHashMap<>();
+    private volatile ConcurrentHashMap<UUID, ThreadSafeLocatable> entityLocationMap = new ConcurrentHashMap<>();
 
-    public void updateEntireEntityLocationMap(HashMap<UUID, ThreadSafeLocation> newLocations) {
+    public void updateEntireEntityLocationMap(HashMap<UUID, ThreadSafeLocatable> newLocations) {
         entityLocationMap = new ConcurrentHashMap<>(newLocations);
     }
 
     private void setOrUpdateEntityLocation(UUID entityUUID, Vector location, UUID world) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return new ThreadSafeLocation(location, world);
+            if (oldLoc == null) return new ThreadSafeLocatable(location, world);
             while (!oldLoc.update(location)) {
                 Thread.onSpinWait(); //doesn't actually sleep the thread, just indicates that this thread should be deprioritized. Once the write lock is released it should write nearly immediately
             }
+            oldLoc.setWorld(world);
             return oldLoc;
         });
     }
@@ -59,7 +60,7 @@ public class BukkitESM implements EntitySnapshotManager {
     }
 
     @Override
-    public ThreadSafeLocation getLocation(UUID entityUUID) {
+    public ThreadSafeLocatable getLocation(UUID entityUUID) {
         return entityLocationMap.get(entityUUID);
     }
 
@@ -68,7 +69,7 @@ public class BukkitESM implements EntitySnapshotManager {
         return SnapshotManager.EntitySnapshotManagerType.BUKKIT;
     }
 
-    public HashMap<UUID, ThreadSafeLocation> getCopyOfEntityLocationMap() {
+    public HashMap<UUID, ThreadSafeLocatable> getCopyOfEntityLocationMap() {
         return new HashMap<>(entityLocationMap);
     }
 

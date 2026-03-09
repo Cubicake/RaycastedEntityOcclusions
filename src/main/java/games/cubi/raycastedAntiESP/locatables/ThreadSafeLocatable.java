@@ -11,17 +11,20 @@ import org.bukkit.World;
 import org.bukkit.util.Vector;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.StampedLock;
+
 @SuppressWarnings("UnstableApiUsage")
-public class ThreadSafeLocation implements Locatable /*TBH I still don't even know if this is needed */ {
-    private final UUID world;
+public class ThreadSafeLocatable implements Locatable /*TBH I still don't even know if this is needed */ {
+    private volatile UUID world;
     private final Vector vector1;
     private final Vector vector2;
     private volatile byte pointer = 1;
-    private final AtomicBoolean writeLock = new AtomicBoolean(false);
+//    private final AtomicBoolean writeLock = new AtomicBoolean(false);
+
+    private final StampedLock lock = new StampedLock();
 
 
-    public ThreadSafeLocation(Vector vec, UUID world) {
+    public ThreadSafeLocatable(Vector vec, UUID world) {
         writeLock.set(true);
         this.world = world;
         vector1 = vec.clone(); //clone to ensure a new vector
@@ -29,7 +32,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
         vector2 = vector1.clone();
     }
 
-    public ThreadSafeLocation(World world, double x, double y, double z) {
+    public ThreadSafeLocatable(World world, double x, double y, double z) {
         writeLock.set(true);
         this.world = world.getUID();
         vector1 = new Vector(x, y, z);
@@ -37,7 +40,7 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
         vector2 = vector1.clone();
     }
 
-    public ThreadSafeLocation(UUID world, double x, double y, double z) {
+    public ThreadSafeLocatable(UUID world, double x, double y, double z) {
         writeLock.set(true);
         this.world = world;
         vector1 = new Vector(x, y, z);
@@ -45,11 +48,11 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
         vector2 = vector1.clone();
     }
 
-    public ThreadSafeLocation(Location loc) {
+    public ThreadSafeLocatable(Location loc) {
         this(loc.toVector(), loc.getWorld().getUID());
     }
 
-    public ThreadSafeLocation(Location loc, double height) {
+    public ThreadSafeLocatable(Location loc, double height) {
         this(loc.add(0, height/2, 0).toVector(), loc.getWorld().getUID());
     }
 
@@ -73,15 +76,48 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
     }
     /**Returns the X value of the vector*/
     public double readX() {
-        return getPointedVector().getX();
+        long stamp = lock.tryOptimisticRead();
+        double x = vector1.getX();
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                x = vector1.getX();
+            }
+            finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return x;
     }
     /**Returns the Y value of the vector*/
     public double readY() {
-        return getPointedVector().getY();
+        long stamp = lock.tryOptimisticRead();
+        double y = vector1.getY();
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                y = vector1.getY();
+            }
+            finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return y;
     }
     /**Returns the Z value of the vector*/
     public double readZ() {
-        return getPointedVector().getZ();
+        long stamp = lock.tryOptimisticRead();
+        double z = vector1.getZ();
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                z = vector1.getZ();
+            }
+            finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return z;
     }
     public UUID readWorld() { return world; }
 
@@ -125,27 +161,11 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
      * In other words, this method can be used so that writing code to ThreadSafeLocations is as easy as writing to a normal Vector.
      */
     private void withWriteLock(Runnable body) {
-        while (!writeLock.compareAndSet(false, true)) {
-            Thread.onSpinWait();
-        }
+        long stamp = lock.writeLock();
         try {
-            Preconditions.checkArgument(pointer == 1);
-            // Switch reads to vector2
-            pointer = 2;
-
-            // Perform mutation on vector1
             body.run();
-
-            // Switch reads back to vector1
-            pointer = 1;
-
-            // Sync vector2 with updated vector1
-            overwriteVector(vector2, vector1);
-
         } finally {
-            if (!writeLock.compareAndSet(true, false)) {
-                Logger.errorAndReturn(new RuntimeException("ThreadSafeLocation lost thread lock during operation"), 1);
-            }
+            lock.unlockWrite(stamp);
         }
     }
 
@@ -286,6 +306,10 @@ public class ThreadSafeLocation implements Locatable /*TBH I still don't even kn
     @Override
     public BlockPosition toBlock() {
         return new BlockLocation(world, blockX(), blockY(), blockZ());
+    }
+
+    public void setWorld(UUID world) {
+        this.world = world;
     }
 }
 

@@ -6,7 +6,7 @@ public class LocatableImpl implements Locatable {
     private double x;
     private double y;
     private double z;
-    private final UUID world;
+    private UUID world;
 
     public LocatableImpl(UUID world, double x, double y, double z) {
         this.world = world;
@@ -77,5 +77,9 @@ public class LocatableImpl implements Locatable {
     @Override
     public String toString() {
         return toStringForm();
+    }
+
+    public void setWorld(UUID world) {
+        this.world = world;
     }
 }

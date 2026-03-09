@@ -7,9 +7,8 @@ import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
 import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocation;
+import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocatable;
 import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
 import games.cubi.raycastedAntiESP.raycast.RaycastUtil;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
@@ -173,10 +172,10 @@ public class SimpleEngine implements Engine {
             return;
         }
 
-        HashMap<UUID, ThreadSafeLocation> entities = new HashMap<>();
+        HashMap<UUID, ThreadSafeLocatable> entities = new HashMap<>();
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                entities.put(entity.getUniqueId(), new ThreadSafeLocation(entity.getLocation(), entity.getHeight()));
+                entities.put(entity.getUniqueId(), new ThreadSafeLocatable(entity.getLocation(), entity.getHeight()));
             }
         }
         ((BukkitESM) SnapshotManager.getEntitySnapshotManager()).updateEntireEntityLocationMap(entities);
