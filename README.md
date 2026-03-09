@@ -1,4 +1,4 @@
-Latest stable version: v1.6.5 | Latest beta version: v2.0.0-beta-1
+Latest stable version: v1.6.5 | Latest alpha version: v2.0.0-alpha-2.1
 
 The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/
 
