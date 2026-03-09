@@ -1,14 +1,12 @@
-Latest stable version: v1.6.5 | Latest alpha version: v2.0.0-alpha-2.1
+### Latest stable version: v1.6.5 | Latest alpha version: v2.0.0-alpha-2.1
 
-The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/
+The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/. The latest alpha version can be found on the [discord](https://discord.cubi.games) or by compiling from `main`.
 
-The latest alpha version can be found on the [discord](https://discord.cubi.games) or by compiling from `main`.
-
-This is an async plugin for PaperMC and its forks that hides/culls entities (and tile entities) from players if they do not have line-of-sight.
+This is a predominantly async plugin for PaperMC and its forks that hides/culls entities (and tile entities) from players if they do not have line-of-sight.
 
 The supported versions are 1.21.x PaperMC and Pufferfish. Other server versions and software may work too.
 
-Use cases:
+## Use cases:
 
 - Prevent cheating (anti-esp hacks)
   - Block usage of pie-ray to locate underground bases
@@ -18,14 +16,12 @@ Use cases:
 - Hide nametags behind walls
   - Yes, this plugin is a bit overkill for doing that, yes you can do it anyways.
  
-Dependencies:
+## Dependencies:
 - Packetevents (soft depend)
   - Only needed if you are using the cull-players option and wish for the players to remain in the tablist
 
-Known issues:
+## Known issues:
 - Due to the nature of the plugin, there will be a short delay once an entity should be visible before it appears, causing it to appear like it "popped" into view. This issue is partially resolved by turning engine-mode to 2, and is worse for players with higher ping.
 
 ## Contributions
-Contributions via pull requests are welcome. Please join our [discord](https://discord.cubi.games) to discuss any contributions beforehand to make sure they will not conflict with or hinder existing plans.
-
-You must hold the rights to any code you contribute, and must agree to licence it under the same licence as the rest of the project in perpetuity, explicitly including any and all changes to the project's licence by project maintainers in the future. The project's licence can always be found at [LICENSE.md](LICENSE.md).
+Contributions via pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
