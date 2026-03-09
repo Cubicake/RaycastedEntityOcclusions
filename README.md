@@ -1,6 +1,6 @@
 ### Latest stable version: v1.6.5 | Latest alpha version: v2.0.0-alpha-2.1
 
-The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/. The latest alpha version can be found on the [discord](https://discord.cubi.games) or by compiling from `main`.
+The latest stable version can currently only be found on Modrinth https://modrinth.com/plugin/raycasted-anti-esp/ or by compiling from `v1.6.x`. The latest alpha version can be found on the [discord](https://discord.cubi.games) or by compiling from `main`.
 
 This is a predominantly async plugin for PaperMC and its forks that hides/culls entities (and tile entities) from players if they do not have line-of-sight.
 
