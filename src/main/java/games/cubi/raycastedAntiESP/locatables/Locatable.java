@@ -17,6 +17,9 @@ public interface Locatable {
     double z();
     UUID world();
 
+
+    void setWorld(UUID world);
+
     default int blockX() {
         return (int) Math.floor(x());
     }
@@ -38,7 +41,7 @@ public interface Locatable {
     }
 
     default Location toBukkitLocation(){
-        return new Location(Bukkit.getWorld(world()), x(), y(), z());
+        return new Location(LocatableType.Bukkit.getWorld(world()), x(), y(), z());
     }
 
     default double length() {
@@ -131,8 +134,8 @@ public interface Locatable {
     static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {
         switch (to) {
             case ThreadSafe -> {
-                if ((from instanceof ThreadSafeLocation) && !clone) return from;
-                return new ThreadSafeLocation(from.world(), from.x(), from.y(), from.z());
+                if ((from instanceof ThreadSafeLocatable) && !clone) return from;
+                return new ThreadSafeLocatable(from.world(), from.x(), from.y(), from.z());
             }
             case Bukkit -> {
                 if ((from instanceof Location) && !clone) return from;
@@ -172,7 +175,7 @@ public interface Locatable {
     static Locatable create(UUID world, double x, double y, double z, LocatableType type) {
         switch (type) {
             case ThreadSafe -> {
-                return new ThreadSafeLocation(world, x, y, z);
+                return new ThreadSafeLocatable(world, x, y, z);
             }
             case Bukkit -> {
                 return new WrappedBukkitLocation(world, x, y, z);
