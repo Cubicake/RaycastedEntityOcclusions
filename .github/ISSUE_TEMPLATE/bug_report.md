@@ -18,8 +18,9 @@ A clear and concise description of what you expected to happen.
 
 **General debugging information**
  - Any relevant crash or console logs
- - The output of /raycastedentityocclusions
- - The output of /raycastedentityocclusions config-values
+ - The output of `/raycastedentityocclusions`
+ - The output of `/raycastedentityocclusions config-values`
+ - The link returned by `/spark profiler start --timeout 11`
 
 **Additional context**
 Add any other context about the problem here.
