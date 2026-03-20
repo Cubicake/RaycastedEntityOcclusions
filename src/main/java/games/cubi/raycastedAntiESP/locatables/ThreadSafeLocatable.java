@@ -11,8 +11,7 @@ import org.bukkit.util.Vector;
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 
-@SuppressWarnings("UnstableApiUsage")
-public class ThreadSafeLocatable implements Locatable /*TBH I still don't even know if this is needed */ {
+public class ThreadSafeLocatable implements Locatable {
     private volatile UUID world;
 
     private double x, y, z;
@@ -45,60 +44,6 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
         this(loc.add(0, height/2, 0).toVector(), loc.getWorld().getUID());
     }
 
-    /*public ThreadSafeLocation(QuantisedLocation loc) {
-        this(new Vector(loc.realX(), loc.realY(), loc.realZ()), loc.world());
-    }*/
-
-
-    /**Returns the X value of the vector*/
-    public double readX() {
-        long stamp = lock.tryOptimisticRead();
-        double val = this.x;
-        if (!lock.validate(stamp)) {
-            stamp = lock.readLock();
-            try {
-                val = this.x;
-            }
-            finally {
-                lock.unlockRead(stamp);
-            }
-        }
-        return val;
-    }
-    /**Returns the Y value of the vector*/
-    public double readY() {
-        long stamp = lock.tryOptimisticRead();
-        double val = this.y;
-        if (!lock.validate(stamp)) {
-            stamp = lock.readLock();
-            try {
-                val = this.y;
-            }
-            finally {
-                lock.unlockRead(stamp);
-            }
-        }
-        return val;
-    }
-    /**Returns the Z value of the vector*/
-    public double readZ() {
-        long stamp = lock.tryOptimisticRead();
-        double val = this.z;
-        if (!lock.validate(stamp)) {
-            stamp = lock.readLock();
-            try {
-                val = this.z;
-            }
-            finally {
-                lock.unlockRead(stamp);
-            }
-        }
-        return val;
-    }
-    public UUID readWorld() { return world; }
-
-
-
     /**
      * Runs a write operation on x, y, z fields under a write lock.
      */
@@ -110,8 +55,6 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
             lock.unlockWrite(stamp);
         }
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -140,10 +83,17 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
 
     @Override
     public double lengthSquared() {
-        double x=readX();
-        double y=readY();
-        double z=readZ();
-        return x*x + y*y + z*z;
+        long stamp = lock.tryOptimisticRead();
+        double result = x*x + y*y + z*z;
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = x*x + y*y + z*z;
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     /**
@@ -160,20 +110,22 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
 
     @Override
     public Locatable add(Locatable locatable) {
+        double[] otherPosition = locatable.getAtomicPositionArray();
         withWriteLock(() -> {
-            x += locatable.x();
-            y += locatable.y();
-            z += locatable.z();
+            x += otherPosition[0];
+            y += otherPosition[1];
+            z += otherPosition[2];
         });
         return this;
     }
 
     @Override
     public Locatable subtract(Locatable locatable) {
+        double[] otherPosition = locatable.getAtomicPositionArray();
         withWriteLock(() -> {
-            x -= locatable.x();
-            y -= locatable.y();
-            z -= locatable.z();
+            x -= otherPosition[0];
+            y -= otherPosition[1];
+            z -= otherPosition[2];
         });
         return this;
     }
@@ -186,62 +138,92 @@ public class ThreadSafeLocatable implements Locatable /*TBH I still don't even k
 
     @Override
     public UUID world() {
-        return readWorld();
+        long stamp = lock.tryOptimisticRead();
+        UUID result = world;
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = world;
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     @Override
     public int blockX() {
-        return (int) Math.floor(readX());
+        return (int) Math.floor(x());
     }
 
     @Override
     public int blockY() {
-        return (int) Math.floor(readY());
+        return (int) Math.floor(y());
     }
 
     @Override
     public int blockZ() {
-        return (int) Math.floor(readZ());
+        return (int) Math.floor(z());
     }
 
     @Override
     public double x() {
-        return readX();
+        long stamp = lock.tryOptimisticRead();
+        double result = x;
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = x;
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     @Override
     public double y() {
-        return readY();
+        long stamp = lock.tryOptimisticRead();
+        double result = y;
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = y;
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     @Override
     public double z() {
-        return readZ();
+        long stamp = lock.tryOptimisticRead();
+        double result = z;
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = z;
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     @Override
-    public boolean isBlock() {
-        return false;
-    }
-
-    @Override
-    public boolean isFine() {
-        return true;
-    }
-
-    @Override
-    public Position offset(int x, int y, int z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
-    public FinePosition offset(double x, double y, double z) {
-        throw new RuntimeException("Unimplemented");
-    }
-
-    @Override
-    public BlockPosition toBlock() {
-        return new BlockLocation(world, blockX(), blockY(), blockZ());
+    public double[] getAtomicPositionArray() {
+        long stamp = lock.tryOptimisticRead();
+        double[] result = new double[]{x, y, z};
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                result = new double[]{x, y, z};
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return result;
     }
 
     public void setWorld(UUID world) {

@@ -73,8 +73,15 @@ public interface Locatable {
         return scalarMultiply(1.0 / length);
     }
 
-    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
+    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error. Differences in world will be ignored*/
     Locatable add(Locatable locatable);
+
+    /**@return An array of the 3 coordinates, in the order [x,y,z]. This is used for atomic updates of all 3 coordinates.*/
+    default double[] getAtomicPositionArray() {
+        synchronized (this) {
+            return new double[]{x(), y(), z()};
+        }
+    }
 
     /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
     Locatable subtract(Locatable locatable);
