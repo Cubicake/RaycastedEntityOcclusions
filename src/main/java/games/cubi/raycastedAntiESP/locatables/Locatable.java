@@ -41,7 +41,7 @@ public interface Locatable {
     }
 
     default Location toBukkitLocation(){
-        return new Location(LocatableType.Bukkit.getWorld(world()), x(), y(), z());
+        return new Location(Bukkit.getWorld(world()), x(), y(), z());
     }
 
     default double length() {
