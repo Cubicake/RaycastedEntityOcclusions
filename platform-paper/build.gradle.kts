@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     compileOnly("com.github.retrooper:packetevents-spigot:2.8.0")
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
@@ -19,12 +19,16 @@ dependencies {
     implementation("org.jetbrains:annotations:24.0.1")
 
     implementation(project(":locatables"))
-    implementation(project(":logging"))
+    compileOnly(project(":logging"))
+    compileOnly("com.mojang:brigadier:1.3.10")
 }
 
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
+
+group = "games.cubi.raycastedantiesp.paper"
+version = "2.0.0-alpha-3"
 
 tasks {
     runServer {
@@ -41,4 +45,8 @@ tasks {
             expand(props)
         }
     }
+}
+
+tasks.jar {
+    archiveBaseName.set("RaycastedAntiESP-Paper")
 }
