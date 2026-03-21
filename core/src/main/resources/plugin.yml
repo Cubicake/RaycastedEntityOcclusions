@@ -1,0 +1,23 @@
+name: RaycastedAntiESP
+version: ${version}
+main: games.cubi.raycastedantiesp.core.RaycastedAntiESP
+api-version: '1.21'
+prefix: RaycastedAntiESP
+authors: [ _Cubicake ]
+load: STARTUP
+website: https://cubi.games
+permissions:
+    raycastedantiesp.command:
+        description: Permission to use the /RaycastedAntiESP command
+        default: op
+    raycastedantiesp.bypass:
+        description: Permission to bypass all checks. A restart is needed to apply this permission.
+        default: false
+    raycastedantiesp.updatecheck:
+        description: Permission to check for plugin updates
+        default: op
+    raycastedentityocclusions.receivelogmessages:
+        description: Permission to receive log messages which are sent to the console
+        default: false
+softdepend:
+    - packetevents

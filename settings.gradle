@@ -1,3 +1,4 @@
 rootProject.name = 'RaycastedAntiESP'
 include 'locatables'
 include 'logging'
+include 'core'
