@@ -2,6 +2,8 @@ plugins {
     id("java-library")
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
     id("xyz.jpenilla.run-paper") version "3.0.2"
+    id("com.gradleup.shadow") version "9.4.0"
+
 }
 
 repositories {
@@ -19,8 +21,8 @@ dependencies {
     implementation("org.jetbrains:annotations:24.0.1")
 
     implementation(project(":locatables"))
-    compileOnly(project(":logging"))
-    compileOnly("com.mojang:brigadier:1.3.10")
+    implementation(project(":logging"))
+
 }
 
 java {
@@ -28,7 +30,7 @@ java {
 }
 
 group = "games.cubi.raycastedantiesp.paper"
-version = "2.0.0-alpha-3"
+version = "v2.0.0-alpha-3"
 
 tasks {
     runServer {
@@ -44,6 +46,13 @@ tasks {
         filesMatching("plugin.yml") {
             expand(props)
         }
+    }
+}
+
+tasks.shadowJar {
+    dependencies {
+        include(project(":logging"))
+        include(project(":locatables"))
     }
 }
 

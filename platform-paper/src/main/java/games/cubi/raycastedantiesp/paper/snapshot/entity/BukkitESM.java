@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.paper.snapshot.entity;
 
-import games.cubi.locatables.ThreadSafeLocatable;
+import games.cubi.locatables.implementations.ThreadSafeLocatable;
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.EntityLocationPair;

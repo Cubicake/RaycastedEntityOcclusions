@@ -2,7 +2,7 @@ package games.cubi.raycastedantiesp.paper.raycast;
 
 import games.cubi.locatables.MutableLocatable;
 import games.cubi.raycastedantiesp.paper.Logger;
-import games.cubi.locatables.block.MutableBlockVector;
+import games.cubi.locatables.implementations.MutableBlockVector;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
 import games.cubi.locatables.Locatable;
 import games.cubi.raycastedantiesp.paper.utils.LocationPair;

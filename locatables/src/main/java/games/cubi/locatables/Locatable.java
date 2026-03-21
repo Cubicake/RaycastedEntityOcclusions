@@ -1,6 +1,6 @@
 package games.cubi.locatables;
 
-import games.cubi.locatables.block.*;
+import games.cubi.locatables.implementations.*;
 
 import java.util.UUID;
 
@@ -49,7 +49,7 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
     }
 
     default MutableLocatable clonePlainAndCentreIfBlockLocation() {
-        return new LocatableImpl(world(), x(), y(), z());
+        return new MutableLocatableImpl(world(), x(), y(), z());
     }
 
     /**@return An array of the 3 coordinates, in the order [x,y,z]. This is used for atomic updates of all 3 coordinates.*/
@@ -131,11 +131,11 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
                 return new ImmutableBlockLocatable(from.world(), from.x(), from.y(), from.z());
             }
             case Mutable -> {
-                if ((from instanceof LocatableImpl) && !clone) return from;
-                return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
+                if ((from instanceof MutableLocatableImpl) && !clone) return from;
+                return new MutableLocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
             default -> {
-                return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
+                return new MutableLocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
         }
     }
@@ -153,7 +153,7 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
                 return new MutableBlockVector(world, x, y, z);
             }
             case Mutable, ExternalMutable -> {
-                return new LocatableImpl(world, x, y, z);
+                return new MutableLocatableImpl(world, x, y, z);
             }
             case ImmutableBlockLocation, ExternalImmutableBlock -> {
                 return new ImmutableBlockLocatable(world, x, y, z);
@@ -173,8 +173,8 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
             return (T) new MutableBlockVector(world, x, y, z);
         } else if (type == ImmutableBlockLocatable.class) {
             return (T) new ImmutableBlockLocatable(world, x, y, z);
-        } else if (type == LocatableImpl.class) {
-            return (T) new LocatableImpl(world, x, y, z);
+        } else if (type == MutableLocatableImpl.class) {
+            return (T) new MutableLocatableImpl(world, x, y, z);
         } else if (type == ImmutableLocatableImpl.class) {
             return (T) new ImmutableLocatableImpl(world, x, y, z);
         } else {

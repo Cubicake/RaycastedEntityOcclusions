@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
-import games.cubi.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.utils.TileEntityVisibilityTracker;

@@ -2,7 +2,7 @@ package games.cubi.raycastedantiesp.paper.utils;
 
 import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.locatables.Locatable;
-import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
 
 import java.util.HashSet;

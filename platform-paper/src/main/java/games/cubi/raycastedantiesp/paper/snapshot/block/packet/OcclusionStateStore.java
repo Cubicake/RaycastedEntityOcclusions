@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 
 import games.cubi.raycastedantiesp.paper.Logger;
-import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.BlockLocatable;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,14 +1,16 @@
-package games.cubi.locatables;
+package games.cubi.locatables.implementations;
+
+import games.cubi.locatables.MutableLocatable;
 
 import java.util.UUID;
 
-public class LocatableImpl implements MutableLocatable {
+public class MutableLocatableImpl implements MutableLocatable {
     private double x;
     private double y;
     private double z;
     private UUID world;
 
-    public LocatableImpl(UUID world, double x, double y, double z) {
+    public MutableLocatableImpl(UUID world, double x, double y, double z) {
         this.world = world;
         this.x = x;
         this.y = y;

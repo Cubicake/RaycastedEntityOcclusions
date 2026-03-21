@@ -1,6 +1,7 @@
-package games.cubi.locatables.block;
+package games.cubi.locatables.implementations;
 
 import games.cubi.locatables.ImmutableLocatable;
+import games.cubi.locatables.BlockLocatable;
 
 import java.util.UUID;
 

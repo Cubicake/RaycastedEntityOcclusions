@@ -1,4 +1,7 @@
-package games.cubi.locatables;
+package games.cubi.locatables.implementations;
+
+import games.cubi.locatables.Locatable;
+import games.cubi.locatables.MutableLocatable;
 
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;

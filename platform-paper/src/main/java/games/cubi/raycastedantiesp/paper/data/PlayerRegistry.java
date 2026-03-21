@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.paper.data;
 
-import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.utils.PlayerData;
 
 import java.util.Collection;

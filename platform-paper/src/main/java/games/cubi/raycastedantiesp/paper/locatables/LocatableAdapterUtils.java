@@ -1,12 +1,8 @@
 package games.cubi.raycastedantiesp.paper.locatables;
 
-import games.cubi.locatables.ImmutableLocatableImpl;
 import games.cubi.locatables.Locatable;
-import games.cubi.locatables.LocatableImpl;
-import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.BlockLocatable;
 
-import games.cubi.locatables.block.ImmutableBlockLocatable;
-import games.cubi.locatables.block.MutableBlockVector;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 

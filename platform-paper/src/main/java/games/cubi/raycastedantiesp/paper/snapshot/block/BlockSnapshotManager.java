@@ -1,8 +1,8 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block;
 
 import games.cubi.raycastedantiesp.paper.data.PlayerRegistry;
-import games.cubi.locatables.block.BlockLocatable;
-import games.cubi.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.PlayerData;
 

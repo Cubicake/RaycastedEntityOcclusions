@@ -1,13 +1,11 @@
-package games.cubi.locatables.block;
+package games.cubi.locatables;
 
-import games.cubi.locatables.Locatable;
-import games.cubi.locatables.LocatableImpl;
-import games.cubi.locatables.MutableLocatable;
+import games.cubi.locatables.implementations.MutableLocatableImpl;
 
 public non-sealed interface BlockLocatable extends Locatable {
 
     default MutableLocatable clonePlainAndCentreIfBlockLocation() {
-        return new LocatableImpl(world(), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
+        return new MutableLocatableImpl(world(), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
     }
 
     default boolean isEqual(Object o) {

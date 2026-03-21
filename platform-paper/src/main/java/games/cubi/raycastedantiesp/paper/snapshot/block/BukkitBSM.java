@@ -5,8 +5,8 @@ import games.cubi.raycastedantiesp.paper.EventListener;
 import games.cubi.raycastedantiesp.paper.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import games.cubi.locatables.block.BlockLocatable;
-import games.cubi.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
