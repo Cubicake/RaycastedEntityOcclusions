@@ -1,7 +1,6 @@
 package games.cubi.raycastedAntiESP.snapshot.block.packet;
 
 import games.cubi.raycastedAntiESP.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.UUID;

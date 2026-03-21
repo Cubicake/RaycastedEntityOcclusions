@@ -5,7 +5,6 @@ import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.snapshot.SnapshotConfig;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class BukkitTileEntitySnapshotConfig extends TileEntitySnapshotConfig {
     protected BukkitTileEntitySnapshotConfig() {

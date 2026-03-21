@@ -2,7 +2,7 @@ package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

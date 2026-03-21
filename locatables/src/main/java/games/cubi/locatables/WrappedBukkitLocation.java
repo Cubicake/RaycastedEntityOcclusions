@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.locatables;
+package games.cubi.locatables;
 
 import io.papermc.paper.math.BlockPosition;
 import io.papermc.paper.math.FinePosition;

@@ -2,7 +2,6 @@ package games.cubi.raycastedAntiESP.visibilitychangehandlers.entity;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import games.cubi.raycastedAntiESP.utils.PlayerData;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.BukkitAbstractVisibilityChanger;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
 

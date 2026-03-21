@@ -1,8 +1,8 @@
 package games.cubi.raycastedAntiESP.snapshot.block;
 
 import games.cubi.raycastedAntiESP.data.PlayerRegistry;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
-import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.ImmutableBlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 

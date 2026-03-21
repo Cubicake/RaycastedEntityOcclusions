@@ -3,10 +3,8 @@ package games.cubi.raycastedAntiESP.config.engine;
 import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class PredictiveEngineConfig extends EngineConfig {
     private final int leniencyTicks;

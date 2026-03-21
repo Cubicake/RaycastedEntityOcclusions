@@ -2,7 +2,7 @@ package games.cubi.raycastedAntiESP.utils;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 
 import java.util.HashSet;

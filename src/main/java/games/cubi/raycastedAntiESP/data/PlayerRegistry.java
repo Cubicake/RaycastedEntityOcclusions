@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.data;
 
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 
 import java.util.Collection;

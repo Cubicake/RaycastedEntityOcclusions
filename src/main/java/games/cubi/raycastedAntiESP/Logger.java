@@ -2,7 +2,6 @@ package games.cubi.raycastedAntiESP;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.config.DebugConfig;
-import games.cubi.raycastedAntiESP.utils.CheckPreviousLogForError;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 

@@ -1,6 +1,5 @@
 package games.cubi.raycastedAntiESP.config;
 
-import games.cubi.raycastedAntiESP.config.ConfigNodeUtil;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;

@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.locatables;
+package games.cubi.locatables;
 
 public non-sealed interface ImmutableLocatable extends Locatable {
      default boolean isMutable() {

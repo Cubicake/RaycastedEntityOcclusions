@@ -6,7 +6,6 @@ import games.cubi.raycastedAntiESP.config.Config;
 import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class EngineConfig implements Config {
     private final EngineMode mode;

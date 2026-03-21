@@ -1,7 +1,7 @@
-package games.cubi.raycastedAntiESP.locatables.block;
+package games.cubi.locatables.block;
 
-import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.locatables.LocatableImpl;
+import games.cubi.locatables.Locatable;
+import games.cubi.locatables.LocatableImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 

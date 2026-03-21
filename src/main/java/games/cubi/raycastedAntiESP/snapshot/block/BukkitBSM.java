@@ -4,8 +4,8 @@ import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
-import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.ImmutableBlockLocatable;
 
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;

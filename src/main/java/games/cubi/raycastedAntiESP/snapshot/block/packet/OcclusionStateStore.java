@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.snapshot.block.packet;
 
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;

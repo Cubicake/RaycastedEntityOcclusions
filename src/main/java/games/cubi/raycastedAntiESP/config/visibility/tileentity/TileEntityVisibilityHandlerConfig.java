@@ -7,7 +7,6 @@ import games.cubi.raycastedAntiESP.config.ConfigFactory;
 import games.cubi.raycastedAntiESP.config.visibility.VisibilityHandlersConfig;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class TileEntityVisibilityHandlerConfig implements Config {
     private final TileEntityVisibilityHandlerMode mode;

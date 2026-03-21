@@ -2,7 +2,7 @@ plugins {
     id("java")
 }
 
-group = "games.cubi"
+group = "games.cubi.locatables"
 version = "beta-1.0"
 
 repositories {

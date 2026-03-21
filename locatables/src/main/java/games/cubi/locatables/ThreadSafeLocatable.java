@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.locatables;
+package games.cubi.locatables;
 
 import org.bukkit.Location;
 import org.bukkit.World;

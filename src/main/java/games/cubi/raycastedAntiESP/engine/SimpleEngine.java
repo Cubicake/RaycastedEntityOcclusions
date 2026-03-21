@@ -8,7 +8,7 @@ import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocatable;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.raycast.RaycastUtil;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;

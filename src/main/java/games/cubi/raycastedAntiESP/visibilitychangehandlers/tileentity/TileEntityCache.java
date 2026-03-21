@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.utils.ConcurrentSetMap;
 
 import java.util.Map;

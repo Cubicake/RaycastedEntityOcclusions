@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.raycast;
 
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.MutableBlockVector;
+import games.cubi.locatables.block.MutableBlockVector;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.utils.LocationPair;

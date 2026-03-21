@@ -1,4 +1,4 @@
-package games.cubi.raycastedAntiESP.locatables;
+package games.cubi.locatables;
 
 import java.util.UUID;
 

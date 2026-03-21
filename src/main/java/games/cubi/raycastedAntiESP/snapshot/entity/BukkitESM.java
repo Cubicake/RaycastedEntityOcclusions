@@ -4,7 +4,6 @@ import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.EntityLocationPair;
 import org.bukkit.Location;
-import org.bukkit.util.Vector;
 
 import java.util.HashMap;
 import java.util.UUID;

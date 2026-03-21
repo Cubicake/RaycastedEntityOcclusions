@@ -2,8 +2,8 @@ package games.cubi.raycastedAntiESP.snapshot.block.packet;
 
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
-import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
+import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.locatables.block.ImmutableBlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
