@@ -35,11 +35,10 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static SimpleEngine engine;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
-    private static java.util.logging.Logger logger;
     //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
     {
         instance = this;
-        logger = getLogger();
+
     }
 
     @Override
@@ -80,7 +79,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onDisable() {
-        Logger.flush();
         metricsCollector.shutdown();
     }
 
@@ -125,8 +123,5 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     }
     public static RaycastedAntiESP get() {
         return instance;
-    }
-    public static java.util.logging.Logger logger() {
-        return logger;
     }
 }

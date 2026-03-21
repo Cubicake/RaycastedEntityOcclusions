@@ -1,6 +1,7 @@
 package games.cubi.raycastedAntiESP.config;
 
 import games.cubi.raycastedAntiESP.Logger;
+import games.cubi.logs.Frequency;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
 import games.cubi.raycastedAntiESP.config.raycast.EntityConfig;
 import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
@@ -70,7 +71,7 @@ public class ConfigManager {
      */
     public void load() {
         //check that we are on the main bukkit thread to prevent concurrency issues
-        if (isNotOnMainThread()) Logger.warningAndReturn(new RuntimeException("ConfigManager attempted to be loaded off the main thread. Please report this to the plugin developer."), Logger.Frequency.CRITICAL.value);
+        if (isNotOnMainThread()) Logger.warningAndReturn(new RuntimeException("ConfigManager attempted to be loaded off the main thread. Please report this to the plugin developer."), Frequency.CRITICAL.value);
         ensureConfigFileExists();
         config = loadConfigNode();
 
@@ -293,7 +294,7 @@ public class ConfigManager {
                     .build();
             return resourceLoader.load();
         } catch (IOException e) {
-            Logger.warning("Failed to read bundled config defaults: " + e.getMessage(), Logger.Frequency.CONFIG_LOAD.value);
+            Logger.warning("Failed to read bundled config defaults: " + e.getMessage(), Frequency.CONFIG_LOAD.value);
             return null;
         }
     }

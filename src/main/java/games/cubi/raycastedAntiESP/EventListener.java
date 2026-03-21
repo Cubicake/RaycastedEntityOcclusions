@@ -43,7 +43,6 @@ import java.util.function.Consumer;
 import static games.cubi.raycastedAntiESP.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(EventListener.class);
     private final ConfigManager config;
     private final PacketProcessor packetProcessor;
     private final RaycastedAntiESP plugin;
