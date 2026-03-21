@@ -1,8 +1,5 @@
 package games.cubi.locatables;
 
-import org.bukkit.Location;
-import org.bukkit.World;
-
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 
@@ -13,21 +10,9 @@ public class ThreadSafeLocatable implements MutableLocatable {
 
     private final StampedLock lock = new StampedLock();
 
-    public ThreadSafeLocatable(World world, double x, double y, double z) {
-        this(world.getUID(), x, y, z);
-    }
-
     public ThreadSafeLocatable(UUID world, double x, double y, double z) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
-    }
-
-    public ThreadSafeLocatable(Location loc) {
-        this(loc, 0);
-    }
-
-    public ThreadSafeLocatable(Location loc, double height) {
-        this(loc.getWorld().getUID(), loc.getX(), loc.getY() + height, loc.getZ());
     }
 
     /**

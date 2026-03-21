@@ -1,6 +1,6 @@
 name: RaycastedAntiESP
 version: ${version}
-main: games.cubi.raycastedantiesp.core.RaycastedAntiESP
+main: games.cubi.raycastedantiesp.paper.RaycastedAntiESP
 api-version: '1.21'
 prefix: RaycastedAntiESP
 authors: [ _Cubicake ]

@@ -1,11 +1,6 @@
 package games.cubi.locatables;
 
-
-import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.locatables.block.*;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 
 import java.util.UUID;
 
@@ -34,10 +29,6 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
         return blockZ() >> 4;
     }
 
-    default Location toBukkitLocation(){
-        return new Location(Bukkit.getWorld(world()), x(), y(), z());
-    }
-
     default double length() {
         return Math.sqrt(lengthSquared());
     }
@@ -57,8 +48,8 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
         return dx * dx + dy * dy + dz * dz;
     }
 
-    default Locatable clonePlainAndCentreIfBlockLocation() {
-        return convertLocatable(this, LocatableType.Mutable, true);
+    default MutableLocatable clonePlainAndCentreIfBlockLocation() {
+        return new LocatableImpl(world(), x(), y(), z());
     }
 
     /**@return An array of the 3 coordinates, in the order [x,y,z]. This is used for atomic updates of all 3 coordinates.*/
@@ -114,11 +105,15 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
 
     enum LocatableType {
         ThreadSafe,
-        Bukkit,
         MutableBlockVector,
         ImmutableBlockLocation,
         Immutable,
         Mutable,
+        // implementations from other modules/projects should use the following
+        ExternalMutable,
+        ExternalImmutable,
+        ExternalMutableBlock,
+        ExternalImmutableBlock,
     }
 
     static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {
@@ -126,10 +121,6 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
             case ThreadSafe -> {
                 if ((from instanceof ThreadSafeLocatable) && !clone) return from;
                 return new ThreadSafeLocatable(from.world(), from.x(), from.y(), from.z());
-            }
-            case Bukkit -> {
-                if ((from instanceof Location) && !clone) return from;
-                return new WrappedBukkitLocation(from.world(), from.x(), from.y(), from.z());
             }
             case MutableBlockVector -> {
                 if ((from instanceof MutableBlockVector) && !clone) return from;
@@ -144,22 +135,13 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
                 return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
             default -> {
-                Logger.error(new RuntimeException("Locatable.convertLocatable: Unhandled LocatableType conversion to: " + to), 2);
                 return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
         }
     }
 
-    static Locatable convertLocatable(Location from, LocatableType to, boolean clone) {
-        return convertLocatable((Locatable) WrappedBukkitLocation.wrap(from), to, clone);
-    }
-
     static Locatable copyOf(Locatable locatable) {
         return convertLocatable(locatable, locatable.getType(), true);
-    }
-
-    static Locatable copyOf(Location location) {
-        return convertLocatable(location, LocatableType.Bukkit, true);
     }
 
     static Locatable create(UUID world, double x, double y, double z, LocatableType type) {
@@ -167,26 +149,21 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
             case ThreadSafe -> {
                 return new ThreadSafeLocatable(world, x, y, z);
             }
-            case Bukkit -> {
-                return new WrappedBukkitLocation(world, x, y, z);
-            }
-            case MutableBlockVector -> {
+            case MutableBlockVector, ExternalMutableBlock -> {
                 return new MutableBlockVector(world, x, y, z);
             }
-            case Mutable -> {
+            case Mutable, ExternalMutable -> {
                 return new LocatableImpl(world, x, y, z);
             }
-            case ImmutableBlockLocation -> {
+            case ImmutableBlockLocation, ExternalImmutableBlock -> {
                 return new ImmutableBlockLocatable(world, x, y, z);
             }
-            case Immutable -> {
+            case Immutable, ExternalImmutable -> {
                 return new ImmutableLocatableImpl(world, x, y, z);
             }
-            default -> {
-                Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type),2);
-                return new LocatableImpl(world, x, y, z);
-            }
+
         }
+        return null;
     }
 
     static Locatable create(UUID world, double x, double y, double z) {

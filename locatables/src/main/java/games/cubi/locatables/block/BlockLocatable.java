@@ -2,21 +2,12 @@ package games.cubi.locatables.block;
 
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.LocatableImpl;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
+import games.cubi.locatables.MutableLocatable;
 
-public interface BlockLocatable extends Locatable {
+public non-sealed interface BlockLocatable extends Locatable {
 
-    default Location toCentredLocation() {
-        return new Location(Bukkit.getWorld(world()), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
-    }
-
-    default Locatable clonePlainAndCentreIfBlockLocation() {
+    default MutableLocatable clonePlainAndCentreIfBlockLocation() {
         return new LocatableImpl(world(), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
-    }
-
-    default Location toBukkitLocation() {
-        return toCentredLocation();
     }
 
     default boolean isEqual(Object o) {

@@ -1,10 +1,8 @@
 package games.cubi.locatables;
 
-import games.cubi.raycastedAntiESP.Logger;
-
 import java.util.UUID;
 
-public record ImmutableLocatableImpl(UUID world, double x, double y, double z) implements Locatable {
+public record ImmutableLocatableImpl(UUID world, double x, double y, double z) implements ImmutableLocatable {
 
     @Override
     public LocatableType getType() {

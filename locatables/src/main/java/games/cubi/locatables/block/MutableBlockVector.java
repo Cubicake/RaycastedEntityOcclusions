@@ -2,7 +2,6 @@ package games.cubi.locatables.block;
 
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.MutableLocatable;
-import org.bukkit.Location;
 
 import java.util.UUID;
 
@@ -24,13 +23,6 @@ public class MutableBlockVector implements BlockLocatable, MutableLocatable {
         this.mutableX = x;
         this.mutableY = y;
         this.mutableZ = z;
-    }
-
-    public MutableBlockVector(Location loc) {
-        this.world = loc.getWorld().getUID();
-        this.mutableX = loc.getX();
-        this.mutableY = loc.getY();
-        this.mutableZ = loc.getZ();
     }
 
     public MutableBlockVector(UUID world, int x, int y, int z) {
@@ -82,11 +74,6 @@ public class MutableBlockVector implements BlockLocatable, MutableLocatable {
     @Override
     public UUID world() {
         return world;
-    }
-
-    @Override
-    public Location toBukkitLocation() {
-        return BlockLocatable.super.toBukkitLocation();
     }
 
     @Override
