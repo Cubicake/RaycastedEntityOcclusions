@@ -2,11 +2,10 @@ package games.cubi.raycastedAntiESP.locatables.block;
 
 import games.cubi.raycastedAntiESP.locatables.Locatable;
 import games.cubi.raycastedAntiESP.locatables.LocatableImpl;
-import io.papermc.paper.math.BlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-public interface AbstractBlockLocation extends Locatable {
+public interface BlockLocatable extends Locatable {
 
     default Location toCentredLocation() {
         return new Location(Bukkit.getWorld(world()), blockX() + 0.5, blockY() + 0.5, blockZ() + 0.5);
@@ -22,7 +21,7 @@ public interface AbstractBlockLocation extends Locatable {
 
     default boolean isEqual(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AbstractBlockLocation other)) return false;
+        if (!(o instanceof BlockLocatable other)) return false;
         return this.blockX() == other.blockX() && this.blockY() == other.blockY() && this.blockZ() == other.blockZ() && world().equals(other.world());
     }
 

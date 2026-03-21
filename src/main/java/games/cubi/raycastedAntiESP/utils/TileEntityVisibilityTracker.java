@@ -2,7 +2,7 @@ package games.cubi.raycastedAntiESP.utils;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 
 import java.util.HashSet;
@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlockLocation> {
-    private final ConcurrentHashMap<AbstractBlockLocation, PlayerData.VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
+public class TileEntityVisibilityTracker extends VisibilityTracker<BlockLocatable> {
+    private final ConcurrentHashMap<BlockLocatable, PlayerData.VisibilityAndLastCheckTime> tileEntityVisibility = new ConcurrentHashMap<>();
     private final Set<Long> loadedChunks = ConcurrentHashMap.newKeySet();
     private final PlayerData player;
 
@@ -20,18 +20,18 @@ public class TileEntityVisibilityTracker extends VisibilityTracker<AbstractBlock
     }
 
     @Override
-    protected ConcurrentHashMap<AbstractBlockLocation, PlayerData.VisibilityAndLastCheckTime> getMap() {
+    protected ConcurrentHashMap<BlockLocatable, PlayerData.VisibilityAndLastCheckTime> getMap() {
         return tileEntityVisibility;
     }
 
     @Override
-    public Set<AbstractBlockLocation> getNeedingRecheck(int recheckTicks, int currentTime) {
+    public Set<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTime) {
         Logger.errorAndReturn(new RuntimeException("getNeedingRecheck without world and chunk parameters called on TileEntityVisibilityTracker."), 1);
         return null;
     }
 
-    public Set<AbstractBlockLocation> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
-        HashSet<AbstractBlockLocation> recheckList = new HashSet<>();
+    public Set<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
+        HashSet<BlockLocatable> recheckList = new HashSet<>();
 
         for (int x = chunkX-chunkRadius; x <= chunkRadius+chunkX; x++) {
             for (int z = chunkZ-chunkRadius; z <= chunkRadius+chunkZ; z++) {

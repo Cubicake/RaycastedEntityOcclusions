@@ -7,27 +7,27 @@ import org.bukkit.World;
 
 import java.util.UUID;
 
-public class BlockLocation implements AbstractBlockLocation {
+public class ImmutableBlockLocatable implements BlockLocatable {
     protected final UUID world;
     private final int x;
     private final int y;
     private final int z;
 
-    public BlockLocation(World world, double x, double y, double z) {
+    public ImmutableBlockLocatable(World world, double x, double y, double z) {
         this.world = world.getUID();
         this.x = (int) Math.floor(x);
         this.y = (int) Math.floor(y);
         this.z = (int) Math.floor(z);
     }
 
-    public BlockLocation(UUID world, double x, double y, double z) {
+    public ImmutableBlockLocatable(UUID world, double x, double y, double z) {
         this.world = world;
         this.x = (int) Math.floor(x);
         this.y = (int) Math.floor(y);
         this.z = (int) Math.floor(z);
     }
 
-    public BlockLocation(Location loc) {
+    public ImmutableBlockLocatable(Location loc) {
         this.world = loc.getWorld().getUID();
         this.x = (int) Math.floor(loc.getX());
         this.y = (int) Math.floor(loc.getY());
@@ -41,7 +41,7 @@ public class BlockLocation implements AbstractBlockLocation {
 
     @Override
     public Location toBukkitLocation() {
-        return AbstractBlockLocation.super.toBukkitLocation();
+        return BlockLocatable.super.toBukkitLocation();
     }
 
     @Override

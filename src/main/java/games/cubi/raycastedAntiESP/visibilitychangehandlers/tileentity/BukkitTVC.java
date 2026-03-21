@@ -2,19 +2,14 @@ package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import games.cubi.raycastedAntiESP.data.PlayerRegistry;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
-import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.visibilitychangehandlers.VisibilityChangeHandlers;
-import net.kyori.adventure.util.TriState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -24,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityChanger {
     @Override
-    public void showTileEntityToPlayer(UUID player, AbstractBlockLocation tileEntity, int currentTick) {
+    public void showTileEntityToPlayer(UUID player, BlockLocatable tileEntity, int currentTick) {
         if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, true, currentTick)) return;
 
         addToTileEntityCache(player, tileEntity);
@@ -37,7 +32,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
 
     @Override
-    public void hideTileEntityFromPlayer(UUID player, AbstractBlockLocation tileEntity, int currentTick) {
+    public void hideTileEntityFromPlayer(UUID player, BlockLocatable tileEntity, int currentTick) {
 
         if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, false, currentTick)) {
             return; // Already hidden
@@ -60,10 +55,10 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
     @Override
     public void processCache() {
-        for (Map.Entry<UUID, Set<AbstractBlockLocation>> entry : flushTileEntityShowCache().entrySet()) {
+        for (Map.Entry<UUID, Set<BlockLocatable>> entry : flushTileEntityShowCache().entrySet()) {
             UUID playerUUID = entry.getKey();
-            Set<AbstractBlockLocation> tileEntities = entry.getValue();
-            for (AbstractBlockLocation tileEntity : tileEntities) {
+            Set<BlockLocatable> tileEntities = entry.getValue();
+            for (BlockLocatable tileEntity : tileEntities) {
                 BlockState blockState = Bukkit.getWorld(tileEntity.world()).getBlockState(tileEntity.blockX(), tileEntity.blockY(), tileEntity.blockZ());
 
                 Player player = Bukkit.getPlayer(playerUUID); //Move back inside the if statement when removing the else logger todo

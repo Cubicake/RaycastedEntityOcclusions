@@ -8,7 +8,7 @@ import games.cubi.raycastedAntiESP.config.raycast.PlayerConfig;
 import games.cubi.raycastedAntiESP.config.raycast.TileEntityConfig;
 import games.cubi.raycastedAntiESP.data.DataHolder;
 import games.cubi.raycastedAntiESP.locatables.ThreadSafeLocatable;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.raycast.RaycastUtil;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
@@ -51,11 +51,11 @@ public class SimpleEngine implements Engine {
         flushLogCache(null);
     }
 
-    public final ConcurrentLinkedQueue<AbstractBlockLocation> recheckQueue = new ConcurrentLinkedQueue<>();
+    public final ConcurrentLinkedQueue<BlockLocatable> recheckQueue = new ConcurrentLinkedQueue<>();
 
     public void syncRecheck() {
         while (!recheckQueue.isEmpty()) {
-            AbstractBlockLocation location = recheckQueue.poll();
+            BlockLocatable location = recheckQueue.poll();
 
             World world = Bukkit.getWorld(location.world());
             if (world == null) continue;
@@ -151,9 +151,9 @@ public class SimpleEngine implements Engine {
         int chunkX = playerLocation.blockX() >> 4;
         int chunkZ = playerLocation.blockZ() >> 4;
 
-        Set<AbstractBlockLocation> tileEntitiesToCheck = player.tileVisibility().getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick, playerLocation.world(), chunkX, chunkZ, chunkRadius, blockSnapshotManager);
+        Set<BlockLocatable> tileEntitiesToCheck = player.tileVisibility().getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick, playerLocation.world(), chunkX, chunkZ, chunkRadius, blockSnapshotManager);
 
-        for (AbstractBlockLocation tileEntityLocation : tileEntitiesToCheck) {
+        for (BlockLocatable tileEntityLocation : tileEntitiesToCheck) {
             if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
             boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);

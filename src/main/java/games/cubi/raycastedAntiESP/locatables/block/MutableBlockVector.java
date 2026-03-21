@@ -1,13 +1,19 @@
 package games.cubi.raycastedAntiESP.locatables.block;
 
 import games.cubi.raycastedAntiESP.locatables.Locatable;
-import io.papermc.paper.math.BlockPosition;
-import io.papermc.paper.math.FinePosition;
+import games.cubi.raycastedAntiESP.locatables.MutableLocatable;
 import org.bukkit.Location;
 
 import java.util.UUID;
-@SuppressWarnings("UnstableApiUsage")
-public class MutableBlockVector implements AbstractBlockLocation {
+
+/**
+ * A mutable locatable representing a floating-point vector in a given world, akin to a LocatableImpl. However, Object#equals and Object#hashCode are implemented as per AbstractBlockLocation, meaning that they are equal if their blockX, blockY, blockZ and world are equal.
+ * <p>
+ *     This allows them to be used as keys in hashmaps where they will be considered equal to AbstractBlockLocations with the same block coordinates and world, but they can also be mutated and have vector-like operations performed on them.
+ * <p>
+ *      The object is named "Vector" to reflect the fact that it supports floating-point coordinates under the hood.
+ */
+public class MutableBlockVector implements BlockLocatable, MutableLocatable {
     private UUID world;
     private double mutableX;
     private double mutableY;
@@ -50,7 +56,7 @@ public class MutableBlockVector implements AbstractBlockLocation {
     }
 
     @Override
-    public Locatable add(Locatable locatable) {
+    public MutableLocatable add(Locatable locatable) {
         this.mutableX += locatable.x();
         this.mutableY +=  locatable.y();
         this.mutableZ += locatable.z();
@@ -58,7 +64,7 @@ public class MutableBlockVector implements AbstractBlockLocation {
     }
 
     @Override
-    public Locatable subtract(Locatable locatable) {
+    public MutableLocatable subtract(Locatable locatable) {
         this.mutableX -= locatable.x();
         this.mutableY -=  locatable.y();
         this.mutableZ -= locatable.z();
@@ -66,7 +72,7 @@ public class MutableBlockVector implements AbstractBlockLocation {
     }
 
     @Override
-    public Locatable scalarMultiply(double factor) {
+    public MutableLocatable scalarMultiply(double factor) {
         this.mutableX *= factor;
         this.mutableY *= factor;
         this.mutableZ *= factor;
@@ -80,25 +86,7 @@ public class MutableBlockVector implements AbstractBlockLocation {
 
     @Override
     public Location toBukkitLocation() {
-        return AbstractBlockLocation.super.toBukkitLocation();
-    }
-
-    /**
- * This checks equality with AbstractBlockLocations, not Locatables. Use Locatable#isEqualTo for that. Thus, hashmap lookups are compatible with only AbstractBlockLocations, not Locatables.
- */
-    @Override
-    public boolean equals(Object o) {
-        return isEqual(o);
-    }
-
-    @Override
-    public int hashCode() {
-        return hash();
-    }
-
-    @Override
-    public String toString() {
-        return toStringForm();
+        return BlockLocatable.super.toBukkitLocation();
     }
 
     @Override
@@ -137,14 +125,45 @@ public class MutableBlockVector implements AbstractBlockLocation {
         this.mutableZ += dz;
     }
 
-    public void set(int x, int y, int z) {
+    @Override
+    public MutableLocatable setX(double x) {
         this.mutableX = x;
-        this.mutableY = y;
-        this.mutableZ = z;
+        return this;
     }
 
     @Override
-    public void setWorld(UUID world) {
+    public MutableLocatable setY(double y) {
+        this.mutableY = y;
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setZ(double z) {
+        this.mutableZ = z;
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setWorld(UUID world) {
         this.world = world;
+        return this;
+    }
+
+    /**
+     * This checks equality with AbstractBlockLocations, not Locatables. Use Locatable#isEqualTo for that. Thus, hashmap lookups are compatible with only AbstractBlockLocations, not Locatables.
+     */
+    @Override
+    public boolean equals(Object o) {
+        return isEqual(o);
+    }
+
+    @Override
+    public int hashCode() {
+        return hash();
+    }
+
+    @Override
+    public String toString() {
+        return toStringForm();
     }
 }

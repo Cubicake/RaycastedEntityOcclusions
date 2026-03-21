@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedAntiESP.data.DataHolder;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BukkitBSM;
 import games.cubi.raycastedAntiESP.utils.TileEntityVisibilityTracker;
@@ -16,9 +16,6 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 
 import games.cubi.raycastedAntiESP.config.ConfigManager;
@@ -107,7 +104,7 @@ public class CommandsManager {
                         final BlockPositionResolver blockPositionResolver = ctx.getArgument("arg", BlockPositionResolver.class);
                         final BlockPosition blockPosition = blockPositionResolver.resolve(ctx.getSource());
 
-                        BlockLocation location = new BlockLocation(ctx.getSource().getLocation().getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z());
+                        ImmutableBlockLocatable location = new ImmutableBlockLocatable(ctx.getSource().getLocation().getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z());
 
                         Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
                         SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));

@@ -2,8 +2,8 @@ package games.cubi.raycastedAntiESP.snapshot.block.packet;
 
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
@@ -23,7 +23,7 @@ public class PacketEventsBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public boolean isBlockOccluding(AbstractBlockLocation location, PlayerData player) {
+    public boolean isBlockOccluding(BlockLocatable location, PlayerData player) {
         PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
         if (snapshot == null) {
             Logger.warning("PacketEventsBSM: No snapshot for player " + player, 5);
@@ -33,7 +33,7 @@ public class PacketEventsBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ, PlayerData player) {
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ, PlayerData player) {
         PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
         if (snapshot == null) {
             Logger.warning("PacketEventsBSM: No snapshot for player " + player, 5);

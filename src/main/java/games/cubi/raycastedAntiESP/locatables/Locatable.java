@@ -10,24 +10,19 @@ import org.bukkit.Location;
 import java.util.UUID;
 
 // A vector-like interface representing a location in a 3D space within a specific world.
-public interface Locatable {
+public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, BlockLocatable {
 
     double x();
     double y();
     double z();
     UUID world();
 
-
-    void setWorld(UUID world);
-
     default int blockX() {
         return (int) Math.floor(x());
     }
-
     default int blockY() {
         return (int) Math.floor(y());
     }
-
     default int blockZ() {
         return (int) Math.floor(z());
     }
@@ -35,7 +30,6 @@ public interface Locatable {
     default int chunkX() {
         return blockX() >> 4;
     }
-
     default int chunkZ() {
         return blockZ() >> 4;
     }
@@ -64,17 +58,8 @@ public interface Locatable {
     }
 
     default Locatable clonePlainAndCentreIfBlockLocation() {
-        return convertLocatable(this, LocatableType.Plain, true);
+        return convertLocatable(this, LocatableType.Mutable, true);
     }
-
-    /**@return The same Locatable, with the same direction but a length of 1. If the implementation is immutable, this will throw an error.*/
-    default Locatable normalize() {
-        double length = length();
-        return scalarMultiply(1.0 / length);
-    }
-
-    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error. Differences in world will be ignored*/
-    Locatable add(Locatable locatable);
 
     /**@return An array of the 3 coordinates, in the order [x,y,z]. This is used for atomic updates of all 3 coordinates.*/
     default double[] getAtomicPositionArray() {
@@ -83,13 +68,11 @@ public interface Locatable {
         }
     }
 
-    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
-    Locatable subtract(Locatable locatable);
-
-    /**@return The same Locatable, now mutated. If the implementation is immutable, this will throw an error.*/
-    Locatable scalarMultiply(double factor);
-
     LocatableType getType();
+
+    boolean isMutable();
+
+    MutableLocatable castToMutableOrNull(); // There shouldn't be a need for an equivalent of this method for immutable locatables as all of their methods are common to all Locatables
 
     default boolean isEqualTo(Object thatOne) {
         if (this == thatOne) return true;
@@ -135,7 +118,7 @@ public interface Locatable {
         MutableBlockVector,
         ImmutableBlockLocation,
         Immutable,
-        Plain,
+        Mutable,
     }
 
     static Locatable convertLocatable(Locatable from, LocatableType to, boolean clone) {
@@ -153,10 +136,10 @@ public interface Locatable {
                 return new MutableBlockVector(from.world(), from.x(), from.y(), from.z());
             }
             case ImmutableBlockLocation -> {
-                if ((from instanceof BlockLocation) && !clone) return from;
-                return new BlockLocation(from.world(), from.x(), from.y(), from.z());
+                if ((from instanceof ImmutableBlockLocatable) && !clone) return from;
+                return new ImmutableBlockLocatable(from.world(), from.x(), from.y(), from.z());
             }
-            case Plain -> {
+            case Mutable -> {
                 if ((from instanceof LocatableImpl) && !clone) return from;
                 return new LocatableImpl(from.world(), from.x(), from.y(), from.z());
             }
@@ -190,14 +173,14 @@ public interface Locatable {
             case MutableBlockVector -> {
                 return new MutableBlockVector(world, x, y, z);
             }
-            case Plain -> {
+            case Mutable -> {
                 return new LocatableImpl(world, x, y, z);
             }
             case ImmutableBlockLocation -> {
-                return new BlockLocation(world, x, y, z);
+                return new ImmutableBlockLocatable(world, x, y, z);
             }
             case Immutable -> {
-                return new ImmutableLocatable(world, x, y, z);
+                return new ImmutableLocatableImpl(world, x, y, z);
             }
             default -> {
                 Logger.error(new RuntimeException("Locatable.create: Unhandled LocatableType " + type),2);
@@ -207,6 +190,6 @@ public interface Locatable {
     }
 
     static Locatable create(UUID world, double x, double y, double z) {
-        return create(world, x, y, z, LocatableType.Plain);
+        return create(world, x, y, z, LocatableType.Mutable);
     }
 }

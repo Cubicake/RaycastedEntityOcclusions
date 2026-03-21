@@ -2,7 +2,7 @@ package games.cubi.raycastedAntiESP.locatables;
 
 import java.util.UUID;
 
-public class LocatableImpl implements Locatable {
+public class LocatableImpl implements MutableLocatable {
     private double x;
     private double y;
     private double z;
@@ -17,31 +17,7 @@ public class LocatableImpl implements Locatable {
 
     @Override
     public LocatableType getType() {
-        return LocatableType.Plain;
-    }
-
-    @Override
-    public Locatable add(Locatable locatable) {
-        this.x += locatable.x();
-        this.y += locatable.y();
-        this.z += locatable.z();
-        return this;
-    }
-
-    @Override
-    public Locatable subtract(Locatable locatable) {
-        this.x -= locatable.x();
-        this.y -= locatable.y();
-        this.z -= locatable.z();
-        return this;
-    }
-
-    @Override
-    public Locatable scalarMultiply(double factor) {
-        this.x *= factor;
-        this.y *= factor;
-        this.z *= factor;
-        return this;
+        return LocatableType.Mutable;
     }
 
     @Override
@@ -65,6 +41,29 @@ public class LocatableImpl implements Locatable {
     }
 
     @Override
+    public MutableLocatable setX(double x) {
+        this.x = x;
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setY(double y) {
+        this.y = y;
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setZ(double z) {
+        this.z = z;
+        return this;
+    }
+
+    public MutableLocatable setWorld(UUID world) {
+        this.world = world;
+        return this;
+    }
+
+    @Override
     public boolean equals(Object o) {
         return isEqualTo(o);
     }
@@ -77,9 +76,5 @@ public class LocatableImpl implements Locatable {
     @Override
     public String toString() {
         return toStringForm();
-    }
-
-    public void setWorld(UUID world) {
-        this.world = world;
     }
 }

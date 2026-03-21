@@ -1,34 +1,20 @@
 package games.cubi.raycastedAntiESP.locatables;
 
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
-import io.papermc.paper.math.BlockPosition;
-import io.papermc.paper.math.FinePosition;
-import io.papermc.paper.math.Position;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import org.bukkit.util.Vector;
 import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 
-public class ThreadSafeLocatable implements Locatable {
+public class ThreadSafeLocatable implements MutableLocatable {
     private volatile UUID world;
 
     private double x, y, z;
 
     private final StampedLock lock = new StampedLock();
 
-
-    public ThreadSafeLocatable(Vector vec, UUID world) {
-        this.world = world;
-        this.x = vec.getX();
-        this.y = vec.getY();
-        this.z = vec.getZ();
-    }
-
     public ThreadSafeLocatable(World world, double x, double y, double z) {
-        this.world = world.getUID();
-        this.x = x; this.y = y; this.z = z;
+        this(world.getUID(), x, y, z);
     }
 
     public ThreadSafeLocatable(UUID world, double x, double y, double z) {
@@ -37,11 +23,11 @@ public class ThreadSafeLocatable implements Locatable {
     }
 
     public ThreadSafeLocatable(Location loc) {
-        this(loc.toVector(), loc.getWorld().getUID());
+        this(loc, 0);
     }
 
     public ThreadSafeLocatable(Location loc, double height) {
-        this(loc.add(0, height/2, 0).toVector(), loc.getWorld().getUID());
+        this(loc.getWorld().getUID(), loc.getX(), loc.getY() + height, loc.getZ());
     }
 
     /**
@@ -100,7 +86,7 @@ public class ThreadSafeLocatable implements Locatable {
      * @return Normalised internal vectors, may busy-wait if write access is locked
      */
     @Override
-    public Locatable normalize() {
+    public MutableLocatable normalize() {
         withWriteLock(() -> {
             double len = Math.sqrt(x*x + y*y + z*z);
             x /= len; y /= len; z /= len;
@@ -109,7 +95,7 @@ public class ThreadSafeLocatable implements Locatable {
     }
 
     @Override
-    public Locatable add(Locatable locatable) {
+    public MutableLocatable add(Locatable locatable) {
         double[] otherPosition = locatable.getAtomicPositionArray();
         withWriteLock(() -> {
             x += otherPosition[0];
@@ -120,7 +106,7 @@ public class ThreadSafeLocatable implements Locatable {
     }
 
     @Override
-    public Locatable subtract(Locatable locatable) {
+    public MutableLocatable subtract(Locatable locatable) {
         double[] otherPosition = locatable.getAtomicPositionArray();
         withWriteLock(() -> {
             x -= otherPosition[0];
@@ -131,7 +117,7 @@ public class ThreadSafeLocatable implements Locatable {
     }
 
     @Override
-    public Locatable scalarMultiply(double factor) {
+    public MutableLocatable scalarMultiply(double factor) {
         withWriteLock(() -> { x *= factor; y *= factor; z *= factor; });
         return this;
     }
@@ -226,8 +212,49 @@ public class ThreadSafeLocatable implements Locatable {
         return result;
     }
 
-    public void setWorld(UUID world) {
+    @Override
+    public MutableLocatable setX(double x) {
+        withWriteLock(() -> this.x = x);
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setY(double y) {
+        withWriteLock(() -> this.y = y);
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setZ(double z) {
+        withWriteLock(() -> this.z = z);
+        return this;
+    }
+
+    @Override
+    public MutableLocatable setWorld(UUID world) {
         this.world = world;
+        return this;
+    }
+
+    @Override
+    public MutableLocatable set(Locatable locatable) {
+        double[] otherPosition = locatable.getAtomicPositionArray();
+        withWriteLock(() -> {
+            this.world = locatable.world(); // technically this could be racy, but the world shouldn't be changing often
+            this.x = otherPosition[0];
+            this.y = otherPosition[1];
+            this.z = otherPosition[2];
+        });
+        return this;
+    }
+
+    @Override
+    public MutableLocatable set(double x, double y, double z, UUID world) {
+        withWriteLock(() -> {
+            this.world = world;
+            this.x = x; this.y = y; this.z = z;
+        });
+        return this;
     }
 }
 

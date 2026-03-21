@@ -1,7 +1,6 @@
 package games.cubi.raycastedAntiESP.data;
 
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
 
 import java.util.Collection;
@@ -47,7 +46,7 @@ public class PlayerRegistry {
     }
 
     /**For use when an invalid tile entity is detected, to ensure all players have it removed from their data**/
-    public void removeTileEntityFromAllPlayers(AbstractBlockLocation blockLocation) {
+    public void removeTileEntityFromAllPlayers(BlockLocatable blockLocation) {
         for (PlayerData playerData : playerDataMap.values()) {
             playerData.tileVisibility().remove(blockLocation);
         }

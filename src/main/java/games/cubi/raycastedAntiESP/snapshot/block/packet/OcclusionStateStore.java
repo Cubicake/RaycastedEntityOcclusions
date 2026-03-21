@@ -1,7 +1,7 @@
 package games.cubi.raycastedAntiESP.snapshot.block.packet;
 
 import games.cubi.raycastedAntiESP.Logger;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +14,7 @@ public class OcclusionStateStore {
     private final ConcurrentHashMap<Chunk, boolean[][][]> occlusionData = new ConcurrentHashMap<>(); // Since we shouldn't need CAS operations, this is thread-safe
     private final ConcurrentHashMap<UUID, Integer> minimumWorldHeight = new ConcurrentHashMap<>(); // todo Maybe switch to a replace-on-write map for liqhtning fast reads
 
-    public boolean isOccluding(AbstractBlockLocation location) {
+    public boolean isOccluding(BlockLocatable location) {
         return isOccluding(location.world(), location.blockX(), location.blockY(), location.blockZ());
     }
 

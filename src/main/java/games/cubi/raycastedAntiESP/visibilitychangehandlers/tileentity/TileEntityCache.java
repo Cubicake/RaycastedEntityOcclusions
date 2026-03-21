@@ -1,6 +1,6 @@
 package games.cubi.raycastedAntiESP.visibilitychangehandlers.tileentity;
 
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
 import games.cubi.raycastedAntiESP.utils.ConcurrentSetMap;
 
 import java.util.Map;
@@ -9,25 +9,25 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class TileEntityCache {
-    private final AtomicReference<ConcurrentSetMap<UUID, AbstractBlockLocation>> tileEntitiesToShowCache = new AtomicReference<>(new ConcurrentSetMap<>());
+    private final AtomicReference<ConcurrentSetMap<UUID, BlockLocatable>> tileEntitiesToShowCache = new AtomicReference<>(new ConcurrentSetMap<>());
 
-    protected AtomicReference<ConcurrentSetMap<UUID, AbstractBlockLocation>> tileEntitiesToShowCacheAtomicReference() {
+    protected AtomicReference<ConcurrentSetMap<UUID, BlockLocatable>> tileEntitiesToShowCacheAtomicReference() {
         return tileEntitiesToShowCache;
     }
 
-    protected ConcurrentSetMap<UUID, AbstractBlockLocation> entitiesToShowCache() {
+    protected ConcurrentSetMap<UUID, BlockLocatable> entitiesToShowCache() {
         return tileEntitiesToShowCache.get();
     }
 
-    protected void addToTileEntityCache(UUID player, AbstractBlockLocation value) {
+    protected void addToTileEntityCache(UUID player, BlockLocatable value) {
         entitiesToShowCache().add(player, value);
     }
 
-    protected Set<AbstractBlockLocation> getFromTileEntityCache(UUID key) {
+    protected Set<BlockLocatable> getFromTileEntityCache(UUID key) {
         return entitiesToShowCache().getOrDefault(key, Set.of());
     }
 
-    protected Map<UUID, Set<AbstractBlockLocation>> flushTileEntityShowCache() {
+    protected Map<UUID, Set<BlockLocatable>> flushTileEntityShowCache() {
         return tileEntitiesToShowCache.getAndSet(new ConcurrentSetMap<>()).asActualConcurrentMap();
     }
 }

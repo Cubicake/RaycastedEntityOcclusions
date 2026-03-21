@@ -4,8 +4,8 @@ import games.cubi.raycastedAntiESP.EventListener;
 import games.cubi.raycastedAntiESP.config.ConfigManager;
 import games.cubi.raycastedAntiESP.Logger;
 import games.cubi.raycastedAntiESP.RaycastedAntiESP;
-import games.cubi.raycastedAntiESP.locatables.block.AbstractBlockLocation;
-import games.cubi.raycastedAntiESP.locatables.block.BlockLocation;
+import games.cubi.raycastedAntiESP.locatables.block.BlockLocatable;
+import games.cubi.raycastedAntiESP.locatables.block.ImmutableBlockLocatable;
 
 import games.cubi.raycastedAntiESP.snapshot.SnapshotManager;
 import games.cubi.raycastedAntiESP.utils.PlayerData;
@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BukkitBSM implements BlockSnapshotManager {
     private static class ChunkData {
         public final ChunkSnapshot snapshot;
-        public final ConcurrentHashMap<BlockLocation, Material> delta = new ConcurrentHashMap<>();
-        public final Set<BlockLocation> tileEntities = ConcurrentHashMap.newKeySet();
+        public final ConcurrentHashMap<ImmutableBlockLocatable, Material> delta = new ConcurrentHashMap<>();
+        public final Set<ImmutableBlockLocatable> tileEntities = ConcurrentHashMap.newKeySet();
         public long lastRefresh;
         public int minHeight;
         public int maxHeight;
@@ -109,7 +109,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         if (d == null) {
             Logger.error("Data map value empty, ignoring block update!",3);
         }
-        BlockLocation blockLoc = new BlockLocation(loc);
+        ImmutableBlockLocatable blockLoc = new ImmutableBlockLocatable(loc);
 
         d.delta.put(blockLoc, m);
         if (cfg.getTileEntityConfig().isEnabled()) {
@@ -143,7 +143,7 @@ public class BukkitBSM implements BlockSnapshotManager {
                         BlockState bs = data.snapshot.getBlockData(x, y, z).createBlockState();
 
                         if (bs instanceof TileState) {
-                            data.tileEntities.add(new BlockLocation(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
+                            data.tileEntities.add(new ImmutableBlockLocatable(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
                         }
                     }
                 }
@@ -158,7 +158,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     public String key(World world, int x, int z) {
         return world.getUID() + ":" + x + ":" + z;
     }
-    public String key(AbstractBlockLocation location) {
+    public String key(BlockLocatable location) {
         //make a string builder, UUID is location.world()
         StringBuilder sb = new StringBuilder();
         sb.append(location.world().toString());
@@ -186,7 +186,7 @@ public class BukkitBSM implements BlockSnapshotManager {
 
     static final AtomicInteger stupidErrorCounter = new AtomicInteger(0);
 
-    public Material getMaterialAt(AbstractBlockLocation loc) {
+    public Material getMaterialAt(BlockLocatable loc) {
         ChunkData chunkData = dataMap.get(key(loc));
         if (chunkData == null) {
             if (stupidErrorCounter.addAndGet(1) % 500 == 0) {
@@ -212,7 +212,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public boolean isBlockOccluding(AbstractBlockLocation locatable, PlayerData player) {
+    public boolean isBlockOccluding(BlockLocatable locatable, PlayerData player) {
         Material m = getMaterialAt(locatable);
         if (m == null) {
             return false;
@@ -225,7 +225,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     //get TileEntity Locations in chunk
-    public Set<BlockLocation> getTileEntitiesInChunk(World world, int x, int z) {
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(World world, int x, int z) {
         ChunkData d = dataMap.get(key(world, x, z));
         if (d == null) {
             return Collections.emptySet();
@@ -237,7 +237,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         Chunk c = loc.getChunk();
         ChunkData d = dataMap.get(key(c));
         if (d != null) {
-            d.tileEntities.remove(new BlockLocation(loc));
+            d.tileEntities.remove(new ImmutableBlockLocatable(loc));
             Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc,9);
         } else {
             Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc,9);
@@ -250,7 +250,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public Set<BlockLocation> getTileEntitiesInChunk(UUID world, int x, int z, PlayerData player) {
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int x, int z, PlayerData player) {
         return getTileEntitiesInChunk(Bukkit.getWorld(world), x, z);
     }
 }

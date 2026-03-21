@@ -35,19 +35,12 @@ public class BukkitESM implements EntitySnapshotManager {
         entityLocationMap = new ConcurrentHashMap<>(newLocations);
     }
 
-    private void setOrUpdateEntityLocation(UUID entityUUID, Vector location, UUID world) {
+    private void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return new ThreadSafeLocatable(location, world);
-            while (!oldLoc.update(location)) {
-                Thread.onSpinWait(); //doesn't actually sleep the thread, just indicates that this thread should be deprioritized. Once the write lock is released it should write nearly immediately
-            }
-            oldLoc.setWorld(world);
+            if (oldLoc == null) return new ThreadSafeLocatable(location);
+            oldLoc.set(location.getX(), location.getY(), location.getZ(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
             return oldLoc;
         });
-    }
-
-    private void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
-        setOrUpdateEntityLocation(entityUUID, location.toVector(), location.getWorld().getUID());
     }
 
     // Run this async
