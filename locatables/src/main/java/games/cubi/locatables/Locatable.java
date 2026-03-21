@@ -166,6 +166,22 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
         return null;
     }
 
+    static <T extends Locatable> T create(UUID world, double x, double y, double z, Class<T> type) {
+        if (type == ThreadSafeLocatable.class) {
+            return (T) new ThreadSafeLocatable(world, x, y, z);
+        } else if (type == MutableBlockVector.class) {
+            return (T) new MutableBlockVector(world, x, y, z);
+        } else if (type == ImmutableBlockLocatable.class) {
+            return (T) new ImmutableBlockLocatable(world, x, y, z);
+        } else if (type == LocatableImpl.class) {
+            return (T) new LocatableImpl(world, x, y, z);
+        } else if (type == ImmutableLocatableImpl.class) {
+            return (T) new ImmutableLocatableImpl(world, x, y, z);
+        } else {
+            throw new IllegalArgumentException("Unsupported Locatable type: " + type.getName());
+        }
+    }
+
     static Locatable create(UUID world, double x, double y, double z) {
         return create(world, x, y, z, LocatableType.Mutable);
     }

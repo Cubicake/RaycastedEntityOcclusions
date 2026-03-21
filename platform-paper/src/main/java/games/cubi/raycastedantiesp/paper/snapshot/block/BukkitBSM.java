@@ -8,6 +8,7 @@ import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.block.BlockLocatable;
 import games.cubi.locatables.block.ImmutableBlockLocatable;
 
+import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.PlayerData;
 import org.bukkit.Material;
@@ -110,7 +111,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         if (d == null) {
             Logger.error("Data map value empty, ignoring block update!",3);
         }
-        ImmutableBlockLocatable blockLoc = new ImmutableBlockLocatable(loc);
+        ImmutableBlockLocatable blockLoc = LocatableAdapterUtils.toLocatable(loc, ImmutableBlockLocatable.class);
 
         d.delta.put(blockLoc, m);
         if (cfg.getTileEntityConfig().isEnabled()) {
@@ -144,7 +145,7 @@ public class BukkitBSM implements BlockSnapshotManager {
                         BlockState bs = data.snapshot.getBlockData(x, y, z).createBlockState();
 
                         if (bs instanceof TileState) {
-                            data.tileEntities.add(new ImmutableBlockLocatable(w, x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
+                            data.tileEntities.add(new ImmutableBlockLocatable(w.getUID(), x+ chunkX +0.5, y+0.5, z + chunkZ+0.5));
                         }
                     }
                 }
@@ -238,7 +239,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         Chunk c = loc.getChunk();
         ChunkData d = dataMap.get(key(c));
         if (d != null) {
-            d.tileEntities.remove(new ImmutableBlockLocatable(loc));
+            d.tileEntities.remove(LocatableAdapterUtils.toLocatable(loc, ImmutableBlockLocatable.class));
             Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc,9);
         } else {
             Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc,9);

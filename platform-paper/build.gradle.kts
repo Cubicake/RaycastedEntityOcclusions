@@ -16,7 +16,10 @@ dependencies {
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 
+    implementation("org.jetbrains:annotations:24.0.1")
+
     implementation(project(":locatables"))
+    implementation(project(":logging"))
 }
 
 java {

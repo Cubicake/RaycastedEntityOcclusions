@@ -9,6 +9,7 @@ import games.cubi.raycastedantiesp.paper.config.raycast.TileEntityConfig;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.ThreadSafeLocatable;
 import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.raycast.RaycastUtil;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
@@ -48,7 +49,6 @@ public class SimpleEngine implements Engine {
         forceEntityLocationUpdate();
 
         processEntityMovements(null); //first one will run on main thread but it shouldn't have to do much anyways
-        flushLogCache(null);
     }
 
     public final ConcurrentLinkedQueue<BlockLocatable> recheckQueue = new ConcurrentLinkedQueue<>();
@@ -175,7 +175,7 @@ public class SimpleEngine implements Engine {
         HashMap<UUID, ThreadSafeLocatable> entities = new HashMap<>();
         for (World world : Bukkit.getWorlds()) {
             for (Entity entity : world.getEntities()) {
-                entities.put(entity.getUniqueId(), new ThreadSafeLocatable(entity.getLocation(), entity.getHeight()));
+                entities.put(entity.getUniqueId(), LocatableAdapterUtils.toLocatable(entity.getLocation(), entity.getHeight(), ThreadSafeLocatable.class));
             }
         }
         ((BukkitESM) SnapshotManager.getEntitySnapshotManager()).updateEntireEntityLocationMap(entities);

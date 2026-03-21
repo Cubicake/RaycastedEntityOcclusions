@@ -1,6 +1,7 @@
 package games.cubi.raycastedantiesp.paper.snapshot.entity;
 
-import games.cubi.raycastedantiesp.paper.locatables.ThreadSafeLocatable;
+import games.cubi.locatables.ThreadSafeLocatable;
+import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.EntityLocationPair;
 import org.bukkit.Location;
@@ -36,7 +37,7 @@ public class BukkitESM implements EntitySnapshotManager {
 
     private void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return new ThreadSafeLocatable(location);
+            if (oldLoc == null) return LocatableAdapterUtils.toLocatable(location, ThreadSafeLocatable.class);
             oldLoc.set(location.getX(), location.getY(), location.getZ(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
             return oldLoc;
         });

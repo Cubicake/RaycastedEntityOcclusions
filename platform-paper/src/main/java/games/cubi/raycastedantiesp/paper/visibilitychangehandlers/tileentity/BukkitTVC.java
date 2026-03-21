@@ -3,6 +3,7 @@ package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity;
 import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.block.BlockLocatable;
+import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -38,10 +39,10 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
             return; // Already hidden
         }
 
-        if (tileEntity.blockY() > 0) Bukkit.getPlayer(player).sendBlockChange(tileEntity.toBukkitLocation(), STONE_DATA);
+        if (tileEntity.blockY() > 0) Bukkit.getPlayer(player).sendBlockChange(LocatableAdapterUtils.toBukkitLocation(tileEntity), STONE_DATA);
         else {
             Player p = Bukkit.getPlayer(player);
-            Location loc = tileEntity.toBukkitLocation().toBlockLocation();
+            Location loc = LocatableAdapterUtils.toBukkitLocation(tileEntity).toBlockLocation();
 
             p.sendBlockChange(loc, DEEPSLATE_DATA);
             //Logger.debug("Sent deepslate block change to " + p.getName() + " at " + loc);

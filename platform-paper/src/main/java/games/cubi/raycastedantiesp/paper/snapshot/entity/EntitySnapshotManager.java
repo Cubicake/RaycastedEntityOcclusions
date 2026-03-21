@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.paper.snapshot.entity;
 
-import games.cubi.raycastedantiesp.paper.locatables.Locatable;
+import games.cubi.locatables.Locatable;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import org.bukkit.Location;
 

@@ -39,6 +39,6 @@ public class PacketProcessor {
     public void processSendTileEntityDataPacket(PacketSendEvent event) {
         WrapperPlayServerBlockEntityData blockEntityDataPacket = new WrapperPlayServerBlockEntityData(event);
         int type = blockEntityDataPacket.getType();
-        int nbt = blockEntityDataPacket.getNBT();
+        //int nbt = blockEntityDataPacket.getNBT();
     }
 }
