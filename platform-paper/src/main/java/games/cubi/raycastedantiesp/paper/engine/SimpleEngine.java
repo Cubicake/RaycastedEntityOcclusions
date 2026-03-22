@@ -1,11 +1,12 @@
 package games.cubi.raycastedantiesp.paper.engine;
 
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.DebugConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.Logger;
-import games.cubi.raycastedantiesp.paper.config.*;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import games.cubi.raycastedantiesp.paper.config.raycast.EntityConfig;
-import games.cubi.raycastedantiesp.paper.config.raycast.PlayerConfig;
-import games.cubi.raycastedantiesp.paper.config.raycast.TileEntityConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
 import games.cubi.locatables.BlockLocatable;
@@ -88,7 +89,7 @@ public class SimpleEngine implements Engine {
 
         EntityConfig entityConfig = config.getEntityConfig();
         PlayerConfig playerConfig = config.getPlayerConfig();
-        TileEntityConfig tileEntityConfig = config.getTileEntityConfig();
+        PlatformTileEntityConfig<?> tileEntityConfig = config.getTileEntityConfig();
         DebugConfig debugConfig = config.getDebugConfig();
         BlockSnapshotManager blockSnapshotManager = SnapshotManager.getBlockSnapshotManager();
         EntitySnapshotManager entitySnapshotManager = SnapshotManager.getEntitySnapshotManager();
@@ -106,7 +107,7 @@ public class SimpleEngine implements Engine {
         }
     }
 
-    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig, int tileEntityRadius,
+    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, PlatformTileEntityConfig<?> tileEntityConfig, int tileEntityRadius,
                                        boolean debugParticles, BlockSnapshotManager blockSnapshotManager, EntitySnapshotManager entitySnapshotManager, int currentTick) {
 
         for (PlayerData playerData : playerDataList) {
@@ -145,7 +146,7 @@ public class SimpleEngine implements Engine {
         }
     }
 
-    private void checkTileEntities(PlayerData player, Locatable playerLocation, TileEntityConfig tileEntityConfig, int chunkRadius, boolean debugParticles, BlockSnapshotManager blockSnapshotManager, int currentTick) {
+    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, int chunkRadius, boolean debugParticles, BlockSnapshotManager blockSnapshotManager, int currentTick) {
         //todo: How to get tile entities around player? Just chunkscan?
         TileEntityVisibilityChanger tileEntityVisibilityChanger = VisibilityChangeHandlers.getTileEntity();
         int chunkX = playerLocation.blockX() >> 4;

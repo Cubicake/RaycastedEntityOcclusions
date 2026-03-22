@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.paper.raycast;
 
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
-import games.cubi.raycastedantiesp.paper.config.engine.EngineMode;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.engine.EngineMode;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

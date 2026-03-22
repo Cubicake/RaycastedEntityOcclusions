@@ -18,7 +18,7 @@ import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.CommandSender;
 
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;

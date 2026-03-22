@@ -2,8 +2,8 @@ package games.cubi.raycastedantiesp.paper;
 
 import games.cubi.logs.CheckPreviousLogForError;
 import games.cubi.logs.PlatformLogger;
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
-import games.cubi.raycastedantiesp.paper.config.DebugConfig;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.DebugConfig;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 

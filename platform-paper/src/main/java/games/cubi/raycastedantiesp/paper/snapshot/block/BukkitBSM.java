@@ -2,7 +2,7 @@ package games.cubi.raycastedantiesp.paper.snapshot.block;
 
 import games.cubi.logs.Frequency;
 import games.cubi.raycastedantiesp.paper.EventListener;
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.BlockLocatable;
@@ -219,6 +219,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         if (m == null) {
             return false;
         }
+        if (cfg.getTileEntityConfig().getExemptedBlocks().contains(m)) return false;
         return m.isOccluding();
     }
 

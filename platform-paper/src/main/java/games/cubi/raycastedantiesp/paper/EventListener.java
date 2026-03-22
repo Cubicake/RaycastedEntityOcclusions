@@ -6,7 +6,7 @@ import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
 import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
 import games.cubi.raycastedantiesp.paper.utils.PlayerData;

@@ -3,12 +3,14 @@ package games.cubi.raycastedantiesp.paper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
+import games.cubi.raycastedantiesp.core.RaycastedAntiESPCore;
+import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.SimpleEngine;
 import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
 import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.packets.Registrar;
 import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
-import games.cubi.raycastedantiesp.paper.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
@@ -23,9 +25,12 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.nio.file.Files;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
@@ -38,12 +43,13 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
     {
         instance = this;
-
+        Logger.initialize(getLogger());
     }
 
     @Override
     public void onLoad() {
-        config = ConfigManager.initialiseConfigManager(this);
+        new RaycastedAntiESPCore(Logger.loggerAdapter, getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
+        config = ConfigManager.initialiseConfigManager();
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {
             //packetEventsPresent = true;
@@ -73,8 +79,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
         //bStats
         metricsCollector =  new MetricsCollector(this, config);
-
-        //Bukkit.getGlobalRegionScheduler().runDelayed(this, (task) -> {initialisePacketProcessor(); task.cancel();}, 1); todo: Removed pending testing of the move to onLoad
     }
 
     @Override
@@ -98,16 +102,6 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
                     .redirect(buildCommand).build());
         });
     }
-
-    private void initialisePacketProcessor() {/*
-        if (packetEventsPresent && Bukkit.getPluginManager().isPluginEnabled("packetevents")) {
-            PacketEventsStatus.init(true);
-            packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
-            Logger.info("PacketEvents is enabled, enabling packet-based tablist modification.", 3);
-        }
-        else PacketEventsStatus.init(false);*/
-    }
-
 
     public static ConfigManager getConfigManager() {
         return config;

@@ -22,7 +22,7 @@ dependencies {
 
     implementation(project(":locatables"))
     implementation(project(":logging"))
-
+    implementation(project(":core"))
 }
 
 java {
@@ -53,6 +53,7 @@ tasks.shadowJar {
     dependencies {
         include(project(":logging"))
         include(project(":locatables"))
+        include(project(":core"))
     }
 }
 
