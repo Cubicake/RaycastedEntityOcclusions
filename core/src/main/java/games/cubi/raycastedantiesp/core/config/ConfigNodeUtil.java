@@ -11,7 +11,7 @@ public final class ConfigNodeUtil {
     private ConfigNodeUtil() {}
 
     public static @NotNull ConfigurationNode node(@NotNull ConfigurationNode config, @NotNull String path) {
-        // REO config keys are dot-delimited and do not contain literal dots in key names
+        // Config keys are dot-delimited and do not contain literal dots in key names. This is legacy from when it was based on Bukkit's ConfigurationSection, and is not a Configurate requirement, but it is simpler to implement and use than supporting literal dots in keys.
         return config.node((Object[]) path.split("\\."));
     }
 
