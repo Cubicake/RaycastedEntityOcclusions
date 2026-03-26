@@ -3,7 +3,7 @@ package games.cubi.raycastedantiesp.paper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
-import games.cubi.raycastedantiesp.core.RaycastedAntiESPCore;
+import games.cubi.raycastedantiesp.core.Core;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.SimpleEngine;
 import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
@@ -25,12 +25,9 @@ import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.nio.file.Files;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
@@ -48,8 +45,8 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onLoad() {
-        new RaycastedAntiESPCore(Logger.loggerAdapter, getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
-        config = ConfigManager.initialiseConfigManager();
+        new Core(Logger.loggerAdapter);
+        config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {
             //packetEventsPresent = true;
