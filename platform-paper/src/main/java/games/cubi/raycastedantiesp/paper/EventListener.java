@@ -2,15 +2,17 @@ package games.cubi.raycastedantiesp.paper;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
 import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
-import games.cubi.raycastedantiesp.paper.utils.PlayerData;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import io.papermc.paper.event.entity.EntityMoveEvent;
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent;
@@ -107,7 +109,7 @@ public class EventListener implements Listener {
             UUID player = e.getPlayer().getUniqueId();
             packetProcessor.sendPlayerInfoRemovePacket(player);
         }
-        DataHolder.players().unregisterPlayer(e.getPlayer().getUniqueId());
+        PlayerRegistry.getInstance().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
@@ -117,19 +119,19 @@ public class EventListener implements Listener {
         if (player.hasPermission("raycastedantiesp.updatecheck")) { //todo: centralise permission strings to prevent issues when perm names are changed
             checkForUpdates(plugin, player);
         }
-        DataHolder.players().registerPlayer(player.getUniqueId(),player.hasPermission("raycastedantiesp.bypass") ,DataHolder.getTick());
+        PlayerRegistry.getInstance().registerPlayer(player.getUniqueId(),player.hasPermission("raycastedantiesp.bypass") ,DataHolder.getTick());
 
         if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChunkLoad(PlayerChunkLoadEvent e) {
-        DataHolder.players().getPlayerData(e.getPlayer().getUniqueId()).tileVisibility().addChunk(e.getChunk().getX(), e.getChunk().getZ());
+        PlayerRegistry.getInstance().getPlayerData(e.getPlayer().getUniqueId()).tileVisibility().addChunk(e.getChunk().getX(), e.getChunk().getZ());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChunkUnload(PlayerChunkUnloadEvent e) {
-        PlayerData player = DataHolder.players().getPlayerData(e.getPlayer().getUniqueId());
+        PlayerData player = PlayerRegistry.getInstance().getPlayerData(e.getPlayer().getUniqueId());
         if (player == null) return; // They've logged out
         player.tileVisibility().removeChunk(e.getWorld().getUID(), e.getChunk().getX(), e.getChunk().getZ());
     }
@@ -169,13 +171,13 @@ public class EventListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         updateEntityLocation(event.getPlayer().getUniqueId(), event.getPlayer().getEyeLocation());
 
-        /*if (DataHolder.players().isPlayerRegistered(event.getPlayer().getUniqueId())) return; //todo this will be used for the backport version where PlayerClientLoadWorldEvent is not available
+        /*if (PlayerRegistry.getInstance().isPlayerRegistered(event.getPlayer().getUniqueId())) return; //todo this will be used for the backport version where PlayerClientLoadWorldEvent is not available
         onPlayerJoin(event.getPlayer());*/
     }
 /*
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerLoadWorld(PlayerClientLoadedWorldEvent event) {
-        if (DataHolder.players().isPlayerRegistered(event.getPlayer().getUniqueId())) return;
+        if (PlayerRegistry.getInstance().isPlayerRegistered(event.getPlayer().getUniqueId())) return;
         onPlayerJoin(event.getPlayer());
     }*/
 
@@ -194,7 +196,7 @@ public class EventListener implements Listener {
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
 
-        PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(playerUUID);
 
         int currentTick = DataHolder.getTick();
 
@@ -214,17 +216,17 @@ public class EventListener implements Listener {
         UUID entityUUID = event.getEntity().getUniqueId();
         Player player = event.getPlayer();
         UUID playerUUID = player.getUniqueId();
-        PlayerData playerData = DataHolder.players().getPlayerData(playerUUID);
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(playerUUID);
         final int currentTick = DataHolder.getTick();
 
         if ((playerData == null) || (!playerData.entityVisibility().isVisible(entityUUID, currentTick))) return; // State change was triggered by us, do nothing
 
-        DataHolder.players().getPlayerData(playerUUID).entityVisibility().remove(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
+        PlayerRegistry.getInstance().getPlayerData(playerUUID).entityVisibility().remove(entityUUID); // Remove entity from player's data as they are no longer tracking it, so no more raycasts are needed
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntitySpawn(EntitySpawnEvent event) {
-        ifIsBukkitESM(bukkitESM -> bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getLocation()));
+        ifIsBukkitESM(bukkitESM -> bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), LocatableAdapterUtils.toLocatable(event.getLocation(), event.getEntity().getHeight() / 2, games.cubi.locatables.implementations.ThreadSafeLocatable.class)));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)

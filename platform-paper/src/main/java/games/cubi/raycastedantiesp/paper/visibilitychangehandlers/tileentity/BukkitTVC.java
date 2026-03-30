@@ -1,10 +1,11 @@
 package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity;
 
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
 import games.cubi.raycastedantiesp.paper.Logger;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityChanger {
     @Override
     public void showTileEntityToPlayer(UUID player, BlockLocatable tileEntity, int currentTick) {
-        if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, true, currentTick)) return;
+        if (!PlayerRegistry.getInstance().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, true, currentTick)) return;
 
         addToTileEntityCache(player, tileEntity);
     }
@@ -35,7 +36,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
     @Override
     public void hideTileEntityFromPlayer(UUID player, BlockLocatable tileEntity, int currentTick) {
 
-        if (!DataHolder.players().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, false, currentTick)) {
+        if (!PlayerRegistry.getInstance().getPlayerData(player).tileVisibility().compareAndSetVisibility(tileEntity, false, currentTick)) {
             return; // Already hidden
         }
 
@@ -75,7 +76,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
                 }
                 else {
                     Logger.warning("Tried to show tile entity at " + tileEntity + " to "+player.getName()+" but it was not a TileState! Block type: " + blockState.getType()+". Removing from the list of tile entities.", 5);
-                    DataHolder.players().removeTileEntityFromAllPlayers(tileEntity);
+                    PlayerRegistry.getInstance().removeTileEntityFromAllPlayers(tileEntity);
                 }
             }
         }

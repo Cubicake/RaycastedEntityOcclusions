@@ -1,9 +1,10 @@
 package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity;
 
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
 import games.cubi.raycastedantiesp.paper.Logger;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.BukkitAbstractVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
 
 import java.util.UUID;
 
@@ -11,7 +12,7 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
 
     @Override
     public void showEntityToPlayer(UUID player, UUID entity, int currentTick) {
-        if (!DataHolder.players().isPlayerRegistered(player)) {
+        if (!PlayerRegistry.getInstance().isPlayerRegistered(player)) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }
@@ -20,7 +21,7 @@ public class BukkitEVC extends BukkitAbstractVisibilityChanger implements Entity
 
     @Override
     public void hideEntityFromPlayer(UUID player, UUID entity, int currentTick) {
-        if (!DataHolder.players().isPlayerRegistered(player)) {
+        if (!PlayerRegistry.getInstance().isPlayerRegistered(player)) {
             Logger.errorAndReturn(new RuntimeException("Null PlayerData when attempting to show entity to player"), 3);
             return;
         }

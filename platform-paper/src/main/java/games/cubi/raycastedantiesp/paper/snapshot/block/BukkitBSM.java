@@ -3,14 +3,15 @@ package games.cubi.raycastedantiesp.paper.snapshot.block;
 import games.cubi.logs.Frequency;
 import games.cubi.raycastedantiesp.paper.EventListener;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
 import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.paper.utils.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;

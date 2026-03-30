@@ -3,7 +3,17 @@ package games.cubi.raycastedantiesp.paper.engine;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
+import games.cubi.raycastedantiesp.core.engine.Engine;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.entity.EntitySnapshotManager;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.player.PlayerVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
 import games.cubi.raycastedantiesp.paper.Logger;
+import games.cubi.raycastedantiesp.paper.PaperParticleSpawner;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
@@ -11,18 +21,11 @@ import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
-import games.cubi.raycastedantiesp.paper.raycast.RaycastUtil;
-import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
-import games.cubi.raycastedantiesp.paper.snapshot.entity.EntitySnapshotManager;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.locatables.Locatable;
-import games.cubi.raycastedantiesp.paper.utils.PlayerData;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.EntityVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.PlayerVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
@@ -40,6 +43,7 @@ public class SimpleEngine implements Engine {
 
     private final RaycastedAntiESP plugin;
     private final ConfigManager config;
+    private final PaperParticleSpawner particleSpawner = new PaperParticleSpawner();
 
     public SimpleEngine(RaycastedAntiESP plugin, ConfigManager cfg) {
         this.plugin = plugin;
@@ -73,7 +77,7 @@ public class SimpleEngine implements Engine {
     //run async
     private void distributeTick() {
         final int currentTick = DataHolder.getTick();
-        Collection<PlayerData> allPlayers = DataHolder.players().getAllPlayerData();
+        Collection<PlayerData> allPlayers = PlayerRegistry.getInstance().getAllPlayerData();
         int threads = 1; //TODO Don't hardcode
         if (threads < 1) threads = 1;
 
@@ -131,7 +135,7 @@ public class SimpleEngine implements Engine {
                 return;
                 //todo: add loggers to figure out why
             }
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/, particleSpawner);
             entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee, currentTick);
         }
     }
@@ -141,7 +145,7 @@ public class SimpleEngine implements Engine {
 
         for (UUID otherPlayerUUID : player.playerVisibility().getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             Locatable otherPlayerLocation = entitySnapshotManager.getLocation(otherPlayerUUID);
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/, particleSpawner);
             playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee, currentTick);
         }
     }
@@ -156,7 +160,7 @@ public class SimpleEngine implements Engine {
 
         for (BlockLocatable tileEntityLocation : tileEntitiesToCheck) {
             if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1 /*TODO stop hardcoding*/, particleSpawner);
             tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
         }
     }
