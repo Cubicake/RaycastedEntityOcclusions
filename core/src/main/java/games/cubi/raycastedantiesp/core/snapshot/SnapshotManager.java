@@ -1,9 +1,9 @@
-package games.cubi.raycastedantiesp.paper.snapshot;
+package games.cubi.raycastedantiesp.core.snapshot;
 
-import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.paper.snapshot.entity.EntitySnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.entity.EntitySnapshotManager;
 
-public class SnapshotManager {
+public final class SnapshotManager {
     private static BlockSnapshotManager blockSnapshotManager;
     private static EntitySnapshotManager entitySnapshotManager;
 
@@ -32,7 +32,6 @@ public class SnapshotManager {
     public static EntitySnapshotManager getEntitySnapshotManager() {
         return entitySnapshotManager;
     }
-
 
     public static EntitySnapshotManagerType entitySnapshotManagerType() {
         return entitySnapshotManagerType;
