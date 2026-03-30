@@ -1,8 +1,7 @@
-package games.cubi.raycastedantiesp.paper.snapshot.entity;
+package games.cubi.raycastedantiesp.core.snapshot.entity;
 
 import games.cubi.locatables.Locatable;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
-import org.bukkit.Location;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 
 import java.util.UUID;
 
@@ -11,7 +10,7 @@ public interface EntitySnapshotManager {
 
     SnapshotManager.EntitySnapshotManagerType getType();
 
-    void queueEntityLocationUpdate(UUID entityUUID, Location location);
+    void queueEntityLocationUpdate(UUID entityUUID, Locatable location);
     void removeEntityLocation(UUID entityUUID); //for use when entity is unloaded, fine not to queue as this will be rare
     void processEntityLocationQueue();
 }
