@@ -30,7 +30,15 @@ java {
 }
 
 group = "games.cubi.raycastedantiesp.paper"
-version = "v2.0.0-alpha-3"
+version = "2.0.0-alpha-3"
+
+val commitShort = providers.exec {
+    commandLine("git", "rev-parse", "--short=8", "HEAD")
+}.standardOutput.asText.map { it.trim() }
+
+val commitFull = providers.exec {
+    commandLine("git", "rev-parse", "HEAD")
+}.standardOutput.asText.map { it.trim() }
 
 tasks {
     runServer {
