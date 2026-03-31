@@ -1,7 +1,10 @@
 package games.cubi.raycastedantiesp.paper.data;
 
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Deprecated(forRemoval = true)
 public class DataHolder {
 
     private static AtomicInteger tick = new AtomicInteger();
