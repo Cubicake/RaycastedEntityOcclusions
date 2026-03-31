@@ -1,8 +1,7 @@
 package games.cubi.raycastedantiesp.core.config;
 
-import games.cubi.raycastedantiesp.core.Logger;
-import games.cubi.raycastedantiesp.core.RaycastedAntiESPCore;
 import games.cubi.logs.Frequency;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
@@ -40,8 +39,18 @@ public class ConfigManager {
     private EngineConfig engineConfig;
     private VisibilityHandlersConfig visibilityHandlersConfig;
 
-    private ConfigManager() {
-        this.configPath = RaycastedAntiESPCore.dataFolder.resolve("config.yml");
+    // Platform provided
+    public final InputStream resource;
+    public final Path dataFolder;
+    public final PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider; // This is getting ridiculous lol
+
+
+    private ConfigManager(InputStream resource, Path dataFolder, PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider) {
+        this.resource = resource;
+        this.dataFolder = dataFolder;
+        this.tileEntityConfigFactoryProvider = tileEntityConfigFactoryProvider;
+
+        this.configPath = dataFolder.resolve("config.yml");
         this.loader = YamlConfigurationLoader.builder()
                 .path(configPath)
                 .nodeStyle(NodeStyle.BLOCK)
@@ -49,14 +58,14 @@ public class ConfigManager {
         load();
     }
 
-    public static ConfigManager initialiseConfigManager() {
+    public static ConfigManager initialiseConfigManager(InputStream resource, Path dataFolder, PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider) {
         if (instance == null) {
-            instance = new ConfigManager();
+            instance = new ConfigManager(resource, dataFolder, tileEntityConfigFactoryProvider);
         }
         return instance;
     }
     public static ConfigManager get() {
-        if (instance == null) Logger.get().errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."), 2);
+        if (instance == null) Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."), 2, ConfigManager.class);
         return instance;
     }
 
@@ -97,7 +106,7 @@ public class ConfigManager {
 
         PlayerConfig.Factory playerFactory = new PlayerConfig.Factory();
         EntityConfig.Factory entityFactory = new EntityConfig.Factory();
-        PlatformTileEntityConfig.Factory<?,?> tileEntityFactory = RaycastedAntiESPCore.tileEntityConfigFactoryProvider.getFactory();
+        PlatformTileEntityConfig.Factory<?,?> tileEntityFactory = tileEntityConfigFactoryProvider.getFactory();
         SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
         DebugConfig.Factory debugFactory = new DebugConfig.Factory();
         VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
@@ -239,14 +248,12 @@ public class ConfigManager {
 
     private void ensureConfigFileExists() {
         try {
-            Files.createDirectories(RaycastedAntiESPCore.dataFolder);
+            Files.createDirectories(dataFolder);
             if (!Files.exists(configPath)) {
-                try (InputStream resource = RaycastedAntiESPCore.resource) {
-                    if (resource != null) {
-                        Files.copy(resource, configPath);
-                    } else {
-                        Files.createFile(configPath);
-                    }
+                if (resource != null) {
+                    Files.copy(resource, configPath);
+                } else {
+                    Files.createFile(configPath);
                 }
             }
         } catch (IOException e) {
@@ -271,14 +278,14 @@ public class ConfigManager {
     }
 
     private ConfigurationNode loadBundledDefaults() {
-        try (InputStream resource = RaycastedAntiESPCore.resource) {
+        try {
             if (resource == null) return null;
             ConfigurationLoader<? extends ConfigurationNode> resourceLoader = YamlConfigurationLoader.builder()
                     .source(() -> new BufferedReader(new InputStreamReader(resource)))
                     .build();
             return resourceLoader.load();
         } catch (IOException e) {
-            Logger.get().warning("Failed to read bundled config defaults: " + e.getMessage(), Frequency.CONFIG_LOAD.value);
+            Logger.warning("Failed to read bundled config defaults: " + e.getMessage(), Frequency.CONFIG_LOAD.value, ConfigManager.class);
             return null;
         }
     }
