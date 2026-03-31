@@ -1,11 +1,10 @@
-package games.cubi.raycastedantiesp.paper.visibilitychangehandlers;
+package games.cubi.raycastedantiesp.core.visibilitychangehandlers;
 
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.EntityVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.PlayerVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
-import org.jspecify.annotations.Nullable;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.player.PlayerVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
 
-public class VisibilityChangeHandlers {
+public final class VisibilityChangeHandlers {
     private static EntityVisibilityChanger entityVisibilityChanger;
     private static PlayerVisibilityChanger playerVisibilityChanger;
     private static TileEntityVisibilityChanger tileEntityVisibilityChanger;
@@ -13,9 +12,11 @@ public class VisibilityChangeHandlers {
     public enum EntityVisibilityChangerType {
         BUKKIT,
     }
+
     public enum PlayerVisibilityChangerType {
         BUKKIT,
     }
+
     public enum TileEntityVisibilityChangerType {
         BUKKIT,
     }
@@ -24,21 +25,20 @@ public class VisibilityChangeHandlers {
     private static PlayerVisibilityChangerType playerVisibilityChangeHandlerType;
     private static TileEntityVisibilityChangerType tileEntityVisibilityChangeHandlerType;
 
+    private VisibilityChangeHandlers() {}
+
     public static void initialise(EntityVisibilityChanger entityVisibilityChanger1, PlayerVisibilityChanger playerVisibilityChanger1, TileEntityVisibilityChanger tileEntityVisibilityChanger1) {
         changeHandlers(entityVisibilityChanger1, playerVisibilityChanger1, tileEntityVisibilityChanger1);
     }
 
-    @Nullable
     public static EntityVisibilityChanger getEntity() {
         return entityVisibilityChanger;
     }
 
-    @Nullable
     public static PlayerVisibilityChanger getPlayer() {
         return playerVisibilityChanger;
     }
 
-    @Nullable
     public static TileEntityVisibilityChanger getTileEntity() {
         return tileEntityVisibilityChanger;
     }
@@ -46,9 +46,11 @@ public class VisibilityChangeHandlers {
     public static EntityVisibilityChangerType entityVisibilityChangeHandlerType() {
         return entityVisibilityChangeHandlerType;
     }
+
     public static PlayerVisibilityChangerType playerVisibilityChangeHandlerType() {
         return playerVisibilityChangeHandlerType;
     }
+
     public static TileEntityVisibilityChangerType tileEntityVisibilityChangeHandlerType() {
         return tileEntityVisibilityChangeHandlerType;
     }
