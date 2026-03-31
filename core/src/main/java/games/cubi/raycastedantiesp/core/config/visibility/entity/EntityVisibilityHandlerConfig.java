@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.core.config.visibility.entity;
 
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -56,7 +56,7 @@ public class EntityVisibilityHandlerConfig implements Config {
             String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", EntityVisibilityHandlerConfig.DEFAULT.getName());
             EntityVisibilityHandlerMode mode = EntityVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
-                Logger.get().warning("Invalid entity visibility handler mode in config, defaulting to " + EntityVisibilityHandlerConfig.DEFAULT.getName(), 3);
+                Logger.warning("Invalid entity visibility handler mode in config, defaulting to " + EntityVisibilityHandlerConfig.DEFAULT.getName(), 3, EntityVisibilityHandlerConfig.class);
                 mode = EntityVisibilityHandlerConfig.DEFAULT.getMode();
             }
             return mode;
