@@ -1,7 +1,7 @@
-package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity;
+package games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity;
 
 import games.cubi.locatables.BlockLocatable;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 
 import java.util.UUID;
 
