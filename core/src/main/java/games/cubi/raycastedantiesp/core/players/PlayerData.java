@@ -1,4 +1,4 @@
-package games.cubi.raycastedantiesp.paper.utils;
+package games.cubi.raycastedantiesp.core.players;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
