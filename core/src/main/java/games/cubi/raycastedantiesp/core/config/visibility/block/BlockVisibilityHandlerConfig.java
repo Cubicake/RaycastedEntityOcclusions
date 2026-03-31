@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.core.config.visibility.block;
 
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -55,7 +55,7 @@ public class BlockVisibilityHandlerConfig implements Config {
             String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", BlockVisibilityHandlerConfig.DEFAULT.getName());
             BlockVisibilityHandlerMode mode = BlockVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
-                Logger.get().warning("Invalid block visibility handler mode in config, defaulting to " + BlockVisibilityHandlerConfig.DEFAULT.getName(), 3);
+                Logger.warning("Invalid block visibility handler mode in config, defaulting to " + BlockVisibilityHandlerConfig.DEFAULT.getName(), 3, BlockVisibilityHandlerConfig.class);
                 mode = BlockVisibilityHandlerConfig.DEFAULT.getMode();
             }
             return mode;
