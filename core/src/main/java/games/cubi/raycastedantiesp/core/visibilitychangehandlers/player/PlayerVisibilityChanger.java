@@ -1,6 +1,6 @@
-package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player;
+package games.cubi.raycastedantiesp.core.visibilitychangehandlers.player;
 
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 
 import java.util.UUID;
 
