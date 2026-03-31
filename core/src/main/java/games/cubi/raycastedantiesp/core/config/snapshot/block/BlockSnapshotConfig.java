@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.core.config.snapshot.block;
 
 import games.cubi.logs.Frequency;
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -46,7 +46,7 @@ public class BlockSnapshotConfig implements Config {
         public @NotNull BlockSnapshotConfig getFromConfig(ConfigurationNode config) {
             BlockMode mode = getModeFromConfig(config);
             if (mode == null) {
-                Logger.get().warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value);
+                Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value);
                 mode = DEFAULT.getMode();
             }
 
@@ -56,7 +56,7 @@ public class BlockSnapshotConfig implements Config {
                 case PACKETEVENTS ->
                         throw new UnsupportedOperationException("PacketEvents block snapshot mode is not yet implemented.");
                 default -> {
-                    Logger.get().error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), Frequency.CONFIG_LOAD.value);
+                    Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
                     yield new BukkitBlockSnapshotConfig.Factory(BlockMode.SYNC_BUKKIT).getFromConfig(config);
                 }
             };
