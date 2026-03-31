@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.core.config.snapshot.tileentity;
 
 import games.cubi.logs.Frequency;
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -46,7 +46,7 @@ public class TileEntitySnapshotConfig implements Config {
             String modeName = ConfigNodeUtil.getString(config, getFullPath()+".mode", fallback.getName());
             TileEntitySnapshotMode mode = TileEntitySnapshotMode.fromString(modeName);
             if (mode == null) {
-                Logger.get().warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), Frequency.CONFIG_LOAD.value);
+                Logger.warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
                 mode = fallback.mode;
             }
 
@@ -55,7 +55,7 @@ public class TileEntitySnapshotConfig implements Config {
                 case PACKETEVENTS ->
                         new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.get().error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Frequency.CONFIG_LOAD.value);
+                    Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
                     yield new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 }
             };
