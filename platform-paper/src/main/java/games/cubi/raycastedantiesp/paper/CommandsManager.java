@@ -5,11 +5,12 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
-import games.cubi.raycastedantiesp.paper.utils.TileEntityVisibilityTracker;
+import games.cubi.raycastedantiesp.core.players.TileEntityVisibilityTracker;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
@@ -109,7 +110,7 @@ public class CommandsManager {
                         Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
                         SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
                         Player player = (Player) ctx.getSource().getSender();
-                        TileEntityVisibilityTracker tileEntityVisibilityTracker = DataHolder.players().getPlayerData(player.getUniqueId()).tileVisibility();
+                        TileEntityVisibilityTracker tileEntityVisibilityTracker = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId()).tileVisibility();
                         Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1);
                         Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1);
 
