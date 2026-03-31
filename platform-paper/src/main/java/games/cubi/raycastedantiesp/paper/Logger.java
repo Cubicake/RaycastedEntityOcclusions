@@ -22,11 +22,11 @@ public class Logger {
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
     public static void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.warningAndReturn(throwable, level);
+        loggerAdapter.warningAndReturn(throwable, level, Logger.class);
     }
 
     public static void warning(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.warning(throwable, level);
+        loggerAdapter.warning(throwable, level, Logger.class);
     }
 
     /**
@@ -39,11 +39,11 @@ public class Logger {
     }
 
     public static void error(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.error(throwable, level);
+        loggerAdapter.error(throwable, level, Logger.class);
     }
 
     public static void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.error(message, throwable, level);
+        loggerAdapter.error(message, throwable, level, Logger.class);
     }
 
     /**
@@ -52,18 +52,18 @@ public class Logger {
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
     public static void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.errorAndReturn(throwable, level);
+        loggerAdapter.errorAndReturn(throwable, level, Logger.class);
     }
 
     public static void info(String message, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.info(message, level);
+        loggerAdapter.info(message, level, Logger.class);
     }
 
     public static void warning(String message, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.warning(message, level);
+        loggerAdapter.warning(message, level, Logger.class);
     }
 
     public static void error(String message, @Range(from = 1, to = 10) int level) {
-        loggerAdapter.error(message, level);
+        loggerAdapter.error(message, level, Logger.class);
     }
 }

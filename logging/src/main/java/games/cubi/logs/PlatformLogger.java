@@ -30,9 +30,9 @@ public interface PlatformLogger {
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the warning message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level);
+    void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
 
-    void warning(Throwable throwable, @Range(from = 1, to = 10) int level);
+    void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
 
     /**
      * This should be used for testing only, and should be stripped out of production code. Logs a message at debug level, which is always visible
@@ -41,21 +41,21 @@ public interface PlatformLogger {
      */
     void debug(String message);
 
-    void error(Throwable throwable, @Range(from = 1, to = 10) int level);
+    void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
 
-    void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level);
+    void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
 
     /**
      * Logs an error message including stack trace and serves as an early return. Nothing called after this method will be executed.
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the error message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    default void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        error(throwable, level);
+    default void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+        error(throwable, level, source);
         throw earlyReturn;
     }
 
-    void info(String message, @Range(from = 1, to = 10) int level);
-    void warning(String message, @Range(from = 1, to = 10) int level);
-    void error(String message, @Range(from = 1, to = 10) int level);
+    void info(String message, @Range(from = 1, to = 10) int level, Class<?> source);
+    void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source);
+    void error(String message, @Range(from = 1, to = 10) int level, Class<?> source);
 }

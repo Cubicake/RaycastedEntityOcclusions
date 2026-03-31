@@ -14,7 +14,7 @@ dependencies {
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 
     implementation(project(":locatables"))
-    implementation(project(":logging"))
+    compileOnly(project(":logging"))
 }
 
 java {

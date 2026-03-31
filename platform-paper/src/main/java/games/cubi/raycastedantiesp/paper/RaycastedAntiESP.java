@@ -4,6 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 
 import games.cubi.raycastedantiesp.core.Core;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.SimpleEngine;
 import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
@@ -11,10 +13,8 @@ import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.packets.Registrar;
 import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.BukkitEVC;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.BukkitPVC;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.BukkitTVC;
@@ -45,7 +45,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onLoad() {
-        new Core(Logger.loggerAdapter);
+        Core.initialize(Logger.loggerAdapter);
         config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {

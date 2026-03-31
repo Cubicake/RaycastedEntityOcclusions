@@ -10,5 +10,5 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":logging"))
+    compileOnly(project(":logging"))
 }
