@@ -1,12 +1,12 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.paper.utils.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.paper.Logger;
 
 import java.util.Set;
 import java.util.UUID;
