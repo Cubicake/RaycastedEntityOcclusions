@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.core.config.engine;
 
 import games.cubi.logs.Frequency;
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -35,7 +35,7 @@ public abstract class EngineConfig implements Config {
             String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", DEFAULT.getMode().getName());
             EngineMode mode = EngineMode.fromString(modeName);
             if (mode == null) {
-                Logger.get().warning("Invalid engine mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value);
+                Logger.warning("Invalid engine mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value, EngineConfig.class);
                 mode = DEFAULT.getMode();
             }
             return switch (mode) {
