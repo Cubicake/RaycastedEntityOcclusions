@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.core.config.visibility.tileentity;
 
-import games.cubi.raycastedantiesp.core.Logger;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigFactory;
@@ -53,7 +53,7 @@ public class TileEntityVisibilityHandlerConfig implements Config {
             String modeName = ConfigNodeUtil.getString(config, getFullPath() + ".mode", TileEntityVisibilityHandlerConfig.DEFAULT.getName());
             TileEntityVisibilityHandlerMode mode = TileEntityVisibilityHandlerMode.fromString(modeName);
             if (mode == null) {
-                Logger.get().warning("Invalid tile entity visibility handler mode in config, defaulting to " + TileEntityVisibilityHandlerConfig.DEFAULT.getName(), 3);
+                Logger.warning("Invalid tile entity visibility handler mode in config, defaulting to " + TileEntityVisibilityHandlerConfig.DEFAULT.getName(), 3, TileEntityVisibilityHandlerConfig.class);
                 mode = TileEntityVisibilityHandlerConfig.DEFAULT.getMode();
             }
             return mode;
