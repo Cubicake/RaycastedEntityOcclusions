@@ -1,9 +1,9 @@
-package games.cubi.raycastedantiesp.paper.utils;
+package games.cubi.raycastedantiesp.core.players;
 
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.BlockLocatable;
-import games.cubi.raycastedantiesp.paper.snapshot.block.BlockSnapshotManager;
+import games.cubi.logs.Logger;
+import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +26,7 @@ public class TileEntityVisibilityTracker extends VisibilityTracker<BlockLocatabl
 
     @Override
     public Set<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTime) {
-        Logger.errorAndReturn(new RuntimeException("getNeedingRecheck without world and chunk parameters called on TileEntityVisibilityTracker."), 1);
+        Logger.errorAndReturn(new RuntimeException("getNeedingRecheck without world and chunk parameters called on TileEntityVisibilityTracker."), 1, TileEntityVisibilityTracker.class);
         return null;
     }
 
