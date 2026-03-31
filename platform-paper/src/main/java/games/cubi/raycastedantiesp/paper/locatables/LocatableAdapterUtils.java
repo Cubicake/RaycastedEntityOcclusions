@@ -5,8 +5,12 @@ import games.cubi.locatables.BlockLocatable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 
+import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LocatableAdapterUtils {
 
@@ -40,5 +44,23 @@ public class LocatableAdapterUtils {
         double z = location.getZ();
 
         return Locatable.create(worldUUID, x, y, z, type);
+    }
+
+    private static final Map<UUID, WeakReference<World>> worldCache = new ConcurrentHashMap<>();
+
+    //Bukkit#getWorld iterates through all worlds and compares UUIDs, this is probably not actually needed though
+    public static World getWorld(UUID worldUUID) {
+        World world = null;
+        WeakReference<World> weakRef = worldCache.get(worldUUID);
+        if (weakRef != null) {
+            world = weakRef.get();
+        }
+        if (world == null) {
+            world = Bukkit.getWorld(worldUUID);
+            if (world != null) {
+                worldCache.put(worldUUID, new WeakReference<>(world));
+            }
+        }
+        return world;
     }
 }
