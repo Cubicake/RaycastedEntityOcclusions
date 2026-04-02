@@ -36,14 +36,14 @@ public class PaperLoggerAdapter implements PlatformLogger {
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
     @Override
-    public void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        warning(processThrowable(throwable), level);
+    public void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+        warning(processThrowable(throwable), level, source);
         throw earlyReturn;
     }
 
     @Override
-    public void warning(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        warning(processThrowable(throwable), level);
+    public void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+        error(processThrowable(throwable), level, source);
     }
 
     @Deprecated @Override
@@ -52,13 +52,13 @@ public class PaperLoggerAdapter implements PlatformLogger {
     }
 
     @Override
-    public void error(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        error(processThrowable(throwable), level);
+    public void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+        error(processThrowable(throwable), level, source);
     }
 
     @Override
-    public void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level) {
-        error(processThrowable(throwable, message), level);
+    public void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+        error(processThrowable(throwable, message), level, source);
     }
 
     /**
@@ -66,12 +66,6 @@ public class PaperLoggerAdapter implements PlatformLogger {
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the error message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    @Override
-    public void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level) {
-        error(processThrowable(throwable), level);
-        throw earlyReturn;
-    }
-
     private String processThrowable(Throwable throwable) {
         return processThrowable(throwable, null);
     }
@@ -93,17 +87,17 @@ public class PaperLoggerAdapter implements PlatformLogger {
     }
 
     @Override
-    public void info(String message, @Range(from = 1, to = 10) int level) {
+    public void info(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
         forwardLog(message, Level.INFO, level);
     }
 
     @Override
-    public void warning(String message, @Range(from = 1, to = 10) int level) {
+    public void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
         forwardLog(message, Level.WARN, level);
     }
 
     @Override
-    public void error(String message, @Range(from = 1, to = 10) int level) {
+    public void error(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
         forwardLog(message, Level.ERROR, level);
     }
 
