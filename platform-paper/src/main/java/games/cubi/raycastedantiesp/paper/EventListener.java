@@ -121,7 +121,7 @@ public class EventListener implements Listener {
         }
         PlayerRegistry.getInstance().registerPlayer(player.getUniqueId(),player.hasPermission("raycastedantiesp.bypass") ,DataHolder.getTick());
 
-        if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation());
+        if (SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT) updateEntityLocation(player.getUniqueId(), player.getEyeLocation(), 0);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -164,12 +164,12 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityMove(EntityMoveEvent event) {
-        updateEntityLocation(event.getEntity().getUniqueId(), event.getTo().clone().add(0, event.getEntity().getHeight() / 2, 0));
+        updateEntityLocation(event.getEntity().getUniqueId(), event.getTo(), event.getEntity().getHeight() / 2);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        updateEntityLocation(event.getPlayer().getUniqueId(), event.getPlayer().getEyeLocation());
+        updateEntityLocation(event.getPlayer().getUniqueId(), event.getPlayer().getEyeLocation(), 0);
 
         /*if (PlayerRegistry.getInstance().isPlayerRegistered(event.getPlayer().getUniqueId())) return; //todo this will be used for the backport version where PlayerClientLoadWorldEvent is not available
         onPlayerJoin(event.getPlayer());*/
@@ -181,12 +181,12 @@ public class EventListener implements Listener {
         onPlayerJoin(event.getPlayer());
     }*/
 
-    private void updateEntityLocation(UUID entityUUID, Location newLocation) {
+    private void updateEntityLocation(UUID entityUUID, Location newLocation, double heightOffset) {
         if (!(SnapshotManager.entitySnapshotManagerType() == SnapshotManager.EntitySnapshotManagerType.BUKKIT)) {
             return;
         }
         BukkitESM bukkitESM = (BukkitESM) SnapshotManager.getEntitySnapshotManager();
-        bukkitESM.queueEntityLocationUpdate(entityUUID, newLocation);
+        bukkitESM.queueEntityLocationUpdate(entityUUID, newLocation, heightOffset);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -226,7 +226,7 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntitySpawn(EntitySpawnEvent event) {
-        ifIsBukkitESM(bukkitESM -> bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), LocatableAdapterUtils.toLocatable(event.getLocation(), event.getEntity().getHeight() / 2, games.cubi.locatables.implementations.ThreadSafeLocatable.class)));
+        ifIsBukkitESM(bukkitESM -> bukkitESM.queueEntityLocationUpdate(event.getEntity().getUniqueId(), event.getLocation(), event.getEntity().getHeight() / 2));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -236,7 +236,7 @@ public class EventListener implements Listener {
         if (bukkitESM == null) { Logger.errorAndReturn(new RuntimeException("EntityLoad: Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!"), 2); return; }
 
         for (var entity : event.getEntities()) {
-            bukkitESM.queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation());
+            bukkitESM.queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation(), entity.getHeight() / 2);
         }
     }
 

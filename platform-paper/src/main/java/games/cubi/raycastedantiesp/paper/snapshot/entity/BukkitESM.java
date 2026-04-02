@@ -19,8 +19,8 @@ public class BukkitESM implements EntitySnapshotManager {
     public BukkitESM() {
     }
 
-    public void queueEntityLocationUpdate(UUID entityUUID, Location location) {
-        entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
+    public void queueEntityLocationUpdate(UUID entityUUID, Location location, double offset) {
+        entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location, offset));
     }
 
     @Override
@@ -34,10 +34,10 @@ public class BukkitESM implements EntitySnapshotManager {
         entityLocationMap = new ConcurrentHashMap<>(newLocations);
     }
 
-    private void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
+    private void setOrUpdateEntityLocation(UUID entityUUID, Location location, double offset) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return new ThreadSafeLocatable(location.getWorld().getUID(), location.x(), location.y(), location.z());
-            oldLoc.set(location.x(), location.y(), location.z(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
+            if (oldLoc == null) return new ThreadSafeLocatable(location.getWorld().getUID(), location.x(), location.y() + offset, location.z());
+            oldLoc.set(location.x(), location.y() + offset, location.z(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
             return oldLoc;
         });
     }
@@ -47,7 +47,7 @@ public class BukkitESM implements EntitySnapshotManager {
         while (!entityLocProcessingQueue.isEmpty()) {
             EntityLocationPair entityLocationPair = entityLocProcessingQueue.poll();
             if (entityLocationPair == null) return;
-            setOrUpdateEntityLocation(entityLocationPair.entity(), entityLocationPair.loc());
+            setOrUpdateEntityLocation(entityLocationPair.entity(), entityLocationPair.loc(), entityLocationPair.offset());
         }
     }
 
