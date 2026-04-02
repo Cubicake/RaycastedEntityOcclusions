@@ -46,7 +46,7 @@ public class BlockSnapshotConfig implements Config {
         public @NotNull BlockSnapshotConfig getFromConfig(ConfigurationNode config) {
             BlockMode mode = getModeFromConfig(config);
             if (mode == null) {
-                Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value);
+                Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
                 mode = DEFAULT.getMode();
             }
 
