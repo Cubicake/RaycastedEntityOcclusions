@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.paper.packets;
 
-import games.cubi.raycastedantiesp.paper.Logger;
+import games.cubi.logs.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public final class PacketEventsStatus {
@@ -13,12 +13,12 @@ public final class PacketEventsStatus {
 
     public static void init(boolean packetEventsPresent) {
         if (instance != null) {
-            Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1);
+            Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1, PacketEventsStatus.class);
             return;
         }
         synchronized (PacketEventsStatus.class) {
             if (instance != null) {
-                Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1);
+                Logger.errorAndReturn(new RuntimeException("PacketEventsStatus already initialised"), 1, PacketEventsStatus.class);
                 return;
             }
             instance = new PacketEventsStatus(packetEventsPresent);
@@ -28,7 +28,7 @@ public final class PacketEventsStatus {
     @NotNull
     public static PacketEventsStatus get() {
         if (instance == null) {
-            Logger.error(new RuntimeException("PacketEvents status not initialised"), 1);
+            Logger.error(new RuntimeException("PacketEvents status not initialised"), 1, PacketEventsStatus.class);
             instance = new PacketEventsStatus(false);
         }
         return instance;

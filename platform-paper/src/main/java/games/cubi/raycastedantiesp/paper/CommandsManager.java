@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
@@ -107,12 +108,12 @@ public class CommandsManager {
 
                         ImmutableBlockLocatable location = new ImmutableBlockLocatable(ctx.getSource().getLocation().getWorld().getUID(), blockPosition.x(), blockPosition.y(), blockPosition.z());
 
-                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1);
-                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1));
+                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1, CommandsManager.class);
+                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1, CommandsManager.class));
                         Player player = (Player) ctx.getSource().getSender();
                         TileEntityVisibilityTracker tileEntityVisibilityTracker = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId()).tileVisibility();
-                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1);
-                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1);
+                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1, CommandsManager.class);
+                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1, CommandsManager.class);
 
                         return Command.SINGLE_SUCCESS;
                         }))

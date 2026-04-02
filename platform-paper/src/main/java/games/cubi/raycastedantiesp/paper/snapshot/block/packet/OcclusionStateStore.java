@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.locatables.BlockLocatable;
+import games.cubi.logs.Logger;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +21,7 @@ public class OcclusionStateStore {
     public boolean isOccluding(UUID world, final int x, final int y, final int z) {
         boolean[][][] worldData = occlusionData.get(new Chunk(world, x >> 4, z >> 4));
         if (worldData == null) {
-            Logger.warning("No occlusion data for world " + world + ", defaulting to non-occluding", 5);
+            Logger.warning("No occlusion data for world " + world + ", defaulting to non-occluding", 5, OcclusionStateStore.class);
             return false;
         }
         int localX = x & 15;
@@ -38,7 +38,7 @@ public class OcclusionStateStore {
         Chunk chunk = new Chunk(world, x >> 4, z >> 4);
         boolean[][][] chunkData = occlusionData.get(chunk);
         if (chunkData == null) {
-            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5);
+            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5, OcclusionStateStore.class);
             return;
         }
         int localX = x & 15;

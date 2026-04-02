@@ -1,5 +1,6 @@
 package games.cubi.raycastedantiesp.paper.engine;
 
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
@@ -12,7 +13,6 @@ import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChang
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.player.PlayerVisibilityChanger;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.PaperParticleSpawner;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
@@ -118,7 +118,7 @@ public class SimpleEngine implements Engine {
             if (playerData.hasBypassPermission()) continue;
 
             Locatable playerLocation = entitySnapshotManager.getLocation(playerData.getPlayerUUID());
-            if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"), 3);
+            if (playerLocation == null) Logger.errorAndReturn(new RuntimeException("Player "+playerData.getPlayerUUID()+" does not have a location"), 3, SimpleEngine.class);
 
             if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);
             if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);

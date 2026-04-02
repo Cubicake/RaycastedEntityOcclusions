@@ -3,10 +3,10 @@ package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.paper.Logger;
 
 import java.util.Set;
 import java.util.UUID;
@@ -26,7 +26,7 @@ public class PacketEventsBSM implements BlockSnapshotManager {
     public boolean isBlockOccluding(BlockLocatable location, PlayerData player) {
         PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
         if (snapshot == null) {
-            Logger.warning("PacketEventsBSM: No snapshot for player " + player, 5);
+            Logger.warning("No snapshot for player " + player, 5, PacketEventsBSM.class);
             return false;
         }
         return snapshot.occlusionStateStore().isOccluding(location);
@@ -36,7 +36,7 @@ public class PacketEventsBSM implements BlockSnapshotManager {
     public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ, PlayerData player) {
         PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
         if (snapshot == null) {
-            Logger.warning("PacketEventsBSM: No snapshot for player " + player, 5);
+            Logger.warning("No snapshot for player " + player, 5, PacketEventsBSM.class);
             return null;
         }
         Set<PacketTileEntity<NBTCompound>> tileEntities = snapshot.tileEntityStateStore.getTileEntitiesInChunk(world, chunkX, chunkZ);

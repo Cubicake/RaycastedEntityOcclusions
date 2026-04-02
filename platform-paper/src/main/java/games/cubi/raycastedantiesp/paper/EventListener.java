@@ -2,6 +2,7 @@ package games.cubi.raycastedantiesp.paper;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
@@ -233,7 +234,7 @@ public class EventListener implements Listener {
     public void onEntitiesLoad(EntitiesLoadEvent event) {
         if (!isBukkitESM()) return;
         BukkitESM bukkitESM = (BukkitESM) SnapshotManager.getEntitySnapshotManager();
-        if (bukkitESM == null) { Logger.errorAndReturn(new RuntimeException("EntityLoad: Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!"), 2); return; }
+        if (bukkitESM == null) { Logger.errorAndReturn(new RuntimeException("EntityLoad: Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!"), 2, EventListener.class); return; }
 
         for (var entity : event.getEntities()) {
             bukkitESM.queueEntityLocationUpdate(entity.getUniqueId(), entity.getLocation(), entity.getHeight() / 2);
@@ -271,7 +272,7 @@ public class EventListener implements Listener {
         if (manager instanceof BukkitESM bukkitESM) {
             onBukkitESM.accept(bukkitESM);
         }
-        else Logger.error("Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!", 2);
+        else Logger.error("Snapshot manager is set to Bukkit, but instance is not of type BukkitESM. This should never happen, report this to the developer!", 2, EventListener.class);
     }
 
 

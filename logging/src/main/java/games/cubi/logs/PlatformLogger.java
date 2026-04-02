@@ -1,5 +1,6 @@
 package games.cubi.logs;
 
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 /**
@@ -58,4 +59,33 @@ public interface PlatformLogger {
     void info(String message, @Range(from = 1, to = 10) int level, Class<?> source);
     void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source);
     void error(String message, @Range(from = 1, to = 10) int level, Class<?> source);
+
+    /**
+     * Logs an error message including stack trace and serves as an early return. Nothing called after this method will be executed.
+     * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the error message
+     * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
+     * **/
+    static String processThrowable(Throwable throwable) {
+        return processThrowable(throwable, null);
+    }
+
+    static String processThrowable(Throwable throwable, @Nullable String errorMessage) {
+        StackTraceElement[] thrown = throwable.getStackTrace();
+        StringBuilder message = new StringBuilder();
+        if (errorMessage != null) {
+            message.append(errorMessage);
+        } else {
+            message.append(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred but no error message was set |");
+        }
+        for (int i = 0; i < Math.min(4, thrown.length); i++) {
+            StackTraceElement element = thrown[i];
+            message.append("\n at ").append(element.toString());
+
+        }
+        return message.toString();
+    }
+
+    static String constructMessage(String message, Class<?> source) {
+        return "[" + source.getName() + "] " + message;
+    }
 }

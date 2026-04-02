@@ -19,6 +19,7 @@ import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.BukkitE
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.BukkitPVC;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.BukkitTVC;
 import games.cubi.raycastedantiesp.paper.bStats.MetricsCollector;
+import games.cubi.logs.Logger;
 
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
@@ -40,24 +41,23 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
     {
         instance = this;
-        Logger.initialize(getLogger());
+        Core.initialize(new PaperLoggerAdapter(getLogger()));
     }
 
     @Override
     public void onLoad() {
-        Core.initialize(Logger.loggerAdapter);
         config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {
             //packetEventsPresent = true;
-            Logger.info("PacketEvents detected.", 4);
+            Logger.info("PacketEvents detected.", 4, RaycastedAntiESP.class);
             new Registrar(this);
 
             PacketEventsStatus.init(true);
             packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
         }
         else {
-            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
+            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4, RaycastedAntiESP.class);
             PacketEventsStatus.init(false);
         }
     }

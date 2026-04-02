@@ -1,9 +1,9 @@
 package games.cubi.raycastedantiesp.paper.config;
 
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.RaycastConfig;
-import games.cubi.raycastedantiesp.paper.Logger;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -59,7 +59,7 @@ public class PaperTileEntityConfig extends PlatformTileEntityConfig<Material> {
                 if (m != null) {
                     materials.add(m);
                 } else {
-                    Logger.error("Invalid material in config 'whitelisted-materials': " + name,1);
+                    Logger.error("Invalid material in config 'whitelisted-materials': " + name, 1, Factory.class);
                 }
             }
             return List.copyOf(materials);
@@ -85,7 +85,7 @@ public class PaperTileEntityConfig extends PlatformTileEntityConfig<Material> {
                 if (m != null) {
                     materials.add(m);
                 } else {
-                    Logger.error("Invalid material in config 'whitelisted-materials': " + name,1);
+                    Logger.error("Invalid material in config 'whitelisted-materials': " + name, 1, Factory.class);
                 }
             }
             return List.copyOf(materials);

@@ -4,14 +4,13 @@ import games.cubi.logs.CheckPreviousLogForError;
 import games.cubi.logs.PlatformLogger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 public class PaperLoggerAdapter implements PlatformLogger {
 
     private final java.util.logging.Logger logger;
 
-    public PaperLoggerAdapter(java.util.logging.Logger logger) {
+    protected PaperLoggerAdapter(java.util.logging.Logger logger) {
         this.logger = logger;
     }
     /*
@@ -37,71 +36,46 @@ public class PaperLoggerAdapter implements PlatformLogger {
      * **/
     @Override
     public void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
-        warning(processThrowable(throwable), level, source);
+        warning(PlatformLogger.processThrowable(throwable), level, source);
         throw earlyReturn;
     }
 
     @Override
     public void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
-        error(processThrowable(throwable), level, source);
+        error(PlatformLogger.processThrowable(throwable), level, source);
     }
 
     @Deprecated @Override
     public void debug(String message) {
-        forwardLog(message, Level.INFO, 1);
+        forwardLog(message, Level.INFO, 1, null);
     }
 
     @Override
     public void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
-        error(processThrowable(throwable), level, source);
+        error(PlatformLogger.processThrowable(throwable), level, source);
     }
 
     @Override
     public void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
-        error(processThrowable(throwable, message), level, source);
-    }
-
-    /**
-     * Logs an error message including stack trace and serves as an early return. Nothing called after this method will be executed.
-     * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the error message
-     * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
-     * **/
-    private String processThrowable(Throwable throwable) {
-        return processThrowable(throwable, null);
-    }
-
-    private String processThrowable(Throwable throwable, @Nullable String errorMessage) {
-        StackTraceElement[] thrown = throwable.getStackTrace();
-        StringBuilder message = new StringBuilder();
-        if (errorMessage != null) {
-            message.append(errorMessage);
-        } else {
-            message.append(throwable.getMessage() != null ? throwable.getMessage() : "An error occurred but no error message was set |");
-        }
-        for (int i = 0; i < Math.min(4, thrown.length); i++) {
-            StackTraceElement element = thrown[i];
-            message.append("\n at ").append(element.toString());
-
-        }
-        return message.toString();
+        error(PlatformLogger.processThrowable(throwable, message), level, source);
     }
 
     @Override
     public void info(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
-        forwardLog(message, Level.INFO, level);
+        forwardLog(message, Level.INFO, level, source);
     }
 
     @Override
     public void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
-        forwardLog(message, Level.WARN, level);
+        forwardLog(message, Level.WARN, level, source);
     }
 
     @Override
     public void error(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
-        forwardLog(message, Level.ERROR, level);
+        forwardLog(message, Level.ERROR, level, source);
     }
 
-    private void forwardLog(String message, Level severity, int level) {
+    private void forwardLog(String message, Level severity, int level, Class<?> source) {
         ConfigManager configManager = RaycastedAntiESP.getConfigManager();
         if (configManager != null && configManager.getDebugConfig() != null) {
             DebugConfig debug = configManager.getDebugConfig();
@@ -110,6 +84,8 @@ public class PaperLoggerAdapter implements PlatformLogger {
                 return;
             }
         }
+
+        message = source != null ? PlatformLogger.constructMessage(message, source) : message;
 
         switch (severity) {
             case INFO:

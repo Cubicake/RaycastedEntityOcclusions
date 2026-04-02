@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 
-import games.cubi.raycastedantiesp.paper.Logger;
+import games.cubi.logs.Logger;
 
 import java.util.Set;
 import java.util.UUID;
@@ -39,7 +39,7 @@ public class TileEntityStateStore<T> {
         Chunk chunk = new Chunk(world, x >> 4, z >> 4);
         Set<PacketTileEntity<T>> chunkData = tileEntities.get(chunk);
         if (chunkData == null) {
-            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5);
+            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5, TileEntityStateStore.class);
             return;
         }
         chunkData.add(tileEntity);
@@ -49,7 +49,7 @@ public class TileEntityStateStore<T> {
         Chunk chunk = new Chunk(world, x >> 4, z >> 4);
         Set<PacketTileEntity<T>> chunkData = tileEntities.get(chunk);
         if (chunkData == null) {
-            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5);
+            Logger.warning("No occlusion data for world " + world + ", cannot set occlusion state", 5, TileEntityStateStore.class);
             return;
         }
         chunkData.removeIf(te -> te.location().blockX() == x && te.location().y() == y && te.location().z() == z);

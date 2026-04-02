@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import games.cubi.logs.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -100,7 +101,7 @@ public class UpdateChecker {
                 audience.sendRichMessage("<red>An unknown error occurred while checking for updates. UpdateChecker#checkIfLaterThan returned unrecognised integer " + versionCheck + ".");
             });
         }).exceptionally(ex -> {
-            Logger.error("An error occurred while checking for plugin updates", ex, 4);
+            Logger.error("An error occurred while checking for plugin updates", ex, 4, UpdateChecker.class);
             return null;
         });
     }

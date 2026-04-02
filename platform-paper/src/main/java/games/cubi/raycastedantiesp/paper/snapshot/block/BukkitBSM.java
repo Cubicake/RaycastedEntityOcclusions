@@ -1,11 +1,11 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block;
 
 import games.cubi.logs.Frequency;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.paper.EventListener;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
@@ -80,7 +80,7 @@ public class BukkitBSM implements BlockSnapshotManager {
                         snapshotChunk(key);
                     }
                 }
-                Logger.info("BukkitBSM: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", Frequency.ONCE_PER_TICK.value);
+                Logger.info("BukkitBSM: Refreshed " + chunksRefreshed + " chunks out of " + chunksToRefreshMaximum + " maximum.", Frequency.ONCE_PER_TICK.value, BukkitBSM.class);
             }
         }.runTaskTimerAsynchronously(plugin, refreshInterval, refreshInterval /* This runs 10 times per getRefreshRateSeconds, spreading out the refreshes */);
     }
@@ -94,23 +94,23 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     public void snapshotChunk(Chunk c) {
-        Logger.info("BukkitBSM: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), Frequency.MULTI_PER_TICK.value);
+        Logger.info("BukkitBSM: Taking snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), Frequency.MULTI_PER_TICK.value, BukkitBSM.class);
         dataMap.put(key(c), takeSnapshot(c, System.currentTimeMillis()));
     }
     public void snapshotChunk(String key) {
         snapshotChunk(getKeyChunk(key));
     }
     public void removeChunkSnapshot(Chunk c) {
-        Logger.info("BukkitBSM: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), 9);
+        Logger.info("BukkitBSM: Removing snapshot of chunk " + c.getWorld().getName() + ":" + c.getX() + ":" + c.getZ(), 9, BukkitBSM.class);
         dataMap.remove(key(c));
     }
 
     // Used by EventListener to update the delta map when a block is placed or broken
     public void onBlockChange(Location loc, Material m, int change) {
-        Logger.info("BukkitBSM: Block change at " + loc + " to " + m, Frequency.MULTI_PER_TICK.value);
+        Logger.info("BukkitBSM: Block change at " + loc + " to " + m, Frequency.MULTI_PER_TICK.value, BukkitBSM.class);
         ChunkData d = dataMap.get(key(loc.getChunk()));
         if (d == null) {
-            Logger.error("Data map value empty, ignoring block update!",3);
+            Logger.error("Data map value empty, ignoring block update!", 3, BukkitBSM.class);
         }
         ImmutableBlockLocatable blockLoc = LocatableAdapterUtils.toLocatable(loc, ImmutableBlockLocatable.class);
 
@@ -119,7 +119,7 @@ public class BukkitBSM implements BlockSnapshotManager {
             // Check if the block is a tile entity
             BlockState data = loc.getBlock().getState();
             if (data instanceof TileState) {
-                Logger.info("BukkitBSM: Tile entity at " + loc, 8);
+                Logger.info("BukkitBSM: Tile entity at " + loc, 8, BukkitBSM.class);
                 if (change == EventListener.PLACE) {
                     d.tileEntities.add(blockLoc);
                 }
@@ -193,7 +193,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         ChunkData chunkData = dataMap.get(key(loc));
         if (chunkData == null) {
             if (stupidErrorCounter.addAndGet(1) % 500 == 0) {
-                Logger.error("BukkitBSM: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5);
+                Logger.error("BukkitBSM: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5, BukkitBSM.class);
             }
             RaycastedAntiESP.getEngine().recheckQueue.add(loc);
             return null;
@@ -204,7 +204,7 @@ public class BukkitBSM implements BlockSnapshotManager {
         }
         Material dm = chunkData.delta.get(loc);
         if (dm != null) {
-            Logger.info("Using delta", 9);
+            Logger.info("Using delta", 9, BukkitBSM.class);
             return dm;
         }
         int x = loc.blockX() & 0xF;
@@ -242,9 +242,9 @@ public class BukkitBSM implements BlockSnapshotManager {
         ChunkData d = dataMap.get(key(c));
         if (d != null) {
             d.tileEntities.remove(LocatableAdapterUtils.toLocatable(loc, ImmutableBlockLocatable.class));
-            Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc,9);
+            Logger.info("ChunkSnapshotManager: Removed tile entity at " + loc,9, BukkitBSM.class);
         } else {
-            Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc,9);
+            Logger.error("ChunkSnapshotManager: No snapshot for " + c + " when removing tile entity at " + loc, 9, BukkitBSM.class);
         }
     }
 

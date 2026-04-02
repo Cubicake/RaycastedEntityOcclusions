@@ -1,9 +1,9 @@
 package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity;
 
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
-import games.cubi.raycastedantiesp.paper.Logger;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import org.bukkit.Bukkit;
@@ -75,7 +75,7 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
                     //Logger.debug("Sent block change to " + player.getName() + " at " + location + " for tile entity at " + tileEntity);
                 }
                 else {
-                    Logger.warning("Tried to show tile entity at " + tileEntity + " to "+player.getName()+" but it was not a TileState! Block type: " + blockState.getType()+". Removing from the list of tile entities.", 5);
+                    Logger.warning("Tried to show tile entity at " + tileEntity + " to "+player.getName()+" but it was not a TileState! Block type: " + blockState.getType()+". Removing from the list of tile entities.", 5, BukkitTVC.class);
                     PlayerRegistry.getInstance().removeTileEntityFromAllPlayers(tileEntity);
                 }
             }
