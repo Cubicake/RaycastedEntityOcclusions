@@ -93,7 +93,6 @@ public class PaperTileEntityConfig extends PlatformTileEntityConfig<Material> {
         public static class FactoryProvider implements PlatformTileEntityConfig.Factory.FactoryProvider<Factory> {
             @Override
             public @NotNull Factory getFactory() {
-                Logger.info("Providing factory for PaperTileEntityConfig", 1, PaperTileEntityConfig.class, Factory.class, FactoryProvider.class);
                 return new Factory();
             }
         }
