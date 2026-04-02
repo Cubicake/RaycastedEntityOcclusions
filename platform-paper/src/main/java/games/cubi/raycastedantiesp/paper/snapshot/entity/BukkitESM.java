@@ -1,8 +1,8 @@
 package games.cubi.raycastedantiesp.paper.snapshot.entity;
 
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
-import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
-import games.cubi.raycastedantiesp.paper.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.entity.EntitySnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.EntityLocationPair;
 import org.bukkit.Location;
 
@@ -19,7 +19,6 @@ public class BukkitESM implements EntitySnapshotManager {
     public BukkitESM() {
     }
 
-    @Override
     public void queueEntityLocationUpdate(UUID entityUUID, Location location) {
         entityLocProcessingQueue.add(new EntityLocationPair(entityUUID, location));
     }
@@ -37,8 +36,8 @@ public class BukkitESM implements EntitySnapshotManager {
 
     private void setOrUpdateEntityLocation(UUID entityUUID, Location location) {
         entityLocationMap.compute(entityUUID, (uuid, oldLoc) -> {
-            if (oldLoc == null) return LocatableAdapterUtils.toLocatable(location, ThreadSafeLocatable.class);
-            oldLoc.set(location.getX(), location.getY(), location.getZ(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
+            if (oldLoc == null) return new ThreadSafeLocatable(location.getWorld().getUID(), location.x(), location.y(), location.z());
+            oldLoc.set(location.x(), location.y(), location.z(), location.getWorld().getUID()); // Not atomic, but good enough hopefully.
             return oldLoc;
         });
     }

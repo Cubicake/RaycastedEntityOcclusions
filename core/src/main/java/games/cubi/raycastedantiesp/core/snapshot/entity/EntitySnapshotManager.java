@@ -10,7 +10,6 @@ public interface EntitySnapshotManager {
 
     SnapshotManager.EntitySnapshotManagerType getType();
 
-    void queueEntityLocationUpdate(UUID entityUUID, Locatable location);
     void removeEntityLocation(UUID entityUUID); //for use when entity is unloaded, fine not to queue as this will be rare
     void processEntityLocationQueue();
 }
