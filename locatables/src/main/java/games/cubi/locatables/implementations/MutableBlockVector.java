@@ -7,7 +7,7 @@ import games.cubi.locatables.BlockLocatable;
 import java.util.UUID;
 
 /**
- * A mutable locatable representing a floating-point vector in a given world, akin to a LocatableImpl. However, Object#equals and Object#hashCode are implemented as per AbstractBlockLocation, meaning that they are equal if their blockX, blockY, blockZ and world are equal.
+ * A mutable locatable representing a floating-point vector in a given world, akin to a MutableLocatableImpl. However, Object#equals and Object#hashCode are implemented as per BlockLocatable, meaning that they are equal if their blockX, blockY, blockZ and world are equal.
  * <p>
  *     This allows them to be used as keys in hashmaps where they will be considered equal to AbstractBlockLocations with the same block coordinates and world, but they can also be mutated and have vector-like operations performed on them.
  * <p>
