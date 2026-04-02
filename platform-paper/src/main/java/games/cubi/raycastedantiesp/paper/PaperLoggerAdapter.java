@@ -4,6 +4,7 @@ import games.cubi.logs.CheckPreviousLogForError;
 import games.cubi.logs.PlatformLogger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 public class PaperLoggerAdapter implements PlatformLogger {
@@ -35,13 +36,13 @@ public class PaperLoggerAdapter implements PlatformLogger {
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
     @Override
-    public void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
         warning(PlatformLogger.processThrowable(throwable), level, source);
         throw earlyReturn;
     }
 
     @Override
-    public void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
         error(PlatformLogger.processThrowable(throwable), level, source);
     }
 
@@ -51,31 +52,31 @@ public class PaperLoggerAdapter implements PlatformLogger {
     }
 
     @Override
-    public void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
         error(PlatformLogger.processThrowable(throwable), level, source);
     }
 
     @Override
-    public void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
         error(PlatformLogger.processThrowable(throwable, message), level, source);
     }
 
     @Override
-    public void info(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void info(String message, @Range(from = 1, to = 10) int level, @NotNull Class<?>... source) {
         forwardLog(message, Level.INFO, level, source);
     }
 
     @Override
-    public void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void warning(String message, @Range(from = 1, to = 10) int level, Class<?>... source) {
         forwardLog(message, Level.WARN, level, source);
     }
 
     @Override
-    public void error(String message, @Range(from = 1, to = 10) int level, Class<?> source) {
+    public void error(String message, @Range(from = 1, to = 10) int level, Class<?>... source) {
         forwardLog(message, Level.ERROR, level, source);
     }
 
-    private void forwardLog(String message, Level severity, int level, Class<?> source) {
+    private void forwardLog(String message, Level severity, int level, Class<?>... source) {
         ConfigManager configManager = RaycastedAntiESP.getConfigManager();
         if (configManager != null && configManager.getDebugConfig() != null) {
             DebugConfig debug = configManager.getDebugConfig();

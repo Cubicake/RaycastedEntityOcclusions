@@ -31,9 +31,9 @@ public interface PlatformLogger {
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the warning message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
+    void warningAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source);
 
-    void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
+    void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source);
 
     /**
      * This should be used for testing only, and should be stripped out of production code. Logs a message at debug level, which is always visible
@@ -42,23 +42,23 @@ public interface PlatformLogger {
      */
     void debug(String message);
 
-    void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
+    void error(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source);
 
-    void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source);
+    void error(String message, Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source);
 
     /**
      * Logs an error message including stack trace and serves as an early return. Nothing called after this method will be executed.
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the error message
      * @throws CheckPreviousLogForError Always throws this to allow for early return from functions after logging an error
      * **/
-    default void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?> source) {
+    default void errorAndReturn(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
         error(throwable, level, source);
         throw earlyReturn;
     }
 
-    void info(String message, @Range(from = 1, to = 10) int level, Class<?> source);
-    void warning(String message, @Range(from = 1, to = 10) int level, Class<?> source);
-    void error(String message, @Range(from = 1, to = 10) int level, Class<?> source);
+    void info(String message, @Range(from = 1, to = 10) int level, Class<?>... source);
+    void warning(String message, @Range(from = 1, to = 10) int level, Class<?>... source);
+    void error(String message, @Range(from = 1, to = 10) int level, Class<?>... source);
 
     /**
      * Logs an error message including stack trace and serves as an early return. Nothing called after this method will be executed.
@@ -85,7 +85,20 @@ public interface PlatformLogger {
         return message.toString();
     }
 
-    static String constructMessage(String message, Class<?> source) {
-        return "[" + source.getName() + "] " + message;
+    static String constructMessage(String message, Class<?>... source) {
+        if (source == null || source.length == 0) return message;
+        if (source.length == 1) return "[" + source[0].getSimpleName() + "] " + message;
+        if (source.length == 2) return "[" + source[0].getSimpleName() + "." + source[1].getSimpleName() + "] " + message;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for (int i = 0; i < source.length; i++) {
+            builder.append(source[i].getSimpleName());
+            if (i != source.length - 1) {
+                builder.append(".");
+            }
+        }
+        builder.append("] ").append(message);
+        return builder.toString();
     }
 }
