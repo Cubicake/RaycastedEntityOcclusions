@@ -48,7 +48,7 @@ public class PaperLoggerAdapter implements PlatformLogger {
 
     @Deprecated @Override
     public void debug(String message) {
-        forwardLog(message, Level.INFO, 1, null);
+        forwardLog(message, Level.INFO, 1);
     }
 
     @Override
