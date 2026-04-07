@@ -50,14 +50,14 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents != null) {
             //packetEventsPresent = true;
-            Logger.info("PacketEvents detected.", 4, RaycastedAntiESP.class);
+            Logger.info("PacketEvents detected.", 5);
             new Registrar(this);
 
             PacketEventsStatus.init(true);
             packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
         }
         else {
-            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4, RaycastedAntiESP.class);
+            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
             PacketEventsStatus.init(false);
         }
     }
