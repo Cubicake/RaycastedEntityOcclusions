@@ -3,7 +3,7 @@ package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.TileEntityVisibilityChanger;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
 import org.bukkit.Bukkit;

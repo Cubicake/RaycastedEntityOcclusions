@@ -1,9 +1,5 @@
 package games.cubi.raycastedantiesp.core.visibilitychangehandlers;
 
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.player.PlayerVisibilityChanger;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.tileentity.TileEntityVisibilityChanger;
-
 public final class VisibilityChangeHandlers {
     private static EntityVisibilityChanger entityVisibilityChanger;
     private static PlayerVisibilityChanger playerVisibilityChanger;

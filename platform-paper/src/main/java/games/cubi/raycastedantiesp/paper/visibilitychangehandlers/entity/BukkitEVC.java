@@ -3,7 +3,7 @@ package games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.entity.EntityVisibilityChanger;
+import games.cubi.raycastedantiesp.core.visibilitychangehandlers.EntityVisibilityChanger;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.BukkitAbstractVisibilityChanger;
 
 import java.util.UUID;
