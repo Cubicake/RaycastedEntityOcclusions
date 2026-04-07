@@ -85,6 +85,11 @@ public interface PlatformLogger {
         return message.toString();
     }
 
+    /**
+     * @param message
+     * @param source For nested classes, the outer class should be first, and the innermost class last. May be left empty for obvious sources (init messages).
+     * @return
+     */
     static String constructMessage(String message, Class<?>... source) {
         if (source == null || source.length == 0) return message;
         if (source.length == 1) return "[" + source[0].getSimpleName() + "] " + message;
