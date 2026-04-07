@@ -5,7 +5,7 @@ import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.paper.EventListener;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;

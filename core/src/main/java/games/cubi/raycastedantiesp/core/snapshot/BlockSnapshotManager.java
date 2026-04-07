@@ -1,10 +1,9 @@
-package games.cubi.raycastedantiesp.core.snapshot.block;
+package games.cubi.raycastedantiesp.core.snapshot;
 
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 
 import java.util.Set;
 import java.util.UUID;

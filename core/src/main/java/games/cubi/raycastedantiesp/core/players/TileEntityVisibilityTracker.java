@@ -3,7 +3,7 @@ package games.cubi.raycastedantiesp.core.players;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 
 import java.util.HashSet;
 import java.util.Set;

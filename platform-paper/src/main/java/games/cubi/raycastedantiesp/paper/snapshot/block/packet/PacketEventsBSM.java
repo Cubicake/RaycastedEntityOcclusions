@@ -6,7 +6,7 @@ import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 
 import java.util.Set;
 import java.util.UUID;

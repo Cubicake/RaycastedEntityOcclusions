@@ -2,7 +2,7 @@ package games.cubi.raycastedantiesp.paper.snapshot.entity;
 
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.entity.EntitySnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.EntitySnapshotManager;
 import games.cubi.raycastedantiesp.paper.utils.EntityLocationPair;
 import org.bukkit.Location;
 

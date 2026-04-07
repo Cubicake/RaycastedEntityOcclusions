@@ -1,8 +1,5 @@
 package games.cubi.raycastedantiesp.core.snapshot;
 
-import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.entity.EntitySnapshotManager;
-
 public final class SnapshotManager {
     private static BlockSnapshotManager blockSnapshotManager;
     private static EntitySnapshotManager entitySnapshotManager;

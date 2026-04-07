@@ -5,7 +5,7 @@ import games.cubi.locatables.MutableLocatable;
 import games.cubi.locatables.implementations.MutableBlockVector;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
-import games.cubi.raycastedantiesp.core.snapshot.block.BlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 
 public class RaycastUtil {
 

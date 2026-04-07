@@ -1,7 +1,6 @@
-package games.cubi.raycastedantiesp.core.snapshot.entity;
+package games.cubi.raycastedantiesp.core.snapshot;
 
 import games.cubi.locatables.Locatable;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 
 import java.util.UUID;
 
