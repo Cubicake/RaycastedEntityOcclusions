@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
 public class Logger {
-    private static PlatformLogger platformLogger;
+    private static PlatformLogger platformLogger = new FallbackLogger();
 
     private Logger() {}
 
