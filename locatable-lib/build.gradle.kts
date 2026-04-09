@@ -1,3 +1,5 @@
+import java.time.Instant
+
 plugins {
     id("java")
 }
@@ -13,9 +15,9 @@ val commitFull = providers.exec {
     commandLine("git", "rev-parse", "HEAD")
 }.standardOutput.asText.map { it.trim() }
 
-val buildTime = providers.exec {
-    commandLine("date", "-u", "+%Y-%m-%dT%H:%M:%SZ")
-}.standardOutput.asText.map { it.trim() }
+val buildTime = providers.provider {
+    Instant.now().toString()
+}
 
 tasks {
     processResources {

@@ -62,10 +62,10 @@ fun getVersionString(): String {
 }
 
 fun getBasicVersionString(): String {
-    if (isRelease) {
-        return platformPaperVersion.substringBefore("-") // Remove any suffixes like "-SNAPSHOT"
+    return if (isRelease) {
+        platformPaperVersion.substringBefore("-") // Remove any suffixes like "-SNAPSHOT"
     } else {
-        return platformPaperVersion
+        platformPaperVersion
     }
 }
 
