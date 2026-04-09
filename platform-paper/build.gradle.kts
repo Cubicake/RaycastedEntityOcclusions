@@ -45,7 +45,7 @@ val commitFull = providers.exec {
 }.standardOutput.asText.map { it.trim() }
 
 val buildTime = providers.provider {
-    Instant.now().toString()
+    Instant.now().toString().replace(":", "-") // Replace colons to avoid issues in file names on some platforms
 }
 
 val isRelease = gradle.startParameter.taskNames.any {
