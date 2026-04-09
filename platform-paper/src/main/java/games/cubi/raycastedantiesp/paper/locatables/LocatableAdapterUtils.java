@@ -11,15 +11,15 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+// If only this was kotlin and I could use extension functions
 public class LocatableAdapterUtils {
 
     public static Location toCentredLocation(BlockLocatable locatable) {
-        return new Location(Bukkit.getWorld(locatable.world()), locatable.blockX() + 0.5, locatable.blockY() + 0.5, locatable.blockZ() + 0.5);
+        return new Location(getWorld(locatable.world()), locatable.blockX() + 0.5, locatable.blockY() + 0.5, locatable.blockZ() + 0.5);
     }
 
     public static Location toBukkitLocation(Locatable locatable) {
-        return new Location(Bukkit.getWorld(locatable.world()), locatable.x(), locatable.y(), locatable.z());
+        return new Location(getWorld(locatable.world()), locatable.x(), locatable.y(), locatable.z());
     }
 
     public static Locatable toLocatable(Location location, Locatable.LocatableType type) {
