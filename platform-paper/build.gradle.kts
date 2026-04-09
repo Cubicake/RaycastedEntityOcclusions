@@ -1,3 +1,5 @@
+import java.time.Instant
+
 plugins {
     id("java-library")
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
@@ -42,9 +44,9 @@ val commitFull = providers.exec {
     commandLine("git", "rev-parse", "HEAD")
 }.standardOutput.asText.map { it.trim() }
 
-val buildTime = providers.exec {
-    commandLine("date", "-u", "+%Y-%m-%dT%H:%M:%SZ")
-}.standardOutput.asText.map { it.trim() }
+val buildTime = providers.provider {
+    Instant.now().toString()
+}
 
 val isRelease = gradle.startParameter.taskNames.any {
     it.contains("buildRelease")
