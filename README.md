@@ -23,5 +23,16 @@ The supported versions are 1.21.x PaperMC and Pufferfish. Other server versions 
 ## Known issues:
 - Due to the nature of the plugin, there will be a short delay once an entity should be visible before it appears, causing it to appear like it "popped" into view. This issue is partially resolved by turning engine-mode to 2, and is worse for players with higher ping.
 
-## Contributions
+## Versioning:
+Note that the following versioning information only applies to v2 and beyond.
+
+RaycastedAntiESP binaries are composed of four distinct modules: the core, Locatable-lib (used for platform-independent location objects), a very basic logging api, and a platform adapter.
+
+Each of these has its own versioning system. Locatable-lib and the logging api both declare public apis, and follow [Semantic Versioning](https://semver.org/#semantic-versioning-specification-semver). The platform adapter and core do not declare public apis, and thus [cannot follow semantic versioning](https://semver.org/#spec-item-1). They still follow a major.minor.patch versioning system, but which version number increments is less deterministic. Generally, major version bumps will be for when significant refactoring or rewriting has occurred, or a very significant distinct feature has been added or removed. Minor version bumps will be for the addition/removal of smaller distinct features, while patch version bumps are for bug fixes and tweaks or minor addition/removals which are related to the features added/removed in the minor version bumps.
+
+In addition to the versions for each module, there is also an overall version for each platform binary, which is the version that is advertised in the description and file name, and is used for update checks. This version is a combination of the core and platform adapter versions, in the format `{core version}-PlatformName-{platform adapter version}`. This allows all platforms to share the same first three version numbers, while still allowing for differences in the platform adapter versions.
+
+Note that the version number will be completely different between platforms, core version should be compared for determining the equivalence of versions between platforms, and the platform version should be compared for determining the recency of versions within the same platform.
+
+## Contributions:
 Contributions via pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.

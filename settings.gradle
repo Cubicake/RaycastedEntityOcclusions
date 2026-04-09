@@ -1,1 +1,5 @@
 rootProject.name = 'RaycastedAntiESP'
+include 'locatable-lib'
+include 'logging'
+include 'core'
+include 'platform-paper'

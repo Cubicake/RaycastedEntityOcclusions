@@ -1,0 +1,135 @@
+package games.cubi.raycastedantiesp.paper;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import games.cubi.logs.Logger;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.paper.data.DataHolder;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
+import games.cubi.raycastedantiesp.core.players.TileEntityVisibilityTracker;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
+import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
+import io.papermc.paper.math.BlockPosition;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.command.CommandSender;
+
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import org.bukkit.entity.Player;
+
+import java.util.UUID;
+
+@SuppressWarnings("UnstableApiUsage")
+public class CommandsManager {
+
+    private CommandsManager() {}
+
+    public static LiteralCommandNode<CommandSourceStack> registerCommand(RaycastedAntiESP plugin, ConfigManager config) {
+        //run help command if no context provided
+        return Commands.literal("raycastedantiesp")
+            .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
+            .executes(context -> {
+                helpCommand(context, plugin);
+                return Command.SINGLE_SUCCESS;
+            })
+            .then(Commands.literal("help")
+                .executes(context -> helpCommand(context, plugin)))
+            .then(Commands.literal("reload")
+                .executes(context -> {
+                    config.load();
+                    context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
+                    return Command.SINGLE_SUCCESS;
+                }))
+            .then(Commands.literal("config-values")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    //dynamic config values
+                    sender.sendMessage("[RaycastedAntiESP] Config values: ");
+
+                    for (var entry : config.getConfigValues().entrySet()) {
+                        String path = entry.getKey();
+                        Object val = entry.getValue();
+                        sender.sendMessage(MiniMessage.miniMessage().deserialize("<green>" + path + "<gray> = <white>" + val));
+                    }
+                    return Command.SINGLE_SUCCESS;
+                }))
+
+            .then(Commands.literal("set")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    sender.sendRichMessage("<red>Usage: /raycastedantiesp set <key> <value>");;
+                    return 0;
+                })
+                .then(Commands.argument("key", StringArgumentType.string())
+                    .then(Commands.argument("value", StringArgumentType.string())
+                        .executes(context -> {
+                            CommandSender sender = context.getSource().getSender();
+                            String key = StringArgumentType.getString(context, "key");
+                            String value = StringArgumentType.getString(context, "value");
+
+                            int result = config.setConfigValue(key, value);
+                            if (result == -1) {
+                                sender.sendRichMessage("<red>Invalid inputs");
+                            } else if (result == 0) {
+                                //Integer value out of bounds 0 - 256
+                                sender.sendRichMessage("<red>Invalid value for <white>" + key + "<red>, must be between 0 and 256");
+                            }
+                            else {
+                                sender.sendRichMessage("<white>Set <green>" + key + "<white> to <green>" + value);
+                            }
+                            return 0;
+                        })
+                    )
+                )
+            )
+            .then(Commands.literal("test")
+                    .executes(context -> {
+                        testCommand(context);
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .then(Commands.literal("check-for-updates")
+                    .executes(context -> {
+                        CommandSender sender = context.getSource().getSender();
+                        UpdateChecker.checkForUpdates(plugin, sender);
+                        return Command.SINGLE_SUCCESS;
+                    })
+            )
+            .then(Commands.argument("arg", ArgumentTypes.blockPosition())
+                    .executes(ctx -> {
+                        final BlockPositionResolver blockPositionResolver = ctx.getArgument("arg", BlockPositionResolver.class);
+                        final BlockPosition blockPosition = blockPositionResolver.resolve(ctx.getSource());
+
+                        ImmutableBlockLocatable location = new ImmutableBlockLocatable(ctx.getSource().getLocation().getWorld().getUID(), blockPosition.x(), blockPosition.y(), blockPosition.z());
+
+                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1, CommandsManager.class);
+                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1, CommandsManager.class));
+                        Player player = (Player) ctx.getSource().getSender();
+                        TileEntityVisibilityTracker tileEntityVisibilityTracker = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId()).tileVisibility();
+                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1, CommandsManager.class);
+                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1, CommandsManager.class);
+
+                        return Command.SINGLE_SUCCESS;
+                        }))
+            .build();
+    }
+
+    public static int helpCommand(CommandContext<CommandSourceStack> context, RaycastedAntiESP plugin) {
+        CommandSender sender = context.getSource().getSender();
+        sender.sendRichMessage("<white>RaycastedAntiESP <yellow>v" + plugin.getDescription().getVersion());
+        sender.sendRichMessage("<white>Commands:");
+        sender.sendRichMessage("<green>/raycastedantiesp reload <gray>- Reloads the config");
+        sender.sendRichMessage("<green>/raycastedantiesp config-values <gray>- Shows all config values");
+        sender.sendRichMessage("<green>/raycastedantiesp set <key> <value> <gray>- Sets a config value");
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static void testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    }
+}

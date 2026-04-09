@@ -1,0 +1,4 @@
+short-git: ${short_git}
+long-git: ${long_git}
+build-time: ${build_time}
+version: ${version}
