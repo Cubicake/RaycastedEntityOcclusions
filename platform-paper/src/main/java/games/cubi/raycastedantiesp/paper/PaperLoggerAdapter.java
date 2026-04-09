@@ -43,7 +43,7 @@ public class PaperLoggerAdapter implements PlatformLogger {
 
     @Override
     public void warning(Throwable throwable, @Range(from = 1, to = 10) int level, Class<?>... source) {
-        error(PlatformLogger.processThrowable(throwable), level, source);
+        warning(PlatformLogger.processThrowable(throwable), level, source);
     }
 
     @Deprecated @Override
