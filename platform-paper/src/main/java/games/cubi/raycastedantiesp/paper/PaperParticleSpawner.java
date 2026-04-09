@@ -10,7 +10,7 @@ import java.util.Objects;
 
 public class PaperParticleSpawner implements ParticleSpawner {
     public void spawnParticleAt(Locatable locatable, Colour colour) {
-        Objects.requireNonNull(Bukkit.getWorld(locatable.world())).spawnParticle(Particle.DUST, locatable.x(), locatable.y(), locatable.z(), 0);
+        Objects.requireNonNull(Bukkit.getWorld(locatable.world())).spawnParticle(Particle.DUST, locatable.x(), locatable.y(), locatable.z(), 0, toBukkitDust(colour));
     }
 
     private static final Particle.DustOptions RED_DUST = new Particle.DustOptions(Color.RED, 1);
