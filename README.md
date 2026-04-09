@@ -32,7 +32,5 @@ Each of these has its own versioning system. Locatable-lib and the logging api b
 
 In addition to the versions for each module, there is also an overall version for each platform binary, which is the version that is advertised in the description and file name, and is used for update checks. This version is a combination of the core and platform adapter versions, in the format `{core version}-PlatformName-{platform adapter version}`. This allows all platforms to share the same first three version numbers, while still allowing for differences in the platform adapter versions.
 
-Note that the version number will be completely different between platforms, core version should be compared for determining the equivalence of versions between platforms, and the platform version should be compared for determining the recency of versions within the same platform.
-
 ## Contributions:
 Contributions via pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
