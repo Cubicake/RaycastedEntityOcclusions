@@ -57,7 +57,7 @@ fun getVersionString(): String {
         val paperVersion = platformPaperVersion.substringBefore("-") // Remove any suffixes like "-SNAPSHOT"
         return "${coreVersion}-Paper-${paperVersion}-RELEASE"
     } else {
-        return "${coreVersion}-Paper-${platformPaperVersion}+git-${commitShort.get()}+build-${buildTime.get()}"
+        return "${coreVersion}-Paper-${platformPaperVersion}+build-${buildTime.get()}+git-${commitShort.get()}"
     }
 }
 
