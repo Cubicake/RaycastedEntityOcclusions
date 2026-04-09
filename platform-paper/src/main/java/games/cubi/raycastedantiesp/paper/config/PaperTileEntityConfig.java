@@ -59,7 +59,7 @@ public class PaperTileEntityConfig extends PlatformTileEntityConfig<Material> {
                 if (m != null) {
                     materials.add(m);
                 } else {
-                    Logger.error("Invalid material in config 'whitelisted-materials': " + name, 1, Factory.class);
+                    Logger.error("Invalid material in config 'exempted-blocks': " + name, 1, Factory.class);
                 }
             }
             return List.copyOf(materials);
@@ -67,29 +67,13 @@ public class PaperTileEntityConfig extends PlatformTileEntityConfig<Material> {
 
         @Override
         public @NotNull PaperTileEntityConfig getFromConfig(ConfigurationNode config) {
-            return new PaperTileEntityConfig(super.getFromConfig(config, getDefaults()), getMaterialList(config));
+            return new PaperTileEntityConfig(super.getFromConfig(config, getDefaults()), getExemptedBlockList(config));
         }
 
         protected List<String> getBlockNameList() {
             return DEFAULT.getExemptedBlocks().stream().map(Material::name).toList();
         }
 
-        private List<Material> getMaterialList(ConfigurationNode config) {
-            List<String> materialNames = ConfigNodeUtil.getStringList(config, EXEMPTED_BLOCKS_PATH);
-
-            ArrayList<Material> materials = new ArrayList<>();
-
-            for (String name : materialNames) {
-                if (name == null) continue;
-                Material m = Material.matchMaterial(name);
-                if (m != null) {
-                    materials.add(m);
-                } else {
-                    Logger.error("Invalid material in config 'whitelisted-materials': " + name, 1, Factory.class);
-                }
-            }
-            return List.copyOf(materials);
-        }
         public static class FactoryProvider implements PlatformTileEntityConfig.Factory.FactoryProvider<Factory> {
             @Override
             public @NotNull Factory getFactory() {
