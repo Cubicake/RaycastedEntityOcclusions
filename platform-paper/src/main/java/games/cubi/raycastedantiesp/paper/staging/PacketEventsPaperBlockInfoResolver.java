@@ -60,10 +60,10 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         for (int i = 0; i < occlusion.size() - 95 /*Ignore the trailing airs*/; i++) {
             occlusionArray[i] = occlusion.get(i);
             tileEntityArray[i] = tileEntity.get(i);
-            Logger.debug("BlockState ID " + i + ": occluding=" + occlusionArray[i] + ", tileEntity=" + tileEntityArray[i]);
+            //Logger.debug("BlockState ID " + i + ": occluding=" + occlusionArray[i] + ", tileEntity=" + tileEntityArray[i]);
         }
         for (int j = 0; j < occlusionArray.length; j++) {
-            Logger.debug("ID " + j + ": occludingArray=" + occlusionArray[j] + ", occludingMap=" + occlusion.get(j));
+            //Logger.debug("ID " + j + ": occludingArray=" + occlusionArray[j] + ", occludingMap=" + occlusion.get(j));
             if (occlusionArray[j] != occlusion.get(j)) {
                 Logger.warning("Mismatch at ID " + j + ": occlusionArray=" + occlusionArray[j] + ", occlusionMap=" + occlusion.get(j), 3);
             }
