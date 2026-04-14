@@ -2,16 +2,15 @@ package games.cubi.raycastedantiesp.paper.snapshot.block;
 
 import games.cubi.logs.Frequency;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.paper.EventListener;
+import games.cubi.locatables.ChunkLocatable;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
-import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-
 import games.cubi.raycastedantiesp.paper.locatables.LocatableAdapterUtils;
-import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
+import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.Bukkit;
@@ -20,6 +19,14 @@ import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.TileState;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Set;
@@ -27,9 +34,10 @@ import java.util.Map;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BukkitBSM implements BlockSnapshotManager {
+public class BukkitBSM implements PlayerBlockSnapshotManager, PlayerBlockSnapshotManager.Factory, Listener {
     private static class ChunkData {
         public final ChunkSnapshot snapshot;
         public final ConcurrentHashMap<ImmutableBlockLocatable, Material> delta = new ConcurrentHashMap<>();
@@ -47,8 +55,12 @@ public class BukkitBSM implements BlockSnapshotManager {
     private static final ConcurrentHashMap<String, ChunkData> dataMap = new ConcurrentHashMap<>();
     private final ConfigManager cfg;
     private final RaycastedAntiESP plugin;
+    private final ConcurrentLinkedQueue<BlockLocatable> resnapshotQueue = new ConcurrentLinkedQueue<>();
 
     public BukkitBSM(RaycastedAntiESP plugin, ConfigManager config) {
+
+        Bukkit.getPluginManager().registerEvents(this, plugin);
+
         cfg = config;
         this.plugin = plugin;
         //get loaded chunks and add them to dataMap
@@ -85,12 +97,42 @@ public class BukkitBSM implements BlockSnapshotManager {
         }.runTaskTimerAsynchronously(plugin, refreshInterval, refreshInterval /* This runs 10 times per getRefreshRateSeconds, spreading out the refreshes */);
     }
 
-    public void onChunkLoad(Chunk c) {
+    private void handleChunkLoad(Chunk c) {
         snapshotChunk(c);
     }
 
-    public void onChunkUnload(Chunk c) {
+    private void handleChunkUnload(Chunk c) {
         removeChunkSnapshot(c);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onChunkLoad(ChunkLoadEvent event) {
+        handleChunkLoad(event.getChunk());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        handleChunkUnload(event.getChunk());
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlace(BlockPlaceEvent event) {
+        onBlockChange(event.getBlock().getLocation(), event.getBlock().getType(), 2);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBreak(BlockBreakEvent event) {
+        onBlockChange(event.getBlock().getLocation(), Material.AIR, 1);
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBurn(BlockBurnEvent event) {
+        onBlockChange(event.getBlock().getLocation(), Material.AIR, 1);
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onServerTickStart(ServerTickStartEvent event) {
+        syncResnapshotRequests();
     }
 
     public void snapshotChunk(Chunk c) {
@@ -120,10 +162,10 @@ public class BukkitBSM implements BlockSnapshotManager {
             BlockState data = loc.getBlock().getState();
             if (data instanceof TileState) {
                 Logger.info("BukkitBSM: Tile entity at " + loc, 8, BukkitBSM.class);
-                if (change == EventListener.PLACE) {
+                if (change == 2) {
                     d.tileEntities.add(blockLoc);
                 }
-                if (change == EventListener.BREAK) {
+                if (change == 1) {
                     d.tileEntities.remove(blockLoc);
                 }
             }
@@ -195,7 +237,7 @@ public class BukkitBSM implements BlockSnapshotManager {
             if (stupidErrorCounter.addAndGet(1) % 500 == 0) {
                 Logger.error("BukkitBSM: No snapshot for " + loc + " If this error persists, please report this on our discord (discord.cubi.games)", 5, BukkitBSM.class);
             }
-            RaycastedAntiESP.getEngine().recheckQueue.add(loc);
+            requestResnapshot(loc);
             return null;
         }
         double yLevel = loc.y();
@@ -215,7 +257,7 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public boolean isBlockOccluding(BlockLocatable locatable, PlayerData player) {
+    public boolean isBlockOccluding(BlockLocatable locatable) {
         Material m = getMaterialAt(locatable);
         if (m == null) {
             return false;
@@ -224,8 +266,13 @@ public class BukkitBSM implements BlockSnapshotManager {
         return m.isOccluding();
     }
 
-    public SnapshotManager.BlockSnapshotManagerType getType() {
-        return SnapshotManager.BlockSnapshotManagerType.BUKKIT;
+    public SnapshotManager.SnapshotManagerType getType() {
+        return SnapshotManager.SnapshotManagerType.BUKKIT;
+    }
+
+    @Override
+    public PlayerBlockSnapshotManager createPlayerBlockSnapshotManager() {
+        return this;
     }
 
     //get TileEntity Locations in chunk
@@ -254,7 +301,27 @@ public class BukkitBSM implements BlockSnapshotManager {
     }
 
     @Override
-    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int x, int z, PlayerData player) {
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(ChunkLocatable chunkLocatable) {
+        return getTileEntitiesInChunk(Bukkit.getWorld(chunkLocatable.world()), chunkLocatable.chunkX(), chunkLocatable.chunkZ());
+    }
+
+    public void requestResnapshot(BlockLocatable location) {
+        resnapshotQueue.add(location);
+    }
+
+    public void syncResnapshotRequests() {
+        while (!resnapshotQueue.isEmpty()) {
+            BlockLocatable location = resnapshotQueue.poll();
+            if (location == null) continue;
+
+            World world = Bukkit.getWorld(location.world());
+            if (world == null) continue;
+
+            snapshotChunk(world.getChunkAt(location.blockX() >> 4, location.blockZ() >> 4));
+        }
+    }
+
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int x, int z) {
         return getTileEntitiesInChunk(Bukkit.getWorld(world), x, z);
     }
 }

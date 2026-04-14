@@ -3,7 +3,6 @@ package games.cubi.raycastedantiesp.core.players;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,12 +29,12 @@ public class TileEntityVisibilityTracker extends VisibilityTracker<BlockLocatabl
         return null;
     }
 
-    public Set<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius, BlockSnapshotManager blockSnapshotManager) {
+    public Set<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTime, UUID world, int chunkX, int chunkZ, int chunkRadius) {
         HashSet<BlockLocatable> recheckList = new HashSet<>();
 
         for (int x = chunkX-chunkRadius; x <= chunkRadius+chunkX; x++) {
             for (int z = chunkZ-chunkRadius; z <= chunkRadius+chunkZ; z++) {
-                recheckList.addAll(blockSnapshotManager.getTileEntitiesInChunk(world, x, z, player));
+                recheckList.addAll(player.blockSnapshotManager().getTileEntitiesInChunk(world, x, z));
             }
         }
 

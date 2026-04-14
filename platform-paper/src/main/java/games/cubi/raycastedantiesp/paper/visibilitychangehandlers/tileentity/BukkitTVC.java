@@ -29,9 +29,6 @@ public class BukkitTVC extends TileEntityCache implements TileEntityVisibilityCh
 
     final BlockData STONE_DATA = Material.STONE.createBlockData();
     final BlockData DEEPSLATE_DATA = Material.DEEPSLATE.createBlockData();
-    static final AtomicBoolean firstCastOccurred = new AtomicBoolean(false);
-    public static final AtomicBoolean firstCastOccurredA = new AtomicBoolean(false);
-
 
     @Override
     public void hideTileEntityFromPlayer(UUID player, BlockLocatable tileEntity, int currentTick) {

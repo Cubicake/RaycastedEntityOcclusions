@@ -5,7 +5,7 @@ import games.cubi.logs.Logger;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
+@Deprecated(forRemoval = true)
 public class TileEntityStateStore<T> {
     private final ConcurrentHashMap<Chunk, Set<PacketTileEntity<T>>> tileEntities = new ConcurrentHashMap<>();
     private final OcclusionStateStore occlusionStateStore;

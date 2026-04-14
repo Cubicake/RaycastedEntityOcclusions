@@ -1,16 +1,24 @@
 package games.cubi.raycastedantiesp.paper.visibilitychangehandlers;
 
+import games.cubi.raycastedantiesp.core.players.VisibilityTracker;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public abstract class BukkitAbstractVisibilityChanger extends AbstractEntityCache { //abstracted because entity and player logic is identical
+public abstract class BukkitAbstractVisibilityChanger extends AbstractEntityCache implements Listener { //abstracted because entity and player logic is identical
+
+    public BukkitAbstractVisibilityChanger() {
+        super();
+        Bukkit.getPluginManager().registerEvents(this, RaycastedAntiESP.get());
+    }
+
+    protected abstract VisibilityTracker<UUID> getCorrectVisibilityTracker(UUID playerUUID);
 
     /**
      * @param playerUUID
@@ -18,13 +26,13 @@ public abstract class BukkitAbstractVisibilityChanger extends AbstractEntityCach
      */
     //TODO: Find out if performance is actually a concern here, if not we can do instanceof checks to prevent misuse
     public void showAbstractEntityToPlayer(UUID playerUUID, UUID entityUUID, int currentTick) {
-        if (DataHolder.players().getPlayerData(playerUUID).entityVisibility().compareAndSetVisibility(entityUUID, true, currentTick)) {
+        if (getCorrectVisibilityTracker(playerUUID).compareAndSetVisibility(entityUUID, true, currentTick)) {
             addEntityToShowCache(playerUUID, entityUUID); // Only process entity visibility changes if there was an actual change
         }
     }
 
     public void hideAbstractEntityFromPlayer(UUID playerUUID, UUID entityUUID, int currentTick) {
-        if (DataHolder.players().getPlayerData(playerUUID).entityVisibility().compareAndSetVisibility(entityUUID, false, currentTick)) {
+        if (getCorrectVisibilityTracker(playerUUID).compareAndSetVisibility(entityUUID, false, currentTick)) {
             addEntityToHideCache(playerUUID, entityUUID);
         }
     }

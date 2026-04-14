@@ -1,50 +1,58 @@
 package games.cubi.raycastedantiesp.paper.snapshot.block.packet;
 
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
+import games.cubi.locatables.ChunkLocatable;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.BlockSnapshotManager;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+@Deprecated(forRemoval = true)
+public class PacketEventsBSM implements PlayerBlockSnapshotManager, PlayerBlockSnapshotManager.Factory {
 
-public class PacketEventsBSM implements BlockSnapshotManager {
-
-    record PlayerSnapshot(OcclusionStateStore occlusionStateStore, TileEntityStateStore<NBTCompound> tileEntityStateStore) {}
-
-    private final ConcurrentHashMap<UUID, PlayerSnapshot> playerSnapshots = new ConcurrentHashMap<>();
+    private final OcclusionStateStore occlusionStateStore;
+    private final TileEntityStateStore<NBTCompound> tileEntityStateStore;
 
     public PacketEventsBSM() {
+        this(new OcclusionStateStore(), null);
+    }
 
+    private PacketEventsBSM(OcclusionStateStore occlusionStateStore, TileEntityStateStore<NBTCompound> tileEntityStateStore) {
+        this.occlusionStateStore = occlusionStateStore;
+        this.tileEntityStateStore = tileEntityStateStore;
     }
 
     @Override
-    public boolean isBlockOccluding(BlockLocatable location, PlayerData player) {
-        PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
-        if (snapshot == null) {
-            Logger.warning("No snapshot for player " + player, 5, PacketEventsBSM.class);
-            return false;
+    public boolean isBlockOccluding(BlockLocatable location) {
+        return occlusionStateStore.isOccluding(location);
+    }
+
+    @Override
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(ChunkLocatable chunkLocatable) {
+        if (tileEntityStateStore == null) {
+            Logger.warning("No tile entity snapshot store is available for this PacketEventsBSM instance", 5, PacketEventsBSM.class);
+            return Set.of();
         }
-        return snapshot.occlusionStateStore().isOccluding(location);
+        Set<PacketTileEntity<NBTCompound>> tileEntities = tileEntityStateStore.getTileEntitiesInChunk(chunkLocatable.world(), chunkLocatable.chunkX(), chunkLocatable.chunkZ());
+        return tileEntities.stream().map(PacketTileEntity::location).collect(Collectors.toSet());
     }
 
     @Override
-    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ, PlayerData player) {
-        PlayerSnapshot snapshot = playerSnapshots.get(player.getPlayerUUID());
-        if (snapshot == null) {
-            Logger.warning("No snapshot for player " + player, 5, PacketEventsBSM.class);
-            return null;
-        }
-        Set<PacketTileEntity<NBTCompound>> tileEntities = snapshot.tileEntityStateStore.getTileEntitiesInChunk(world, chunkX, chunkZ);
-        return tileEntities.stream().map(PacketTileEntity::location).collect(java.util.stream.Collectors.toSet());
+    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ) {
+        return getTileEntitiesInChunk(new ChunkLocatable.ImmutableChunkLocatable(world, chunkX, chunkZ));
     }
 
     @Override
-    public SnapshotManager.BlockSnapshotManagerType getType() {
-        return SnapshotManager.BlockSnapshotManagerType.PACKETEVENTS;
+    public SnapshotManager.SnapshotManagerType getType() {
+        return SnapshotManager.SnapshotManagerType.PACKETEVENTS;
+    }
+
+    @Override
+    public PlayerBlockSnapshotManager createPlayerBlockSnapshotManager() {
+        return new PacketEventsBSM();
     }
 }

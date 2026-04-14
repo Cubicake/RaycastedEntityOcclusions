@@ -2,12 +2,11 @@ package games.cubi.raycastedantiesp.paper;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-
 import games.cubi.raycastedantiesp.core.Core;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
-import games.cubi.raycastedantiesp.paper.engine.SimpleEngine;
+import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
 import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
 import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.packets.Registrar;
@@ -15,6 +14,7 @@ import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
 import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
+import games.cubi.raycastedantiesp.paper.staging.PaperPESnapshotFactory;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.BukkitEVC;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.BukkitPVC;
 import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.BukkitTVC;
@@ -35,7 +35,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static MovementTracker tracker;
     //private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
     private static PacketProcessor packetProcessor = null;
-    private static SimpleEngine engine;
+    private static PaperSimpleEngine engine;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
     //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
@@ -64,15 +64,19 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onEnable() {
+        /*
+        //BukkitBSM blockSnapshotManager = new BukkitBSM(this, config);
+        //BukkitESM entitySnapshotManager = new BukkitESM();*/
+        PaperPESnapshotFactory snapshotFactory = new PaperPESnapshotFactory();
+        SnapshotManager.initialise(snapshotFactory, snapshotFactory);
+        VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
+
         tracker = new MovementTracker(this, config);
-        engine = new SimpleEngine(this, config);
+        engine = new PaperSimpleEngine(this, config);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
-        getServer().getPluginManager().registerEvents(EventListener.getInstance(this, config, packetProcessor), this);
+        EventListener.initialise(this, packetProcessor, engine);
 
         initialiseCommands();
-
-        SnapshotManager.initialise(new BukkitBSM(this, config), new BukkitESM());
-        VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
 
         //bStats
         metricsCollector =  new MetricsCollector(this, config);
@@ -109,7 +113,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public static PacketProcessor getPacketProcessor() {
         return packetProcessor;
     }
-    public static SimpleEngine getEngine() {
+    public static PaperSimpleEngine getEngine() {
         return engine;
     }
     public static RaycastedAntiESP get() {

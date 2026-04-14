@@ -1,29 +1,29 @@
 package games.cubi.raycastedantiesp.paper;
 
+import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
-import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
+import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
-import games.cubi.raycastedantiesp.core.players.TileEntityVisibilityTracker;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Location;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import org.bukkit.entity.Player;
-
-import java.util.UUID;
 
 @SuppressWarnings("UnstableApiUsage")
 public class CommandsManager {
@@ -101,22 +101,43 @@ public class CommandsManager {
                         return Command.SINGLE_SUCCESS;
                     })
             )
-            .then(Commands.argument("arg", ArgumentTypes.blockPosition())
-                    .executes(ctx -> {
-                        final BlockPositionResolver blockPositionResolver = ctx.getArgument("arg", BlockPositionResolver.class);
-                        final BlockPosition blockPosition = blockPositionResolver.resolve(ctx.getSource());
-
-                        ImmutableBlockLocatable location = new ImmutableBlockLocatable(ctx.getSource().getLocation().getWorld().getUID(), blockPosition.x(), blockPosition.y(), blockPosition.z());
-
-                        Logger.info("Material at there is: " + ((BukkitBSM) SnapshotManager.getBlockSnapshotManager()).getMaterialAt(location), 1, CommandsManager.class);
-                        SnapshotManager.getBlockSnapshotManager().getTileEntitiesInChunk(location.world(), location.chunkX(), location.chunkZ(), (UUID) null).forEach(tileEntity -> Logger.info("Tile entity in chunk: " + tileEntity, 1, CommandsManager.class));
-                        Player player = (Player) ctx.getSource().getSender();
-                        TileEntityVisibilityTracker tileEntityVisibilityTracker = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId()).tileVisibility();
-                        Logger.info("Chunk loaded status is: " + tileEntityVisibilityTracker.containsChunk(location), 1, CommandsManager.class);
-                        Logger.info("Tile entity visibility is: "+tileEntityVisibilityTracker.isVisible(location, DataHolder.getTick()), 1, CommandsManager.class);
-
+            .then(Commands.argument("loc", ArgumentTypes.blockPosition())
+                    .executes(commandContext -> {
+                        CommandSender sender = commandContext.getSource().getSender();
+                        Player player = (Player) sender;
+                        final BlockPosition blockPosition = commandContext.getArgument("loc", BlockPositionResolver.class).resolve(commandContext.getSource());
+                        BlockLocatable location = new ImmutableBlockLocatable(player.getWorld().getUID(), blockPosition.x(), blockPosition.y(), blockPosition.z());
+                        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+                        sender.sendRichMessage("That block is "+playerData.blockSnapshotManager().isBlockOccluding(location));
+                        BlockData data = player.getWorld().getBlockData(new Location(player.getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z()));
+                        WrappedBlockState wrappedData = SpigotConversionUtil.fromBukkitBlockData(data);
+                        sender.sendRichMessage("Global ID of that block is "+wrappedData.getGlobalId()+". In Paper terms, that is "+data.getAsString());
+                        sender.sendRichMessage("According to PacketEventsPaperBlockInfoResolver, that block is "+ PacketEventsPaperBlockInfoResolver.get.isOccluding(wrappedData.getGlobalId()));
                         return Command.SINGLE_SUCCESS;
-                        }))
+                    }))
+                .then(Commands.literal("dump").executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    boolean[] occlusionArray = PacketEventsPaperBlockInfoResolver.get.dumpOcclusionArray();
+                    // print array in a readable format
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Occlusion array: ");
+                    for (int y = 0; y < occlusionArray.length; y++) {
+                        sb.append("id=").append(y).append(": ").append(occlusionArray[y]).append(",");
+                    }
+                    sender.sendMessage(sb.toString());
+
+                    boolean[] tileArray = PacketEventsPaperBlockInfoResolver.get.dumpOcclusionArray();
+                    // print array in a readable format
+                    StringBuilder string2 = new StringBuilder();
+                    string2.append("Tile array: ");
+                    for (int y = 0; y < occlusionArray.length; y++) {
+                        string2.append("id=").append(y).append(": ").append(occlusionArray[y]).append(",");
+                    }
+                    sender.sendMessage(string2.toString());
+
+                    return Command.SINGLE_SUCCESS;
+                }
+                ))
             .build();
     }
 

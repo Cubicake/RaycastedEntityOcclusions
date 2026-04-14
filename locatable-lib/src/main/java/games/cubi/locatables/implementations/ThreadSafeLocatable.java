@@ -94,6 +94,12 @@ public class ThreadSafeLocatable implements MutableLocatable {
     }
 
     @Override
+    public MutableLocatable add(double x, double y, double z) {
+        withWriteLock(() -> { this.x += x; this.y += y; this.z += z; });
+        return this;
+    }
+
+    @Override
     public MutableLocatable subtract(Locatable locatable) {
         double[] otherPosition = locatable.getAtomicPositionArray();
         withWriteLock(() -> {

@@ -1,48 +1,52 @@
 package games.cubi.raycastedantiesp.core.snapshot;
 
+import games.cubi.logs.Logger;
+
 public final class SnapshotManager {
-    private static BlockSnapshotManager blockSnapshotManager;
-    private static EntitySnapshotManager entitySnapshotManager;
+    private static PlayerEntitySnapshotManager.Factory entitySnapshotManagerFactory;
+    private static PlayerBlockSnapshotManager.Factory blockSnapshotManagerFactory;
 
     private SnapshotManager() {}
 
-    public enum EntitySnapshotManagerType {
-        BUKKIT,
-    }
-
-    public enum BlockSnapshotManagerType {
+    public enum SnapshotManagerType {
         BUKKIT,
         PACKETEVENTS,
     }
 
-    private static EntitySnapshotManagerType entitySnapshotManagerType;
-    private static BlockSnapshotManagerType blockSnapshotManagerType;
+    private static SnapshotManagerType entitySnapshotManagerType;
+    private static SnapshotManagerType blockSnapshotManagerType;
 
-    public static void initialise(BlockSnapshotManager blockSnapshotManager1, EntitySnapshotManager entitySnapshotManager1) {
-        changeManagers(blockSnapshotManager1, entitySnapshotManager1);
+    public static void initialise(PlayerBlockSnapshotManager.Factory blockSnapshotManager, PlayerEntitySnapshotManager.Factory entitySnapshotManager) {
+        changeManagers(blockSnapshotManager, entitySnapshotManager);
     }
 
-    public static BlockSnapshotManager getBlockSnapshotManager() {
-        return blockSnapshotManager;
+    public static PlayerEntitySnapshotManager createEntitySnapshotManager() {
+        if (entitySnapshotManagerFactory == null) {
+            Logger.error(new IllegalStateException("EntitySnapshotManagerFactory is null! Did you forget to call SnapshotManager#initialise?"), 1, SnapshotManager.class);
+        }
+        return entitySnapshotManagerFactory.createPlayerEntitySnapshotManager();
     }
 
-    public static EntitySnapshotManager getEntitySnapshotManager() {
-        return entitySnapshotManager;
+    public static PlayerBlockSnapshotManager createBlockSnapshotManager() {
+        if (blockSnapshotManagerFactory == null) {
+            Logger.error(new IllegalStateException("BlockSnapshotManagerFactory is null! Did you forget to call SnapshotManager#initialise?"), 1, SnapshotManager.class);
+        }
+        return blockSnapshotManagerFactory.createPlayerBlockSnapshotManager();
     }
 
-    public static EntitySnapshotManagerType entitySnapshotManagerType() {
+    public static SnapshotManagerType entitySnapshotManagerType() {
         return entitySnapshotManagerType;
     }
 
-    public static BlockSnapshotManagerType blockSnapshotManagerType() {
+    public static SnapshotManagerType blockSnapshotManagerType() {
         return blockSnapshotManagerType;
     }
 
-    public static void changeManagers(BlockSnapshotManager blockSnapshotManager1, EntitySnapshotManager entitySnapshotManager1) {
-        blockSnapshotManager = blockSnapshotManager1;
-        entitySnapshotManager = entitySnapshotManager1;
+    public static void changeManagers(PlayerBlockSnapshotManager.Factory blockSnapshotManager, PlayerEntitySnapshotManager.Factory entitySnapshotManager) {
+        blockSnapshotManagerFactory = blockSnapshotManager;
+        entitySnapshotManagerFactory = entitySnapshotManager;
 
-        entitySnapshotManagerType = entitySnapshotManager1.getType();
-        blockSnapshotManagerType = blockSnapshotManager1.getType();
+        entitySnapshotManagerType = entitySnapshotManager.getType();
+        blockSnapshotManagerType = blockSnapshotManager.getType();
     }
 }

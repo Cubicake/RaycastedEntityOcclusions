@@ -1,5 +1,9 @@
 package games.cubi.raycastedantiesp.core.players;
 
+import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.PlayerEntitySnapshotManager;
+import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,10 +36,16 @@ public class PlayerData {
     private final EntityVisibilityTracker entityVisibilityTracker = new EntityVisibilityTracker();
     private final PlayerVisibilityTracker playerVisibilityTracker = new PlayerVisibilityTracker();
 
+    private final PlayerBlockSnapshotManager blockSnapshotManager;
+    private final PlayerEntitySnapshotManager entitySnapshotManager;
+
     public PlayerData(UUID player, boolean hasBypassPermission, int joinTick) {
         this.joinTick = joinTick;
         this.playerUUID = player;
         this.hasBypassPermission = hasBypassPermission;
+
+        blockSnapshotManager = SnapshotManager.createBlockSnapshotManager();
+        entitySnapshotManager = SnapshotManager.createEntitySnapshotManager();
     }
 
     public TileEntityVisibilityTracker tileVisibility() {
@@ -48,6 +58,14 @@ public class PlayerData {
 
     public PlayerVisibilityTracker playerVisibility() {
         return playerVisibilityTracker;
+    }
+
+    public PlayerEntitySnapshotManager entitySnapshotManager() {
+        return entitySnapshotManager;
+    }
+
+    public PlayerBlockSnapshotManager blockSnapshotManager() {
+        return blockSnapshotManager;
     }
 
     public UUID getPlayerUUID() {

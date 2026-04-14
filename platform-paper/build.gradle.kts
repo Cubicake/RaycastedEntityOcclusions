@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":locatable-lib"))
     implementation(project(":logging"))
     implementation(project(":core"))
+    implementation(project(":packetevents"))
 }
 
 java {
@@ -102,6 +103,7 @@ tasks.shadowJar {
         include(project(":logging"))
         include(project(":locatable-lib"))
         include(project(":core"))
+        include(project(":packetevents"))
     }
     archiveBaseName.set("RaycastedAntiESP")
     archiveClassifier.set("")

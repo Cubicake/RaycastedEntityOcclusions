@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 // A per-player store of blocks
+@Deprecated(forRemoval = true)
 public class OcclusionStateStore {
 
     protected OcclusionStateStore() {}
