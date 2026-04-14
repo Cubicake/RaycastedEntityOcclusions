@@ -28,10 +28,8 @@ public class PaperPESnapshotFactory extends PacketEventsSnapshotBridge implement
 
     public PaperPESnapshotFactory() {
         super(new PacketEventsPaperBlockInfoResolver());
-        for (var world : Bukkit.getWorlds()) {
-            registerWorld(world);
-        }
         Bukkit.getPluginManager().registerEvents(this, RaycastedAntiESP.get());
+        Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), () -> Bukkit.getWorlds().forEach(this::registerWorld), 5);
     }
 
     @Override
