@@ -46,9 +46,9 @@ public class PaperPESnapshotFactory extends PacketEventsSnapshotBridge implement
 
         NamespacedKey worldKey = NamespacedKey.fromString(user.getDimensionType().getName().toString());
         if (worldKey == null) {
+            Logger.warning("User " + user.getName() + " has invalid dimension type name: " + user.getDimensionType().getName(), 3, PaperPESnapshotFactory.class);
             return null;
         }
-        Logger.debug(worldKey.asString());
         return worldIdByWorldKey.get(worldKey);
     }
 
