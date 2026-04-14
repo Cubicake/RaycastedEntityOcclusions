@@ -3,16 +3,16 @@ package games.cubi.raycastedantiesp.paper.staging;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.player.User;
-import com.github.retrooper.packetevents.protocol.world.dimension.DimensionType;
-import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerEntitySnapshotManager;
 import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 import games.cubi.raycastedantiesp.packetevents.PacketEventsBlockSnapshotManager;
 import games.cubi.raycastedantiesp.packetevents.PacketEventsEntitySnapshotManager;
 import games.cubi.raycastedantiesp.packetevents.PacketEventsSnapshotBridge;
-import io.github.retrooper.packetevents.util.SpigotConversionUtil;
+import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,12 +24,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PaperPESnapshotFactory extends PacketEventsSnapshotBridge implements Listener {
-    private final Map<UUID, DimensionType> dimensionTypeByWorldId = new ConcurrentHashMap<>();
+    private final Map<NamespacedKey, UUID> worldIdByWorldKey = new ConcurrentHashMap<>();
 
     public PaperPESnapshotFactory() {
         super(new PacketEventsPaperBlockInfoResolver());
         Bukkit.getPluginManager().registerEvents(this, RaycastedAntiESP.get());
-        Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), () -> Bukkit.getWorlds().forEach(this::registerWorld), 5);
+        Bukkit.getWorlds().forEach(this::registerWorld);
     }
 
     @Override
@@ -39,13 +39,17 @@ public class PaperPESnapshotFactory extends PacketEventsSnapshotBridge implement
 
     @Override
     protected UUID resolveWorldUUID(User user) {
-        DimensionType dimensionType = user.getDimensionType();
-        for (Map.Entry<UUID, DimensionType> entry : dimensionTypeByWorldId.entrySet()) {
-            if (entry.getValue().equals(dimensionType)) {
-                return entry.getKey();
-            }
+        if (user.getDimensionType() == null || user.getDimensionType().getName() == null) {
+            Logger.warning("User " + user.getName() + " has null dimension type or dimension type name.", 3, PaperPESnapshotFactory.class);
+            return null;
         }
-        return null;
+
+        NamespacedKey worldKey = NamespacedKey.fromString(user.getDimensionType().getName().toString());
+        if (worldKey == null) {
+            return null;
+        }
+        Logger.debug(worldKey.asString());
+        return worldIdByWorldKey.get(worldKey);
     }
 
     @EventHandler
@@ -55,11 +59,11 @@ public class PaperPESnapshotFactory extends PacketEventsSnapshotBridge implement
 
     @EventHandler
     public void onWorldUnload(WorldUnloadEvent event) {
-        dimensionTypeByWorldId.remove(event.getWorld().getUID());
+        worldIdByWorldKey.remove(event.getWorld().getKey());
     }
 
     private void registerWorld(World world) {
-        dimensionTypeByWorldId.put(world.getUID(), SpigotConversionUtil.typeFromBukkitWorld(world));
+        worldIdByWorldKey.put(world.getKey(), world.getUID());
     }
 
     @Override
