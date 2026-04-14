@@ -3,6 +3,7 @@ package games.cubi.raycastedantiesp.packetevents;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerBlockChange;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChunkData;
@@ -44,6 +45,8 @@ public abstract class PacketEventsSnapshotBridge implements PlayerEntitySnapshot
 
     protected abstract void registerListener();
 
+    protected abstract UUID resolveWorldUUID(User user);
+
     @Override
     public void onPacketSend(PacketSendEvent event) {
         UUID playerID = event.getUser().getUUID();
@@ -66,32 +69,38 @@ public abstract class PacketEventsSnapshotBridge implements PlayerEntitySnapshot
         }
 
         Locatable location = entitySnapshotManager.getLocation(playerID);
-        if (location == null) return;
-
-        final UUID world = location.world();
+        final UUID world = location != null ? location.world() : resolveWorldUUID(event.getUser());
 
         handleEntityPackets(event, entitySnapshotManager, world);
         handleBlockPackets(event, blockSnapshotManager, world, blockOcclusionResolver);
     }
 
     private void handleEntityPackets(PacketSendEvent event, PlayerEntitySnapshotManager entitySnapshotManager, UUID world) {
-        if (world == null) {
-            return;
-        }
-
         if (event.getPacketType() == PacketType.Play.Server.SPAWN_LIVING_ENTITY) {
+            if (world == null) {
+                return;
+            }
             final WrapperPlayServerSpawnLivingEntity packet = new WrapperPlayServerSpawnLivingEntity(event);
             entitySnapshotManager.upsertEntity(packet.getEntityId(), packet.getEntityUUID(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
         } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY) {
+            if (world == null) {
+                return;
+            }
             final WrapperPlayServerSpawnEntity packet = new WrapperPlayServerSpawnEntity(event);
             entitySnapshotManager.upsertEntity(packet.getEntityId(), packet.getUUID().orElse(null), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
         } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_PLAYER) {
+            if (world == null) {
+                return;
+            }
             final WrapperPlayServerSpawnPlayer packet = new WrapperPlayServerSpawnPlayer(event);
             entitySnapshotManager.upsertEntity(packet.getEntityId(), packet.getUUID(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
         } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_PAINTING) {
+            if (world == null) {
+                return;
+            }
             final WrapperPlayServerSpawnPainting packet = new WrapperPlayServerSpawnPainting(event);
             entitySnapshotManager.upsertEntity(packet.getEntityId(), packet.getUUID(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
@@ -152,11 +161,11 @@ public abstract class PacketEventsSnapshotBridge implements PlayerEntitySnapshot
             }
         } else if (event.getPacketType() == PacketType.Play.Server.CHUNK_DATA) {
             final WrapperPlayServerChunkData chunkData = new WrapperPlayServerChunkData(event);
-            ingestChunk(world, blockSnapshotManager, chunkData.getColumn().getX(), chunkData.getColumn().getZ(), chunkData.getColumn().getChunks(), blockInfoResolver);
+            ingestChunk(world, blockSnapshotManager, chunkData.getColumn().getX(), chunkData.getColumn().getZ(), chunkData.getColumn().getChunks(), blockInfoResolver, event.getUser().getMinWorldHeight() >> 4);
         } else if (event.getPacketType() == PacketType.Play.Server.MAP_CHUNK_BULK) {
             final WrapperPlayServerChunkDataBulk chunkBulk = new WrapperPlayServerChunkDataBulk(event);
             for (int i = 0; i < chunkBulk.getChunks().length; i++) {
-                ingestChunk(world, blockSnapshotManager, chunkBulk.getX()[i], chunkBulk.getZ()[i], chunkBulk.getChunks()[i], blockInfoResolver);
+                ingestChunk(world, blockSnapshotManager, chunkBulk.getX()[i], chunkBulk.getZ()[i], chunkBulk.getChunks()[i], blockInfoResolver, event.getUser().getMinWorldHeight() >> 4);
             }
         }
     }
@@ -167,9 +176,9 @@ public abstract class PacketEventsSnapshotBridge implements PlayerEntitySnapshot
             int chunkX,
             int chunkZ,
             BaseChunk[] sections,
-            BlockInfoResolver blockInfoResolver
+            BlockInfoResolver blockInfoResolver,
+            int minimumChunkSectionY
     ) {
-
         for (int sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
             final BaseChunk section = sections[sectionIndex];
             if (section == null) {
@@ -196,7 +205,7 @@ public abstract class PacketEventsSnapshotBridge implements PlayerEntitySnapshot
                     }
                 }
             }
-            blockSnapshotManager.replaceChunk(worldId, chunkX, sectionIndex, chunkZ, occluding, tileEntities);
+            blockSnapshotManager.replaceChunk(worldId, chunkX, minimumChunkSectionY + sectionIndex, chunkZ, occluding, tileEntities);
         }
     }
 }

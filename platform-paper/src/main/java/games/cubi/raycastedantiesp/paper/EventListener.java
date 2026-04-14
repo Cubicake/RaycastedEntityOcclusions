@@ -17,9 +17,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static games.cubi.raycastedantiesp.paper.UpdateChecker.checkForUpdates;
 
@@ -76,6 +79,21 @@ public class EventListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent event) {
+        updateOwnSnapshot(event.getPlayer(), event.getTo());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        updateOwnSnapshot(event.getPlayer(), event.getPlayer().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerRespawn(PlayerRespawnEvent event) {
+        updateOwnSnapshot(event.getPlayer(), event.getRespawnLocation());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChunkLoad(PlayerChunkLoadEvent e) {
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(e.getPlayer().getUniqueId());
         if (playerData == null) return;
@@ -125,6 +143,16 @@ public class EventListener implements Listener {
                 location.getY(),
                 location.getZ()
         );
+    }
+
+    private void updateOwnSnapshot(Player player, Location location) {
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+        if (playerData == null || location == null) {
+            return;
+        }
+
+        Location eyeLocation = location.clone().add(0, player.getEyeHeight(), 0);
+        updateOwnSnapshot(playerData, player.getEntityId(), eyeLocation);
     }
 
 }
