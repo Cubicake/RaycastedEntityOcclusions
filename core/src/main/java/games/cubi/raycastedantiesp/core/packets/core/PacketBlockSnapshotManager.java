@@ -162,7 +162,7 @@ public abstract class PacketBlockSnapshotManager implements PlayerBlockSnapshotM
     }
 
     private static final class ChunkSnapshot {
-        private final Set<Short> occludingBlocks = new HashSet<>();
-        private final Set<Short> tileEntityBlocks = new HashSet<>();
+        private final Set<Short> occludingBlocks = ConcurrentHashMap.newKeySet();
+        private final Set<Short> tileEntityBlocks = ConcurrentHashMap.newKeySet();
     }
 }
