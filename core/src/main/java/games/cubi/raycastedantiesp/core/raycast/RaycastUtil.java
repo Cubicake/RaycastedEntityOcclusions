@@ -14,7 +14,7 @@ public class RaycastUtil {
         if (!start.world().equals(end.world())) return false;
 
         MutableLocatable clonedEnd = end.clonePlainAndCentreIfBlockLocation();
-        double total = start.distance(clonedEnd); //benchmarking shows that calling distance() is faster than distanceSquared() then checking distanceSquared < stepSize*stepSize every time despite the latter replacing a square root with multiplication
+        double total = start.distance(clonedEnd) - stepSize; //benchmarking shows that calling distance() is faster than distanceSquared() then checking distanceSquared < stepSize*stepSize every time despite the latter replacing a square root with multiplication
         if (total <= alwaysShowRadius) return true;
         if (total > maxRaycastRadius) return false;
         if (debug && particleSpawner == null) {
