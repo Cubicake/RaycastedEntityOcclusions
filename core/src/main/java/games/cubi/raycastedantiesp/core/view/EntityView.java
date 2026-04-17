@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public interface EntityView<T extends EntityLocatable> {
+public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>> {
     void insertEntity(T entity);
 
     void moveRelative(int entityID, double deltaX, double deltaY, double deltaZ, int currentTick);

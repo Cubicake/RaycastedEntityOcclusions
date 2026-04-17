@@ -84,11 +84,11 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         handleEntityPackets(event, event.getUser(), playerData, world, currentTick);
 
         if (playerData.entityView().hasPendingTransitions()) {
-            processEntityTransitions(viewerUUID, event.getUser(), playerData.entityView(), false);
+            processEntityTransitions(viewerUUID, event.getUser(), cast(playerData.entityView()), false);
         }
 
         if (playerData.playerView().hasPendingTransitions()) {
-            processEntityTransitions(viewerUUID, event.getUser(), playerData.playerView(), true);
+            processEntityTransitions(viewerUUID, event.getUser(), cast(playerData.playerView()), true);
         }
         
         event.getUser().flushPackets();
@@ -102,7 +102,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 if (targetUUID == null) {
                     continue;
                 }
-                EntityLocatable entity = cast(playerData.playerView().getEntity(targetUUID));
+                PacketEventsEntity entity = cast(playerData.playerView().getEntity(targetUUID));
                 if (entity == null) {
                     continue;
                 }
@@ -135,7 +135,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 return;
             }
             WrapperPlayServerSpawnLivingEntity packet = new WrapperPlayServerSpawnLivingEntity(event);
-            EntityLocatable entity = trackEntitySpawn(playerData.entityView().cast(), packet.getEntityUUID(), packet.getEntityId(), world,
+            PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getEntityUUID(), packet.getEntityId(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.LIVING, packet.getEntityType());
             if (entity == null) {
                 Logger.error(new RuntimeException("Entity null after attempting to track entity spawn for living entity packet, uuid=" + packet.getEntityUUID() + " id=" + packet.getEntityId() + " tick=" + currentTick), 2, PacketEventsEntityViewController.class);;
@@ -165,7 +165,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             }
             UUID entityUUID = packet.getUUID().get();
 
-            EntityLocatable entity = trackEntitySpawn(playerData.entityView().cast(), entityUUID, packet.getEntityId(), world,
+            PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), entityUUID, packet.getEntityId(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.ENTITY, packet.getEntityType());
             if (entity == null) {
                 return;
@@ -188,7 +188,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 return;
             }
             WrapperPlayServerSpawnPainting packet = new WrapperPlayServerSpawnPainting(event);
-            EntityLocatable entity = trackEntitySpawn(playerData.entityView().cast(), packet.getUUID(), packet.getEntityId(), world,
+            PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getUUID(), packet.getEntityId(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.PAINTING, packet.getType().orElse(null), packet.getDirection());
             if (entity == null) {
                 return;
@@ -209,7 +209,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 return;
             }
             WrapperPlayServerSpawnPlayer packet = new WrapperPlayServerSpawnPlayer(event);
-            EntityLocatable entity = trackEntitySpawn(playerData.playerView().cast(), packet.getUUID(), packet.getEntityId(), world,
+            PacketEventsEntity entity = trackEntitySpawn(playerData.playerView().cast(), packet.getUUID(), packet.getEntityId(), world,
                     packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.PLAYER, null);
             if (entity == null) {
                 return;
@@ -276,8 +276,8 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
     }
 
-    private EntityLocatable trackEntitySpawn(
-            EntityView<NettyEntityLocatable> entityView,
+    private PacketEventsEntity trackEntitySpawn(
+            EntityView<PacketEventsEntity> entityView,
             UUID entityUUID,
             int entityID,
             UUID world,
@@ -504,9 +504,9 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
     }
 
-    private void processEntityTransitions(UUID viewerUUID, User viewer, EntityView<?> entityView, boolean playerTargets) {
+    private void processEntityTransitions(UUID viewerUUID, User viewer, EntityView<PacketEventsEntity> entityView, boolean playerTargets) {
         for (EntityViewTransition transition : entityView.drainTransitions()) {
-            EntityLocatable entity = getTrackedEntity(entityView, transition.targetUUID());
+            PacketEventsEntity entity = getTrackedEntity(entityView, transition.targetUUID());
 
             switch (transition.type()) {
                 case HIDE -> {
@@ -534,18 +534,18 @@ public abstract class PacketEventsEntityViewController implements PacketListener
     }
 
     private EntityLookup lookupEntity(PlayerData playerData, int entityID) {
-        EntityLocatable playerEntity = getTrackedEntity(playerData.playerView(), entityID);
+        PacketEventsEntity playerEntity = getTrackedEntity(cast(playerData.playerView()), entityID);
         if (playerEntity != null) {
             return new EntityLookup(playerEntity, playerData.playerView());
         }
-        EntityLocatable entity = getTrackedEntity(playerData.entityView(), entityID);
+        PacketEventsEntity entity = getTrackedEntity(cast(playerData.entityView()), entityID);
         if (entity != null) {
             return new EntityLookup(entity, playerData.entityView());
         }
         return null;
     }
 
-    private PacketWrapper<?> buildSpawnPacket(EntityLocatable entity) {
+    private PacketWrapper<?> buildSpawnPacket(PacketEventsEntity entity) {
         return switch (entity.spawnType()) {
             case LIVING -> {
                 List<EntityData<?>> metadata = copyEntityMetadata(cast(entity.metadata()));
@@ -593,7 +593,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         };
     }
 
-    private WrapperPlayServerEntityMetadata buildMetadataPacket(EntityLocatable entity) {
+    private WrapperPlayServerEntityMetadata buildMetadataPacket(PacketEventsEntity entity) {
         List<EntityData<?>> metadata = cast(entity.metadata());
         if (metadata == null || metadata.isEmpty()) {
             return null;
@@ -601,7 +601,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return new WrapperPlayServerEntityMetadata(entity.entityID(), copyEntityMetadata(metadata));
     }
 
-    private WrapperPlayServerEntityEquipment buildEquipmentPacket(EntityLocatable entity) {
+    private WrapperPlayServerEntityEquipment buildEquipmentPacket(PacketEventsEntity entity) {
         List<Equipment> equipment = cast(entity.equipment());
         if (equipment == null || equipment.isEmpty()) {
             return null;
@@ -609,7 +609,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return new WrapperPlayServerEntityEquipment(entity.entityID(), copyEquipment(equipment));
     }
 
-    private WrapperPlayServerSetPassengers buildPassengersPacket(EntityLocatable entity) {
+    private WrapperPlayServerSetPassengers buildPassengersPacket(PacketEventsEntity entity) {
         int[] passengerIDs = entity.passengerIDs();
         if (passengerIDs.length == 0) {
             return null;
@@ -617,7 +617,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return new WrapperPlayServerSetPassengers(entity.entityID(), passengerIDs);
     }
 
-    private WrapperPlayServerEntityVelocity buildVelocityPacket(EntityLocatable entity) {
+    private WrapperPlayServerEntityVelocity buildVelocityPacket(PacketEventsEntity entity) {
         return new WrapperPlayServerEntityVelocity(
                 entity.entityID(),
                 new Vector3d(entity.velocityX(), entity.velocityY(), entity.velocityZ())
@@ -740,15 +740,15 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return (T) value;
     }
 
-    private EntityLocatable getTrackedEntity(EntityView<?> entityView, UUID entityUUID) {
+    private PacketEventsEntity getTrackedEntity(EntityView<PacketEventsEntity> entityView, UUID entityUUID) {
         return entityView.getEntity(entityUUID);
     }
 
-    private EntityLocatable getTrackedEntity(EntityView<?> entityView, int entityID) {
+    private PacketEventsEntity getTrackedEntity(EntityView<PacketEventsEntity> entityView, int entityID) {
         return entityView.getEntity(entityID);
     }
 
-    private PacketEventsEntityReplayData ensureReplayData(EntityLocatable entity) {
+    private PacketEventsEntityReplayData ensureReplayData(PacketEventsEntity entity) {
         PacketEventsEntityReplayData replayData = cast(entity.packetReplayData());
         if (replayData == null) {
             replayData = PacketEventsEntityReplayData.create();
@@ -757,7 +757,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return replayData;
     }
 
-    private PacketEventsPlayerReplayData ensurePlayerReplayData(EntityLocatable entity) {
+    private PacketEventsPlayerReplayData ensurePlayerReplayData(PacketEventsEntity entity) {
         PacketEventsPlayerReplayData replayData = cast(entity.packetReplayData());
         if (replayData == null) {
             replayData = PacketEventsPlayerReplayData.create();
@@ -766,7 +766,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return replayData;
     }
 
-    private void sendEntityShow(User viewer, EntityLocatable entity, PacketEventsEntityReplayData replayData, boolean playerTargets) {
+    private void sendEntityShow(User viewer, PacketEventsEntity entity, PacketEventsEntityReplayData replayData, boolean playerTargets) {
         if (playerTargets) {
             PacketEventsPlayerReplayData data = replayData.asPlayerReplayData();
             for (WrapperPlayServerPlayerInfoUpdate playerInfoUpdate : data.playerInfoUpdates()) {
@@ -785,7 +785,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
     }
 
-    private void sendEntityAbsoluteCorrection(User viewer, EntityLocatable entity) {
+    private void sendEntityAbsoluteCorrection(User viewer, PacketEventsEntity entity) {
         if (entity.entityID() < 0) {
             return;
         }
@@ -802,7 +802,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
     }
 
     private record EntityLookup(
-            EntityLocatable entity,
+            PacketEventsEntity entity,
             EntityView<?> view
     ) {}
 }
