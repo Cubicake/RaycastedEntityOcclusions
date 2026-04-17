@@ -5,8 +5,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
-import games.cubi.raycastedantiesp.core.view.AbstractEntityView;
-import games.cubi.raycastedantiesp.core.view.AbstractTileEntityView;
+import games.cubi.raycastedantiesp.packetevents.view.PacketEventsEntityView;
+import games.cubi.raycastedantiesp.packetevents.view.PacketEventsTileEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
 import games.cubi.raycastedantiesp.packetevents.PacketEventsBlockSnapshotManager;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsBlockViewController;
@@ -50,7 +50,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onEnable() {
-        ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, AbstractEntityView::new, AbstractTileEntityView::new);
+        ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, PacketEventsEntityView::new, PacketEventsTileEntityView::new);
         packetEventsController = new PaperPacketEventsEntityViewController();
         new PaperPacketEventsBlockViewController();
 

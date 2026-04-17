@@ -3,7 +3,7 @@ package games.cubi.raycastedantiesp.paper.packets;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.player.User;
-import games.cubi.raycastedantiesp.packetevents.PacketEventsBlockViewController;
+import games.cubi.raycastedantiesp.packetevents.viewcontrollers.PacketEventsBlockViewController;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;

@@ -1,4 +1,4 @@
-package games.cubi.raycastedantiesp.packetevents;
+package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
@@ -38,6 +38,8 @@ import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
+import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsEntityReplayData;
+import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsPlayerReplayData;
 
 import java.util.ArrayList;
 import java.util.List;

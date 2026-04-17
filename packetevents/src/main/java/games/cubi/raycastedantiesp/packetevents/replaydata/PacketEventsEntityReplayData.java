@@ -1,4 +1,4 @@
-package games.cubi.raycastedantiesp.packetevents;
+package games.cubi.raycastedantiesp.packetevents.replaydata;
 
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEffect;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEquipment;

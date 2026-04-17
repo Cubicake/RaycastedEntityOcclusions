@@ -1,4 +1,4 @@
-package games.cubi.raycastedantiesp.packetevents;
+package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;

@@ -1,6 +1,5 @@
-package games.cubi.raycastedantiesp.packetevents;
+package games.cubi.raycastedantiesp.packetevents.replaydata;
 
-import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 
 import java.util.List;

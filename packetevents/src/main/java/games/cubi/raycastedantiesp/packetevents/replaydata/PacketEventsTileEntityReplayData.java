@@ -1,9 +1,9 @@
-package games.cubi.raycastedantiesp.packetevents;
+package games.cubi.raycastedantiesp.packetevents.replaydata;
 
 import com.github.retrooper.packetevents.protocol.nbt.NBTCompound;
 import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityType;
 
-final class PacketEventsTileEntityReplayData {
+public final class PacketEventsTileEntityReplayData {
     private volatile BlockEntityType blockEntityType;
     private volatile NBTCompound nbt;
 
