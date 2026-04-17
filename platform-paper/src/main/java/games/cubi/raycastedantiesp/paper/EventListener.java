@@ -3,14 +3,10 @@ package games.cubi.raycastedantiesp.paper;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
-import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
-import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
-import io.papermc.paper.event.packet.PlayerChunkUnloadEvent;
+import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsViewController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -27,27 +23,28 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import static games.cubi.raycastedantiesp.paper.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
-    private final PacketProcessor packetProcessor;
+    private final PaperPacketEventsViewController packetEventsController;
     private final RaycastedAntiESP plugin;
     private final PaperSimpleEngine engine;
 
     private static EventListener instance = null;
 
-    private EventListener(RaycastedAntiESP plugin, PacketProcessor packetProcessor, PaperSimpleEngine engine) {
+    private EventListener(RaycastedAntiESP plugin, PaperPacketEventsViewController packetEventsController, PaperSimpleEngine engine) {
         this.plugin = plugin;
-        this.packetProcessor = packetProcessor;
+        this.packetEventsController = packetEventsController;
         this.engine = engine;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public static EventListener initialise(RaycastedAntiESP plugin, PacketProcessor packetProcessor, PaperSimpleEngine engine) {
+    public static EventListener initialise(RaycastedAntiESP plugin, PaperPacketEventsViewController packetEventsController, PaperSimpleEngine engine) {
         if (instance == null) {
-            instance = new EventListener(plugin, packetProcessor, engine);
+            instance = new EventListener(plugin, packetEventsController, engine);
         }
         return instance;
     }
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDisconnect(PlayerQuitEvent e) {
+        packetEventsController.removeViewer(e.getPlayer().getUniqueId());
         PlayerRegistry.getInstance().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
@@ -68,53 +65,33 @@ public class EventListener implements Listener {
 
         if (playerData == null) return;
         playerData.setBypassPermission(hasBypassPermission);
-        updateOwnSnapshot(playerData, player.getEntityId(), player.getEyeLocation());
+        updateOwnLocation(playerData, player.getEyeLocation());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(event.getPlayer().getUniqueId());
         if (playerData == null) return;
-        updateOwnSnapshot(playerData, event.getPlayer().getEntityId(), event.getPlayer().getEyeLocation());
+        updateOwnLocation(playerData, event.getPlayer().getEyeLocation());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        updateOwnSnapshot(event.getPlayer(), event.getTo());
+        updateOwnLocation(event.getPlayer(), event.getTo());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        updateOwnSnapshot(event.getPlayer(), event.getPlayer().getLocation());
+        updateOwnLocation(event.getPlayer(), event.getPlayer().getLocation());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        updateOwnSnapshot(event.getPlayer(), event.getRespawnLocation());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerChunkLoad(PlayerChunkLoadEvent e) {
-        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(e.getPlayer().getUniqueId());
-        if (playerData == null) return;
-        playerData.tileVisibility().addChunk(e.getChunk().getX(), e.getChunk().getZ());
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onPlayerChunkUnload(PlayerChunkUnloadEvent e) {
-        PlayerData player = PlayerRegistry.getInstance().getPlayerData(e.getPlayer().getUniqueId());
-        if (player == null) return; // They've logged out
-        player.tileVisibility().removeChunk(e.getWorld().getUID(), e.getChunk().getX(), e.getChunk().getZ());
+        updateOwnLocation(event.getPlayer(), event.getRespawnLocation());
     }
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
-        if (VisibilityChangeHandlers.entityVisibilityChangeHandlerType() == VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getEntity().processCache();
-
-        if (VisibilityChangeHandlers.playerVisibilityChangeHandlerType() == VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getPlayer().processCache();
-
-        if (VisibilityChangeHandlers.tileEntityVisibilityChangeHandlerType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().processCache();
-
         DataHolder.incrementTick();
 
         Bukkit.getAsyncScheduler().runNow(plugin, task -> engine.tick());
@@ -122,37 +99,23 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR) //Runs last
     public void serverTickStopEvent(ServerTickEndEvent event) {
-        if (VisibilityChangeHandlers.entityVisibilityChangeHandlerType() == VisibilityChangeHandlers.EntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getEntity().processCache();
-
-        if (VisibilityChangeHandlers.playerVisibilityChangeHandlerType() == VisibilityChangeHandlers.PlayerVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getPlayer().processCache();
-
-        if (VisibilityChangeHandlers.tileEntityVisibilityChangeHandlerType() == VisibilityChangeHandlers.TileEntityVisibilityChangerType.BUKKIT) VisibilityChangeHandlers.getTileEntity().processCache();
-
     }
 
-    private void updateOwnSnapshot(PlayerData playerData, int entityId, Location location) {
-        if (SnapshotManager.entitySnapshotManagerType() != SnapshotManager.SnapshotManagerType.PACKETEVENTS) {
+    private void updateOwnLocation(PlayerData playerData, Location location) {
+        if (playerData == null || location == null || location.getWorld() == null) {
             return;
         }
-
-        playerData.entitySnapshotManager().upsertEntity(
-                entityId,
-                playerData.getPlayerUUID(),
-                location.getWorld().getUID(),
-                location.getX(),
-                location.getY(),
-                location.getZ()
-        );
+        playerData.updateOwnLocation(location.getWorld().getUID(), location.getX(), location.getY(), location.getZ());
     }
 
-    private void updateOwnSnapshot(Player player, Location location) {
+    private void updateOwnLocation(Player player, Location location) {
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
         if (playerData == null || location == null) {
             return;
         }
 
         Location eyeLocation = location.clone().add(0, player.getEyeHeight(), 0);
-        updateOwnSnapshot(playerData, player.getEntityId(), eyeLocation);
+        updateOwnLocation(playerData, eyeLocation);
     }
 
 }
