@@ -11,7 +11,7 @@ public interface TileEntityView {
 
     void insertIfAbsent(BlockLocatable location);
 
-    void removeTileEntity(BlockLocatable location, int currentTick);
+    void removeTileEntity(BlockLocatable location);
 
     TrackedTileEntity<?> getTrackedTileEntity(BlockLocatable location);
 
