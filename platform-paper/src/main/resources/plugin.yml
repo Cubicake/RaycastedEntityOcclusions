@@ -21,3 +21,4 @@ permissions:
         default: false
 depend:
     - packetevents
+folia-supported: true

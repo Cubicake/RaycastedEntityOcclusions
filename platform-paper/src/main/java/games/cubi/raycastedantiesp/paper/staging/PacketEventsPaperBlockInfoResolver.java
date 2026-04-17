@@ -12,6 +12,7 @@ import org.bukkit.block.data.BlockData;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
     private boolean[] occlusionArray;
@@ -21,7 +22,8 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
 
     public PacketEventsPaperBlockInfoResolver() {
         get = this;
-        Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), this::initialize, 5);
+        Bukkit.getAsyncScheduler().runDelayed(RaycastedAntiESP.get(), ignored -> initialize(), 2, TimeUnit.SECONDS);
+        //Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), this::initialize, 5);
     }
 
     private void initialize() {
