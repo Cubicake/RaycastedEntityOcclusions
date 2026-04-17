@@ -1,12 +1,10 @@
 package games.cubi.raycastedantiesp.core.packets.core;
 
 import games.cubi.locatables.BlockLocatable;
-import games.cubi.locatables.ChunkLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.packets.api.BlockSnapshotPacketSink;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,32 +33,27 @@ public abstract class PacketBlockSnapshotManager implements PlayerBlockSnapshotM
     }
 
     @Override
-    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(ChunkLocatable chunkLocatable) {
-        return getTileEntitiesInChunk(chunkLocatable.world(), chunkLocatable.chunkX(), chunkLocatable.chunkZ());
-    }
-
-    @Override
-    public Set<ImmutableBlockLocatable> getTileEntitiesInChunk(UUID world, int chunkX, int chunkZ) {
-        final Map<Long, ChunkSnapshot> chunks = worldChunks.get(world);
-        if (chunks == null || chunks.isEmpty()) {
-            return Collections.emptySet();
-        }
-
+    public Set<ImmutableBlockLocatable> getKnownTileEntities() {
         final Set<ImmutableBlockLocatable> out = new HashSet<>();
-        for (Map.Entry<Long, ChunkSnapshot> entry : chunks.entrySet()) {
-            final long packedChunk = entry.getKey();
-            if (unpackChunkX(packedChunk) != chunkX || unpackChunkZ(packedChunk) != chunkZ) {
+        for (Map.Entry<UUID, ConcurrentHashMap<Long, ChunkSnapshot>> worldEntry : worldChunks.entrySet()) {
+            UUID world = worldEntry.getKey();
+            Map<Long, ChunkSnapshot> chunks = worldEntry.getValue();
+            if (chunks == null || chunks.isEmpty()) {
                 continue;
             }
+            for (Map.Entry<Long, ChunkSnapshot> entry : chunks.entrySet()) {
+                final ChunkSnapshot chunk = entry.getValue();
+                if (chunk.tileEntityBlocks.isEmpty()) {
+                    continue;
+                }
 
-            final ChunkSnapshot chunk = entry.getValue();
-            if (chunk.tileEntityBlocks.isEmpty()) {
-                continue;
-            }
-
-            final int chunkY = unpackChunkY(packedChunk);
-            for (short packedPos : chunk.tileEntityBlocks) {
-                out.add(unpackBlock(world, chunkX, chunkY, chunkZ, packedPos));
+                final long packedChunk = entry.getKey();
+                final int chunkX = unpackChunkX(packedChunk);
+                final int chunkY = unpackChunkY(packedChunk);
+                final int chunkZ = unpackChunkZ(packedChunk);
+                for (short packedPos : chunk.tileEntityBlocks) {
+                    out.add(unpackBlock(world, chunkX, chunkY, chunkZ, packedPos));
+                }
             }
         }
         return out;
