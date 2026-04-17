@@ -1,0 +1,387 @@
+package games.cubi.raycastedantiesp.packetevents;
+
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
+import com.github.retrooper.packetevents.protocol.world.chunk.Column;
+import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
+import com.github.retrooper.packetevents.util.Vector3i;
+import com.github.retrooper.packetevents.wrapper.play.server.*;
+import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.Locatable;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.raycastedantiesp.core.packets.core.PacketBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.view.TileEntityView;
+import games.cubi.raycastedantiesp.core.view.TileEntityViewTransition;
+import games.cubi.locatables.TileEntityLocatable;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.IntSupplier;
+
+public abstract class PacketEventsBlockViewController implements PacketListener {
+    private final BlockInfoResolver blockInfoResolver;
+    private final IntSupplier currentTickSupplier;
+    private final PacketEventsCommonViewController common;
+
+    protected PacketEventsBlockViewController(BlockInfoResolver blockInfoResolver, IntSupplier currentTickSupplier) {
+        this.blockInfoResolver = blockInfoResolver;
+        this.currentTickSupplier = currentTickSupplier;
+        common = PacketEventsCommonViewController.get(currentTickSupplier);
+    }
+
+    protected abstract UUID resolveWorldUUID(User user);
+
+    protected abstract int getHiddenBlockId(int blockY);
+
+    public void removeViewer(UUID viewerUUID) {
+    }
+
+    @Override
+    public void onPacketSend(PacketSendEvent event) {
+        UUID viewerUUID = event.getUser().getUUID();
+        if (viewerUUID == null) {
+            return;
+        }
+
+        PlayerData playerData = common.ensurePlayerData(viewerUUID, event);
+        if (playerData == null) {
+            return;
+        }
+
+        Locatable ownLocation = playerData.ownLocation();
+        UUID world = ownLocation != null ? ownLocation.world() : resolveWorldUUID(event.getUser());
+        int currentTick = currentTickSupplier.getAsInt();
+
+        handleBlockPackets(event, event.getUser(), playerData, world, currentTick);
+
+        if (playerData.tileEntityView().hasPendingTransitions()) {
+            processTileEntityTransitions(event.getUser(), playerData.tileEntityView());
+        }
+        event.getUser().flushPackets();
+    }
+
+    private void handleBlockPackets(PacketSendEvent event, User viewer, PlayerData playerData, UUID world, int currentTick) {
+        if (world == null) {
+            return;
+        }
+
+        PlayerBlockSnapshotManager blockSnapshotManager = playerData.blockSnapshotManager();
+        TileEntityView tileEntityView = playerData.tileEntityView();
+
+        if (event.getPacketType() == PacketType.Play.Server.UNLOAD_CHUNK) {
+            WrapperPlayServerUnloadChunk packet = new WrapperPlayServerUnloadChunk(event);
+            blockSnapshotManager.removeChunk(world, packet.getChunkX(), packet.getChunkZ());
+            removeChunkTileEntities(tileEntityView, world, packet.getChunkX(), packet.getChunkZ(), currentTick);
+        } else if (event.getPacketType() == PacketType.Play.Server.BLOCK_CHANGE) {
+            WrapperPlayServerBlockChange packet = new WrapperPlayServerBlockChange(event);
+            handleSingleBlockChange(event, viewer, playerData, world, packet, currentTick);
+        } else if (event.getPacketType() == PacketType.Play.Server.MULTI_BLOCK_CHANGE) {
+            WrapperPlayServerMultiBlockChange packet = new WrapperPlayServerMultiBlockChange(event);
+            for (WrapperPlayServerMultiBlockChange.EncodedBlock change : packet.getBlocks()) {
+                int blockID = change.getBlockId();
+                boolean occluding = blockID != 0 && blockInfoResolver.isOccluding(blockID);
+                boolean tileEntity = blockInfoResolver.isTileEntity(blockID);
+                blockSnapshotManager.upsertBlock(world, change.getX(), change.getY(), change.getZ(), occluding, tileEntity);
+                ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, change.getX(), change.getY(), change.getZ());
+                if (tileEntity) {
+                    tileEntityView.insertIfAbsent(location);
+                    TileEntityLocatable<PacketEventsTileEntityReplayData> trackedTileEntity = getTrackedTileEntity(tileEntityView, location);
+                    trackedTileEntity.setBlockID(blockID);
+                    //if (!tileEntityView.isVisible(location, currentTick)) {
+                        sendHiddenBlock(viewer, location);
+                    //}
+                } else {
+                    tileEntityView.removeTileEntity(location);
+                }
+            }
+        } else if (event.getPacketType() == PacketType.Play.Server.BLOCK_ENTITY_DATA) {
+            WrapperPlayServerBlockEntityData packet = new WrapperPlayServerBlockEntityData(event);
+            ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
+            tileEntityView.insertIfAbsent(location);
+            ensureTileReplayData(getTrackedTileEntity(tileEntityView, location)).setBlockEntityData(packet.getBlockEntityType(), packet.getNBT());
+            if (!tileEntityView.isVisible(location, currentTick)) {
+                event.setCancelled(true);
+                sendHiddenBlock(viewer, location);
+            }
+        } else if (event.getPacketType() == PacketType.Play.Server.CHUNK_DATA) {
+            WrapperPlayServerChunkData packet = new WrapperPlayServerChunkData(event);
+            Column strippedColumn = ingestChunk(
+                    playerData,
+                    world,
+                    packet.getColumn().getX(),
+                    packet.getColumn().getZ(),
+                    packet.getColumn(),
+                    event.getUser().getMinWorldHeight() >> 4,
+                    currentTick
+            );
+            //reapplyHiddenChunkCovers(viewer, playerData, world, packet.getColumn().getX(), packet.getColumn().getZ(), currentTick);
+            Column tileEntitiesRemoved = new Column(strippedColumn.getX(), strippedColumn.getZ(), strippedColumn.isFullChunk(), strippedColumn.getChunks(), new TileEntity[0]);
+            packet.setColumn(tileEntitiesRemoved);
+            event.markForReEncode(true);
+
+        } else if (event.getPacketType() == PacketType.Play.Server.MAP_CHUNK_BULK) {
+            WrapperPlayServerChunkDataBulk packet = new WrapperPlayServerChunkDataBulk(event);/*
+            for (int i = 0; i < packet.getChunks().length; i++) {
+                packet.
+                Column strippedColumn = ingestChunk(
+                        playerData,
+                        world,
+                        packet.getX()[i],
+                        packet.getZ()[i],
+                        packet.getChunks()[i],
+                        null,
+                        event.getUser().getMinWorldHeight() >> 4,
+                        currentTick
+                );
+                reapplyHiddenChunkCovers(viewer, playerData, world, packet.getX()[i], packet.getZ()[i], currentTick);
+            }*/
+            throw new RuntimeException("I didn't think this packet existed");
+        }
+    }
+
+    private void processTileEntityTransitions(User viewer, TileEntityView tileEntityView) {
+        for (TileEntityViewTransition transition : tileEntityView.drainTransitions()) {
+            ImmutableBlockLocatable location = new ImmutableBlockLocatable(
+                    transition.location().world(),
+                    transition.location().blockX(),
+                    transition.location().blockY(),
+                    transition.location().blockZ()
+            );
+            TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(tileEntityView, location);
+
+            switch (transition.type()) {
+                case HIDE -> viewer.writePacketSilently(new WrapperPlayServerBlockChange(
+                        new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
+                        getHiddenBlockId(location.blockY())
+                ));
+                case SHOW -> {
+                    if (state == null || state.blockID() == 0) {
+                        continue;
+                    }
+                    viewer.writePacketSilently(new WrapperPlayServerBlockChange(
+                            new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
+                            state.blockID()
+                    ));
+                    PacketEventsTileEntityReplayData replayData = ensureTileReplayData(state);
+                    if (replayData.blockEntityType() != null && replayData.nbt() != null) {
+                        viewer.writePacketSilently(buildBlockEntityDataPacket(location, replayData));
+                    }
+                }
+                case FORGET -> {
+                }
+            }
+        }
+    }
+
+    private void handleSingleBlockChange(PacketSendEvent event, User viewer, PlayerData playerData, UUID world, WrapperPlayServerBlockChange packet, int currentTick) {
+        int blockID = packet.getBlockId();
+        boolean occluding = blockID != 0 && blockInfoResolver.isOccluding(blockID);
+        boolean tileEntity = blockInfoResolver.isTileEntity(blockID);
+        Vector3i position = packet.getBlockPosition();
+        ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, position.getX(), position.getY(), position.getZ());
+
+        playerData.blockSnapshotManager().upsertBlock(world, position.getX(), position.getY(), position.getZ(), occluding, tileEntity);
+        if (tileEntity) {
+            playerData.tileEntityView().insertIfAbsent(location);
+            TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(playerData.tileEntityView(), location);
+            state.setBlockID(blockID);
+            if (!playerData.tileEntityView().isVisible(location, currentTick)) {
+                event.setCancelled(true);
+                sendHiddenBlock(viewer, location);
+            }
+        } else {
+            playerData.tileEntityView().removeTileEntity(location);
+        }
+    }
+
+    private Column ingestChunk(
+            PlayerData playerData,
+            UUID worldID,
+            int chunkX,
+            int chunkZ,
+            Column column,
+            //BaseChunk[] sections,
+            //TileEntity[] chunkTileEntitiesData,
+            int minimumChunkSectionY,
+            int currentTick
+    ) {
+        Set<ImmutableBlockLocatable> chunkTileEntities = new HashSet<>();
+        PlayerBlockSnapshotManager blockSnapshotManager = playerData.blockSnapshotManager();
+        TileEntityView tileEntityView = playerData.tileEntityView();
+
+        BaseChunk[] sections = column.getChunks();
+        TileEntity[] chunkTileEntitiesData = column.getTileEntities();
+
+        for (int sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+            BaseChunk section = sections[sectionIndex];
+            if (section == null) {
+                continue;
+            }
+
+            Set<Short> occluding = new HashSet<>();
+            Set<Short> tileEntities = new HashSet<>();
+
+            for (int localX = 0; localX < 16; localX++) {
+                for (int localY = 0; localY < 16; localY++) {
+                    for (int localZ = 0; localZ < 16; localZ++) {
+                        int blockID = section.getBlockId(localX, localY, localZ);
+                        if (blockID == 0) {
+                            continue;
+                        }
+
+                        int blockX = (chunkX << 4) + localX;
+                        int blockY = ((minimumChunkSectionY + sectionIndex) << 4) + localY;
+                        int blockZ = (chunkZ << 4) + localZ;
+
+                        if (blockInfoResolver.isOccluding(blockID)) {
+                            occluding.add(PacketBlockSnapshotManager.packBlock(localX, localY, localZ));
+                        }
+                        if (blockInfoResolver.isTileEntity(blockID)) {
+                            tileEntities.add(PacketBlockSnapshotManager.packBlock(localX, localY, localZ));
+                            ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
+                            chunkTileEntities.add(location);
+                            tileEntityView.insertIfAbsent(location);
+                            getTrackedTileEntity(tileEntityView, location).setBlockID(blockID);
+                            section.set(localX, localY, localZ, getHiddenBlockId(blockY));
+                            //tileEntityView.setVisibility(location, false, 0); //todo: this sends an extra block change packet which could be detected
+                        }
+                    }
+                }
+            }
+
+            blockSnapshotManager.replaceChunk(worldID, chunkX, minimumChunkSectionY + sectionIndex, chunkZ, occluding, tileEntities);
+        }
+
+        if (chunkTileEntitiesData != null) {
+            for (TileEntity tileEntity : chunkTileEntitiesData) {
+                int blockX = (chunkX << 4) + tileEntity.getX();
+                int blockY = tileEntity.getY();
+                int blockZ = (chunkZ << 4) + tileEntity.getZ();
+                ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
+                chunkTileEntities.add(location);
+                tileEntityView.insertIfAbsent(location);
+
+                TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(tileEntityView, location);
+                /*
+                int sectionIndex = (blockY >> 4) - minimumChunkSectionY;
+                if (sectionIndex >= 0 && sectionIndex < sections.length) {
+                    BaseChunk section = sections[sectionIndex];
+                    if (section != null) {
+                        int blockID = section.getBlockId(tileEntity.getX(), blockY & 15, tileEntity.getZ());
+                        blockSnapshotManager.upsertBlock(
+                                worldID,
+                                blockX,
+                                blockY,
+                                blockZ,
+                                blockID != 0 && blockInfoResolver.isOccluding(blockID),
+                                true
+                        );
+                        state.setBlockID(blockID);
+                    }
+                }*/
+                ensureTileReplayData(state).setBlockEntityData(packetTileEntityType(tileEntity), tileEntity.getNBT());
+            }
+        }
+
+        //reconcileChunkTileEntities(tileEntityView, worldID, chunkX, chunkZ, chunkTileEntities, currentTick);
+        return column;
+    }
+/*
+    private void reconcileChunkTileEntities(
+            TileEntityView tileEntityView,
+            UUID worldID,
+            int chunkX,
+            int chunkZ,
+            Set<ImmutableBlockLocatable> chunkTileEntities,
+            int currentTick
+    ) {
+        for (BlockLocatable known : tileEntityView.getKnownTileEntities()) {
+            if (!sameChunk(known, worldID, chunkX, chunkZ)) {
+                continue;
+            }
+            ImmutableBlockLocatable immutable = new ImmutableBlockLocatable(known.world(), known.blockX(), known.blockY(), known.blockZ());
+            if (!chunkTileEntities.contains(immutable)) {
+                tileEntityView.removeTileEntity(immutable, currentTick);
+            }
+        }
+    }*/
+
+    private void removeChunkTileEntities(TileEntityView tileEntityView, UUID worldID, int chunkX, int chunkZ, int currentTick) {
+        for (BlockLocatable known : tileEntityView.getKnownTileEntities()) {
+            if (!sameChunk(known, worldID, chunkX, chunkZ)) {
+                continue;
+            }
+            tileEntityView.removeTileEntity(known);
+        }
+    }
+/*
+    private void reapplyHiddenChunkCovers(User viewer, PlayerData playerData, UUID worldID, int chunkX, int chunkZ, int currentTick) {
+        for (BlockLocatable known : playerData.tileEntityView().getKnownTileEntities()) {
+            if (!sameChunk(known, worldID, chunkX, chunkZ)) {
+                continue;
+            }
+            if (!playerData.tileEntityView().isVisible(known, currentTick)) {
+                sendHiddenBlock(viewer, known);
+            }
+        }
+    }*/
+    private void sendHiddenBlock(User viewer, BlockLocatable location) {
+        viewer.writePacketSilently(new WrapperPlayServerBlockChange(
+                new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
+                getHiddenBlockId(location.blockY())
+        ));
+    }
+
+    private boolean sameChunk(BlockLocatable location, UUID worldID, int chunkX, int chunkZ) {
+        return location.world().equals(worldID) && location.chunkX() == chunkX && location.chunkZ() == chunkZ;
+    }
+
+    private WrapperPlayServerBlockEntityData copyBlockEntityDataPacket(WrapperPlayServerBlockEntityData packet) {
+        return new WrapperPlayServerBlockEntityData(
+                copyBlockVector(packet.getPosition()),
+                packet.getBlockEntityType(),
+                packet.getNBT()
+        );
+    }
+
+    private WrapperPlayServerBlockEntityData buildBlockEntityDataPacket(ImmutableBlockLocatable location, PacketEventsTileEntityReplayData replayData) {
+        return new WrapperPlayServerBlockEntityData(
+                new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
+                replayData.blockEntityType(),
+                replayData.nbt()
+        );
+    }
+
+    @SuppressWarnings("deprecation")
+    private com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityType packetTileEntityType(TileEntity tileEntity) {
+        return com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes.getById(
+                PacketEvents.getAPI().getServerManager().getVersion().toClientVersion(),
+                tileEntity.getType()
+        );
+    }
+
+    private Vector3i copyBlockVector(Vector3i vector) {
+        return new Vector3i(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    @SuppressWarnings("unchecked")
+    private TileEntityLocatable<PacketEventsTileEntityReplayData> getTrackedTileEntity(TileEntityView tileEntityView, ImmutableBlockLocatable location) {
+        return (TileEntityLocatable<PacketEventsTileEntityReplayData>) tileEntityView.getTrackedTileEntity(location);
+    }
+
+    private PacketEventsTileEntityReplayData ensureTileReplayData(TileEntityLocatable<PacketEventsTileEntityReplayData> tileEntity) {
+        PacketEventsTileEntityReplayData replayData = tileEntity.extraData();
+        if (replayData == null) {
+            replayData = new PacketEventsTileEntityReplayData();
+            tileEntity.setExtraData(replayData);
+        }
+        return replayData;
+    }
+}
