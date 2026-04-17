@@ -6,7 +6,7 @@ import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
-import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsViewController;
+import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsEntityViewController;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -23,28 +23,25 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import static games.cubi.raycastedantiesp.paper.UpdateChecker.checkForUpdates;
 
 public class EventListener implements Listener {
-    private final PaperPacketEventsViewController packetEventsController;
     private final RaycastedAntiESP plugin;
     private final PaperSimpleEngine engine;
 
     private static EventListener instance = null;
 
-    private EventListener(RaycastedAntiESP plugin, PaperPacketEventsViewController packetEventsController, PaperSimpleEngine engine) {
+    private EventListener(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
         this.plugin = plugin;
-        this.packetEventsController = packetEventsController;
         this.engine = engine;
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
-    public static EventListener initialise(RaycastedAntiESP plugin, PaperPacketEventsViewController packetEventsController, PaperSimpleEngine engine) {
+    public static EventListener initialise(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
         if (instance == null) {
-            instance = new EventListener(plugin, packetEventsController, engine);
+            instance = new EventListener(plugin, engine);
         }
         return instance;
     }
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerDisconnect(PlayerQuitEvent e) {
-        packetEventsController.removeViewer(e.getPlayer().getUniqueId());
         PlayerRegistry.getInstance().unregisterPlayer(e.getPlayer().getUniqueId());
     }
 
