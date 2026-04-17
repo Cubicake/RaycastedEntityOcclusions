@@ -28,7 +28,7 @@ public class TileEntityVisibilityHandlerConfig implements Config {
     }
 
     public static final TileEntityVisibilityHandlerConfig DEFAULT =
-        new TileEntityVisibilityHandlerConfig(TileEntityVisibilityHandlerMode.BUKKIT);
+        new TileEntityVisibilityHandlerConfig(TileEntityVisibilityHandlerMode.PACKETEVENTS);
 
     public static class Factory implements ConfigFactory<TileEntityVisibilityHandlerConfig> {
         public static final String PATH = ".tile-entity";
@@ -43,8 +43,12 @@ public class TileEntityVisibilityHandlerConfig implements Config {
         @Override
         public @NotNull TileEntityVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
             TileEntityVisibilityHandlerMode mode = readMode(config);
+            if (mode != TileEntityVisibilityHandlerMode.PACKETEVENTS) {
+                Logger.warning("Tile entity visibility handler mode '" + mode.getName() + "' is no longer supported, coercing to packetevents.", 3, TileEntityVisibilityHandlerConfig.class);
+                mode = TileEntityVisibilityHandlerMode.PACKETEVENTS;
+            }
             return switch (mode) {
-                case BUKKIT -> bukkitFactory.getFromConfig(config);
+                case BUKKIT -> packetEventsFactory.getFromConfig(config);
                 case PACKETEVENTS -> packetEventsFactory.getFromConfig(config);
             };
         }
@@ -65,7 +69,6 @@ public class TileEntityVisibilityHandlerConfig implements Config {
             ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", fallback.getName());
             TileEntityVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
-                case BUKKIT -> bukkitFactory.setDefaults(config);
                 case PACKETEVENTS -> packetEventsFactory.setDefaults(config);
             }
             return this;

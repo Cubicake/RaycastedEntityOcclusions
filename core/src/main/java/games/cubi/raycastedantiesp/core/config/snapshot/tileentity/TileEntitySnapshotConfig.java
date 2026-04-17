@@ -30,7 +30,7 @@ public class TileEntitySnapshotConfig implements Config {
 
     public static final TileEntitySnapshotConfig DEFAULT =
             new TileEntitySnapshotConfig(
-                    TileEntitySnapshotMode.BUKKIT
+                    TileEntitySnapshotMode.PACKETEVENTS
             );
 
     public static class Factory implements ConfigFactory<TileEntitySnapshotConfig> {
@@ -49,14 +49,17 @@ public class TileEntitySnapshotConfig implements Config {
                 Logger.warning("Invalid tile entity snapshot mode in config, defaulting to " + fallback.getName(), Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
                 mode = fallback.mode;
             }
+            if (mode != TileEntitySnapshotMode.PACKETEVENTS) {
+                Logger.warning("Tile entity snapshot mode '" + mode.getName() + "' is no longer supported, coercing to packetevents.", Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
+                mode = TileEntitySnapshotMode.PACKETEVENTS;
+            }
 
             return switch (mode) {
-                case BUKKIT -> new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 case PACKETEVENTS ->
                         new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
-                    yield new BukkitTileEntitySnapshotConfig.Factory().getFromConfig(config);
+                    Logger.error(new RuntimeException("Unsupported tile entity snapshot mode enum value: " + mode + ", falling back on packetevents"), Frequency.CONFIG_LOAD.value, TileEntitySnapshotConfig.class);
+                    yield new PacketEventsTileEntitySnapshotConfig.Factory().getFromConfig(config);
                 }
             };
         }
