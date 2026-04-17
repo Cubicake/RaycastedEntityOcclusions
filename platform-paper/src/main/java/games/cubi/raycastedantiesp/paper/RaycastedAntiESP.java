@@ -3,21 +3,16 @@ package games.cubi.raycastedantiesp.paper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
-import games.cubi.raycastedantiesp.paper.packets.PacketEventsStatus;
-import games.cubi.raycastedantiesp.paper.packets.PacketProcessor;
-import games.cubi.raycastedantiesp.paper.packets.Registrar;
+import games.cubi.raycastedantiesp.core.view.AbstractEntityView;
+import games.cubi.raycastedantiesp.core.view.AbstractTileEntityView;
+import games.cubi.raycastedantiesp.core.view.ViewRegistry;
+import games.cubi.raycastedantiesp.packetevents.PacketEventsBlockSnapshotManager;
+import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsBlockViewController;
+import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsEntityViewController;
 import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
-import games.cubi.raycastedantiesp.paper.snapshot.block.BukkitBSM;
-import games.cubi.raycastedantiesp.paper.snapshot.entity.BukkitESM;
-import games.cubi.raycastedantiesp.paper.staging.PaperPESnapshotFactory;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.entity.BukkitEVC;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.player.BukkitPVC;
-import games.cubi.raycastedantiesp.paper.visibilitychangehandlers.tileentity.BukkitTVC;
 import games.cubi.raycastedantiesp.paper.bStats.MetricsCollector;
 import games.cubi.logs.Logger;
 
@@ -33,8 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
     private static MovementTracker tracker;
-    //private boolean packetEventsPresent = false; // Don't use this to check if PacketEvents is present, use DataHolder's packetevents field instead. This just checks  if its present, not if its enabled/functional
-    private static PacketProcessor packetProcessor = null;
+    private static PaperPacketEventsEntityViewController packetEventsController;
     private static PaperSimpleEngine engine;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
@@ -48,33 +42,22 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public void onLoad() {
         config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
-        if (packetEvents != null) {
-            //packetEventsPresent = true;
-            Logger.info("PacketEvents detected.", 5);
-            new Registrar(this);
-
-            PacketEventsStatus.init(true);
-            packetProcessor = new PacketProcessor(RaycastedAntiESP.get());
+        if (packetEvents == null) {
+            throw new IllegalStateException("PacketEvents is required but was not found.");
         }
-        else {
-            Logger.info("PacketEvents not detected, disabling packet-based tablist modification. Don't worry, the plugin will still work without it.", 4);
-            PacketEventsStatus.init(false);
-        }
+        Logger.info("PacketEvents detected.", 5);
     }
 
     @Override
     public void onEnable() {
-        /*
-        //BukkitBSM blockSnapshotManager = new BukkitBSM(this, config);
-        //BukkitESM entitySnapshotManager = new BukkitESM();*/
-        PaperPESnapshotFactory snapshotFactory = new PaperPESnapshotFactory();
-        SnapshotManager.initialise(snapshotFactory, snapshotFactory);
-        VisibilityChangeHandlers.initialise(new BukkitEVC(), new BukkitPVC(), new BukkitTVC());
+        ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, AbstractEntityView::new, AbstractTileEntityView::new);
+        packetEventsController = new PaperPacketEventsEntityViewController();
+        new PaperPacketEventsBlockViewController();
 
         tracker = new MovementTracker(this, config);
         engine = new PaperSimpleEngine(this, config);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
-        EventListener.initialise(this, packetProcessor, engine);
+        EventListener.initialise(this, engine);
 
         initialiseCommands();
 
@@ -110,8 +93,8 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public static MovementTracker getMovementTracker() {
         return tracker;
     }
-    public static PacketProcessor getPacketProcessor() {
-        return packetProcessor;
+    public static PaperPacketEventsEntityViewController getPacketEventsController() {
+        return packetEventsController;
     }
     public static PaperSimpleEngine getEngine() {
         return engine;
