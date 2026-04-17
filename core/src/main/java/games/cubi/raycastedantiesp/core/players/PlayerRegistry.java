@@ -53,7 +53,7 @@ public class PlayerRegistry {
     /**For use when an invalid tile entity is detected, to ensure all players have it removed from their data**/
     public void removeTileEntityFromAllPlayers(BlockLocatable blockLocation) {
         for (PlayerData playerData : playerDataMap.values()) {
-            playerData.tileVisibility().remove(blockLocation);
+            playerData.tileEntityView().removeTileEntity(blockLocation);
         }
     }
 }
