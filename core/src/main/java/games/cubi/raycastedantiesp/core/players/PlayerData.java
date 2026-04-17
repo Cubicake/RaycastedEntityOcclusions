@@ -1,71 +1,60 @@
 package games.cubi.raycastedantiesp.core.players;
 
+import games.cubi.locatables.Locatable;
+import games.cubi.locatables.implementations.ThreadSafeLocatable;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.PlayerEntitySnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.SnapshotManager;
+import games.cubi.raycastedantiesp.core.view.EntityView;
+import games.cubi.raycastedantiesp.core.view.TileEntityView;
+import games.cubi.raycastedantiesp.core.view.ViewRegistry;
 
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PlayerData {
-    protected record VisibilityAndLastCheckTime(boolean visible, int lastChecked) {}
-
     private final UUID playerUUID;
     private final int joinTick;
     private volatile boolean hasBypassPermission;
+    private final ThreadSafeLocatable ownLocation;
 
-    public static class EntityVisibilityTracker extends VisibilityTracker<UUID> {
-        private final ConcurrentHashMap<UUID, VisibilityAndLastCheckTime> entityVisibility = new ConcurrentHashMap<>();     // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
-
-        @Override
-        protected ConcurrentHashMap<UUID, VisibilityAndLastCheckTime> getMap() {
-            return entityVisibility;
-        }
-    }
-
-    public static class PlayerVisibilityTracker extends VisibilityTracker<UUID> {
-        private final ConcurrentHashMap<UUID, VisibilityAndLastCheckTime> playerVisibility = new ConcurrentHashMap<>();    // UUID = Entity UUID, Boolean = if it is visible to the player. False = hidden
-
-        @Override
-        protected ConcurrentHashMap<UUID, VisibilityAndLastCheckTime> getMap() {
-            return playerVisibility;
-        }
-    }
-
-    private final TileEntityVisibilityTracker tileEntityVisibilityTracker = new TileEntityVisibilityTracker(this);
-    private final EntityVisibilityTracker entityVisibilityTracker = new EntityVisibilityTracker();
-    private final PlayerVisibilityTracker playerVisibilityTracker = new PlayerVisibilityTracker();
-
+    private final TileEntityView tileEntityView;
+    private final EntityView<?> entityView;
+    private final EntityView<?> playerView;
     private final PlayerBlockSnapshotManager blockSnapshotManager;
-    private final PlayerEntitySnapshotManager entitySnapshotManager;
 
     public PlayerData(UUID player, boolean hasBypassPermission, int joinTick) {
         this.joinTick = joinTick;
         this.playerUUID = player;
         this.hasBypassPermission = hasBypassPermission;
 
-        blockSnapshotManager = SnapshotManager.createBlockSnapshotManager();
-        entitySnapshotManager = SnapshotManager.createEntitySnapshotManager();
+        tileEntityView = ViewRegistry.createTileEntityView();
+        entityView = ViewRegistry.createEntityView();
+        playerView = ViewRegistry.createEntityView();
+        blockSnapshotManager = ViewRegistry.createBlockSnapshotManager();
+        ownLocation = new ThreadSafeLocatable(null, 0, 0, 0);
     }
 
-    public TileEntityVisibilityTracker tileVisibility() {
-        return tileEntityVisibilityTracker;
+    public TileEntityView tileEntityView() {
+        return tileEntityView;
     }
 
-    public EntityVisibilityTracker entityVisibility() {
-        return entityVisibilityTracker;
+    public EntityView<?> entityView() {
+        return entityView;
     }
 
-    public PlayerVisibilityTracker playerVisibility() {
-        return playerVisibilityTracker;
-    }
-
-    public PlayerEntitySnapshotManager entitySnapshotManager() {
-        return entitySnapshotManager;
+    public EntityView<?> playerView() {
+        return playerView;
     }
 
     public PlayerBlockSnapshotManager blockSnapshotManager() {
         return blockSnapshotManager;
+    }
+
+    public void updateOwnLocation(UUID world, double x, double y, double z) {
+        ownLocation.set(x, y, z, world);
+    }
+
+    public Locatable ownLocation() {
+        ThreadSafeLocatable existing = ownLocation;
+        return existing == null ? null : existing.clonePlainAndCentreIfBlockLocation();
     }
 
     public UUID getPlayerUUID() {
