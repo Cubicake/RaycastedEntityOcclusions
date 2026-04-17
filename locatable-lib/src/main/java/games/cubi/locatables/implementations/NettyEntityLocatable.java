@@ -66,7 +66,7 @@ public class NettyEntityLocatable implements EntityLocatable {
 
     @Override
     public LocatableType getType() {
-        return LocatableType.ThreadSafeEntity;
+        return LocatableType.NettyEntity;
     }
 
     @Override

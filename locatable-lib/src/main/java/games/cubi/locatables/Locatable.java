@@ -107,6 +107,7 @@ public sealed interface Locatable extends ChunkLocatable permits MutableLocatabl
 
     enum LocatableType {
         ThreadSafe,
+        NettyEntity,
         MutableBlockVector,
         ImmutableBlockLocation,
         Immutable,
