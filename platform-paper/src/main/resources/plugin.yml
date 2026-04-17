@@ -19,5 +19,5 @@ permissions:
     raycastedentityocclusions.receivelogmessages:
         description: Permission to receive log messages which are sent to the console
         default: false
-softdepend:
+depend:
     - packetevents
