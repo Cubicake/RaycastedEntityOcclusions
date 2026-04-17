@@ -2,6 +2,7 @@ package games.cubi.raycastedantiesp.core.engine;
 
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.Locatable;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
@@ -11,16 +12,12 @@ import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.raycast.ParticleSpawner;
 import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
-import games.cubi.raycastedantiesp.core.snapshot.PlayerEntitySnapshotManager;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.EntityVisibilityChanger;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.PlayerVisibilityChanger;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.TileEntityVisibilityChanger;
-import games.cubi.raycastedantiesp.core.visibilitychangehandlers.VisibilityChangeHandlers;
+import games.cubi.raycastedantiesp.core.view.EntityView;
+import games.cubi.raycastedantiesp.core.view.TileEntityView;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -60,70 +57,80 @@ public class SimpleEngine implements Engine {
         PlatformTileEntityConfig<?> tileEntityConfig = config.getTileEntityConfig();
         DebugConfig debugConfig = config.getDebugConfig();
 
-        int tileEntityRadius = (Math.max(tileEntityConfig.getRaycastRadius(), 10) + 15) / 16;
-
         for (List<PlayerData> batch : batches) {
-            processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, tileEntityRadius, debugConfig.showDebugParticles(), currentTick);
+            processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, debugConfig.showDebugParticles(), currentTick);
         }
     }
 
-    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, PlatformTileEntityConfig<?> tileEntityConfig, int tileEntityRadius,
+    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, PlatformTileEntityConfig<?> tileEntityConfig,
                                        boolean debugParticles, int currentTick) {
 
         for (PlayerData playerData : playerDataList) {
             if (playerData.hasBypassPermission()) continue;
 
-            PlayerEntitySnapshotManager entitySnapshotManager = playerData.entitySnapshotManager();
             PlayerBlockSnapshotManager blockSnapshotManager = playerData.blockSnapshotManager();
 
-            Locatable playerLocation = entitySnapshotManager.getLocation(playerData.getPlayerUUID());
+            Locatable playerLocation = playerData.ownLocation();
             if (playerLocation == null) {
                 continue;
             }
 
-            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);
-            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, entitySnapshotManager, blockSnapshotManager, currentTick);
-            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, tileEntityRadius, debugParticles, blockSnapshotManager, currentTick);
+            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, blockSnapshotManager, currentTick);
+            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, blockSnapshotManager, currentTick);
+            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, debugParticles, blockSnapshotManager, currentTick);
         }
     }
 
-    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, PlayerEntitySnapshotManager entitySnapshotManager, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
-        EntityVisibilityChanger entityVisibilityChanger = VisibilityChangeHandlers.getEntity();
+    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
+        EntityView<?> entityView = player.entityView();
 
-        for (UUID entityUUID : player.entityVisibility().getNeedingRecheck(entityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
-            Locatable entityLocation = entitySnapshotManager.getLocation(entityUUID);
+        for (UUID entityUUID : entityView.getNeedingRecheck(entityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
+            boolean wasVisible = entityView.isVisible(entityUUID, currentTick);
+            Locatable entityLocation = entityView.getLocation(entityUUID);
             if (entityLocation == null) {
+                Logger.debug("SimpleEngine.checkEntities skipped-null-location viewer=" + player.getPlayerUUID()
+                        + " target=" + entityUUID
+                        + " wasVisible=" + wasVisible
+                        + " tick=" + currentTick);
                 continue;
             }
             boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
-            entityVisibilityChanger.setEntityVisibilityForPlayer(player.getPlayerUUID(), entityUUID, canSee, currentTick);
+            entityView.setVisibility(entityUUID, canSee, currentTick);
         }
     }
 
-    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, PlayerEntitySnapshotManager entitySnapshotManager, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
-        PlayerVisibilityChanger playerVisibilityChanger = VisibilityChangeHandlers.getPlayer();
+    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
+        EntityView<?> playerView = player.playerView();
 
-        for (UUID otherPlayerUUID : player.playerVisibility().getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
-            Locatable otherPlayerLocation = entitySnapshotManager.getLocation(otherPlayerUUID);
+        for (UUID otherPlayerUUID : playerView.getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
+            boolean wasVisible = playerView.isVisible(otherPlayerUUID, currentTick);
+            Locatable otherPlayerLocation = playerView.getLocation(otherPlayerUUID);
             if (otherPlayerLocation == null) {
+                Logger.debug("SimpleEngine.checkPlayers skipped-null-location viewer=" + player.getPlayerUUID()
+                        + " target=" + otherPlayerUUID
+                        + " wasVisible=" + wasVisible
+                        + " tick=" + currentTick);
                 continue;
             }
             boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
-            playerVisibilityChanger.setPlayerVisibilityForPlayer(player.getPlayerUUID(), otherPlayerUUID, canSee, currentTick);
+            playerView.setVisibility(otherPlayerUUID, canSee, currentTick);
         }
     }
 
-    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, int chunkRadius, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
-        TileEntityVisibilityChanger tileEntityVisibilityChanger = VisibilityChangeHandlers.getTileEntity();
-        int chunkX = playerLocation.blockX() >> 4;
-        int chunkZ = playerLocation.blockZ() >> 4;
+    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
+        TileEntityView tileEntityView = player.tileEntityView();
 
-        Set<BlockLocatable> tileEntitiesToCheck = player.tileVisibility().getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick, playerLocation.world(), chunkX, chunkZ, chunkRadius);
+        for (BlockLocatable tileEntityLocation : tileEntityView.getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
+            if (tileEntityLocation.world() == null || !tileEntityLocation.world().equals(playerLocation.world())) {
+                continue;
+            }
 
-        for (BlockLocatable tileEntityLocation : tileEntitiesToCheck) {
-            if (!player.tileVisibility().containsChunk(tileEntityLocation)) continue;
+            if (playerLocation.distanceSquared(tileEntityLocation) > (double) tileEntityConfig.getRaycastRadius() * tileEntityConfig.getRaycastRadius()) {
+                tileEntityView.setVisibility(tileEntityLocation, false, currentTick);
+                continue;
+            }
             boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
-            tileEntityVisibilityChanger.setTileEntityVisibilityForPlayer(player.getPlayerUUID(), tileEntityLocation, canSee, currentTick);
+            tileEntityView.setVisibility(tileEntityLocation, canSee, currentTick);
         }
     }
 }
