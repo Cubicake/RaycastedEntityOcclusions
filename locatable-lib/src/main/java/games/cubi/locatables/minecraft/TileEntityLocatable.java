@@ -1,6 +1,10 @@
-package games.cubi.locatables;
+package games.cubi.locatables.minecraft;
 
-public interface TileEntityLocatable<T> extends BlockLocatable {
+import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.ImmutableLocatable;
+import games.cubi.locatables.MutableLocatable;
+
+public interface TileEntityLocatable<T> extends BlockLocatable, ImmutableLocatable {
     boolean visible();
     TileEntityLocatable<T> setVisible(boolean visible);
 

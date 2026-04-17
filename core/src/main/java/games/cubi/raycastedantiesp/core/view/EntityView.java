@@ -1,6 +1,6 @@
 package games.cubi.raycastedantiesp.core.view;
 
-import games.cubi.locatables.EntityLocatable;
+import games.cubi.locatables.minecraft.EntityLocatable;
 import games.cubi.locatables.Locatable;
 
 import java.util.Collection;

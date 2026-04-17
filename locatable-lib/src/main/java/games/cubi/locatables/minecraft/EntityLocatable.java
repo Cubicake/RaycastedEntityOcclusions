@@ -1,4 +1,6 @@
-package games.cubi.locatables;
+package games.cubi.locatables.minecraft;
+
+import games.cubi.locatables.MutableLocatable;
 
 import java.util.List;
 import java.util.UUID;
@@ -6,7 +8,7 @@ import java.util.UUID;
 /**
  * Per-player platform-independent representation of an entity
  */
-public interface EntityLocatable extends MutableLocatable {
+public interface EntityLocatable<EntityType, Direction> extends MutableLocatable {
     enum SpawnType {
         LIVING,
         ENTITY,
@@ -46,26 +48,26 @@ public interface EntityLocatable extends MutableLocatable {
     boolean onGround();
     EntityLocatable setOnGround(boolean onGround);
 
-    Object entityType();
+    EntityType entityType();
 
     int entityData();
     EntityLocatable setEntityData(int entityData);
 
-    Object paintingType();
+    EntityType paintingType();
 
-    Object paintingDirection();
+    Direction paintingDirection();
 
     List<?> metadata();
-    EntityLocatable setMetadata(List<?> metadata);
+    EntityLocatable<?, ?> setMetadata(List<?> metadata);
 
     List<?> equipment();
-    EntityLocatable setEquipment(List<?> equipment);
+    EntityLocatable<?, ?> setEquipment(List<?> equipment);
 
     int[] passengerIDs();
-    EntityLocatable setPassengerIDs(int[] passengerIDs);
+    EntityLocatable<?, ?> setPassengerIDs(int[] passengerIDs);
 
     Object packetReplayData();
-    EntityLocatable setPacketReplayData(Object packetReplayData);
+    EntityLocatable<?, ?> setPacketReplayData(Object packetReplayData);
 
     default <T> T cast() {
         return (T) this;

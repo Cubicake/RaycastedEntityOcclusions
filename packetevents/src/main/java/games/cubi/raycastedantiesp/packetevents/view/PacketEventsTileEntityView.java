@@ -1,9 +1,9 @@
 package games.cubi.raycastedantiesp.packetevents.view;
 
 import games.cubi.locatables.BlockLocatable;
-import games.cubi.locatables.TileEntityLocatable;
+import games.cubi.locatables.minecraft.TileEntityLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.locatables.implementations.NettyTileEntity;
+import games.cubi.locatables.minecraft.NettyTileEntity;
 import games.cubi.raycastedantiesp.core.view.TileEntityView;
 import games.cubi.raycastedantiesp.core.view.TileEntityViewTransition;
 

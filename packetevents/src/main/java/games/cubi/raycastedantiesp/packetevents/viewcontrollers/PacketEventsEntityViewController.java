@@ -31,9 +31,9 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSp
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPainting;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
-import games.cubi.locatables.EntityLocatable;
+import games.cubi.locatables.minecraft.EntityLocatable;
 import games.cubi.locatables.Locatable;
-import games.cubi.locatables.implementations.NettyEntityLocatable;
+import games.cubi.locatables.minecraft.NettyEntityLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;

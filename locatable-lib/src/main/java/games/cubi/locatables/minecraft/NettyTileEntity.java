@@ -1,15 +1,13 @@
-package games.cubi.locatables.implementations;
+package games.cubi.locatables.minecraft;
 
-import games.cubi.locatables.ImmutableLocatable;
-import games.cubi.locatables.MutableLocatable;
-import games.cubi.locatables.TileEntityLocatable;
+import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
-public class NettyTileEntity implements TileEntityLocatable<Object>, ImmutableLocatable {
+public class NettyTileEntity<PacketReplayData> implements TileEntityLocatable<PacketReplayData> {
     private final ImmutableBlockLocatable delegate;
     private volatile boolean visible;
     private volatile int lastChecked;
     private volatile int blockID;
-    private volatile Object extraData;
+    private volatile PacketReplayData extraData;
 
     public NettyTileEntity(ImmutableBlockLocatable location, boolean visible, int lastChecked) {
         this.delegate = location;
@@ -23,7 +21,7 @@ public class NettyTileEntity implements TileEntityLocatable<Object>, ImmutableLo
     }
 
     @Override
-    public TileEntityLocatable<Object> setVisible(boolean visible) {
+    public TileEntityLocatable<PacketReplayData> setVisible(boolean visible) {
         this.visible = visible;
         return this;
     }
@@ -34,7 +32,7 @@ public class NettyTileEntity implements TileEntityLocatable<Object>, ImmutableLo
     }
 
     @Override
-    public TileEntityLocatable<Object> setLastChecked(int lastChecked) {
+    public TileEntityLocatable<PacketReplayData> setLastChecked(int lastChecked) {
         this.lastChecked = lastChecked;
         return this;
     }
@@ -45,30 +43,20 @@ public class NettyTileEntity implements TileEntityLocatable<Object>, ImmutableLo
     }
 
     @Override
-    public TileEntityLocatable<Object> setBlockID(int blockID) {
+    public TileEntityLocatable<PacketReplayData> setBlockID(int blockID) {
         this.blockID = blockID;
         return this;
     }
 
     @Override
-    public Object extraData() {
+    public PacketReplayData extraData() {
         return extraData;
     }
 
     @Override
-    public TileEntityLocatable<Object> setExtraData(Object extraData) {
+    public TileEntityLocatable<PacketReplayData> setExtraData(PacketReplayData extraData) {
         this.extraData = extraData;
         return this;
-    }
-
-    @Override
-    public boolean isMutable() {
-        return ImmutableLocatable.super.isMutable();
-    }
-
-    @Override
-    public MutableLocatable castToMutableOrNull() {
-        return ImmutableLocatable.super.castToMutableOrNull();
     }
 
     @Override

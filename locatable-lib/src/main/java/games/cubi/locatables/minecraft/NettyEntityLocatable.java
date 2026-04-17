@@ -1,7 +1,7 @@
-package games.cubi.locatables.implementations;
+package games.cubi.locatables.minecraft;
 
-import games.cubi.locatables.EntityLocatable;
 import games.cubi.locatables.MutableLocatable;
+import games.cubi.locatables.implementations.MutableLocatableImpl;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,13 +10,13 @@ import java.util.UUID;
  * Designed for use with netty-based systems, where entity data updates only ever come from one thread, but reads may come from multiple threads. This is however not enforced, and must be kept in mind when using this class.
  * A representation of an entity for a specific player.
  */
-public class NettyEntityLocatable implements EntityLocatable {
+public class NettyEntityLocatable<EntityType, Direction> implements EntityLocatable<EntityType, Direction> {
     // immutable fields
     private final int entityID;
     private final UUID entityUUID;
     private final SpawnType spawnType;
-    private final Object entityType; // PacketEvents stores EntityType and PaintingType here
-    private final Object paintingDirection; //Null if type is not painting
+    private final EntityType entityType; // PacketEvents stores EntityType and PaintingType here
+    private final Direction paintingDirection; //Null if type is not painting
 
     // Netty mutatable fields. Should NEVER be mutated from the engine thread, but reads are fine.
     private volatile UUID world;
@@ -42,7 +42,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     // engine thread mutable, reads from netty and engine.
     private volatile boolean visible = true;
 
-    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, Object entityType) {
+    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
 
@@ -53,7 +53,7 @@ public class NettyEntityLocatable implements EntityLocatable {
         this.paintingDirection = null;
     }
 
-    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, Object paintingType, Object paintingDirection) {
+    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType paintingType, Direction paintingDirection) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
 
@@ -88,7 +88,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * Wherever possible, effort should be made to only call this from the engine thread, for thread safety reasons.
      */
     @Override
-    public EntityLocatable setVisible(boolean visible) {
+    public EntityLocatable<?, ?> setVisible(boolean visible) {
         this.visible = visible;
         return this;
     }
@@ -99,7 +99,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 // todo it may be that this is only ever set by the engine thread? If so, just volatile annotation may be safe enough, as no two engine threads should update a single player at the same time (add guard lock for this)
     @Override
-    public EntityLocatable setLastChecked(int lastChecked) {
+    public EntityLocatable<?, ?> setLastChecked(int lastChecked) {
         this.lastChecked = lastChecked;
         return this;
     }
@@ -110,7 +110,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 
     @Override
-    public EntityLocatable setClientVisible(boolean clientVisible) {
+    public EntityLocatable<?, ?> setClientVisible(boolean clientVisible) {
         this.clientVisible = clientVisible;
         return this;
     }
@@ -129,7 +129,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setYaw(float yaw) {
+    public EntityLocatable<?, ?> setYaw(float yaw) {
         this.yaw = yaw;
         return this;
     }
@@ -143,7 +143,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setPitch(float pitch) {
+    public EntityLocatable<?, ?> setPitch(float pitch) {
         this.pitch = pitch;
         return this;
     }
@@ -157,7 +157,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setHeadYaw(float headYaw) {
+    public EntityLocatable<?, ?> setHeadYaw(float headYaw) {
         this.headYaw = headYaw;
         return this;
     }
@@ -181,7 +181,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setVelocity(double velocityX, double velocityY, double velocityZ) {
+    public EntityLocatable<?, ?> setVelocity(double velocityX, double velocityY, double velocityZ) {
         this.velocityX = velocityX;
         this.velocityY = velocityY;
         this.velocityZ = velocityZ;
@@ -197,13 +197,13 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setOnGround(boolean onGround) {
+    public EntityLocatable<?, ?> setOnGround(boolean onGround) {
         this.onGround = onGround;
         return this;
     }
 
     @Override
-    public Object entityType() {
+    public EntityType entityType() {
         return entityType;
     }
 
@@ -213,18 +213,18 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 
     @Override
-    public EntityLocatable setEntityData(int entityData) {
+    public EntityLocatable<?, ?> setEntityData(int entityData) {
         this.entityData = entityData;
         return this;
     }
 
     @Override
-    public Object paintingType() {
+    public EntityType paintingType() {
         return entityType;
     }
 
     @Override
-    public Object paintingDirection() {
+    public Direction paintingDirection() {
         return paintingDirection;
     }
 
@@ -237,7 +237,7 @@ public class NettyEntityLocatable implements EntityLocatable {
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable setMetadata(List<?> metadata) {
+    public EntityLocatable<?, ?> setMetadata(List<?> metadata) {
         this.metadata = metadata == null ? List.of() : List.copyOf(metadata);
         return this;
     }
@@ -248,7 +248,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 
     @Override
-    public EntityLocatable setEquipment(List<?> equipment) {
+    public EntityLocatable<?, ?> setEquipment(List<?> equipment) {
         this.equipment = equipment == null ? List.of() : List.copyOf(equipment);
         return this;
     }
@@ -259,7 +259,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 
     @Override
-    public EntityLocatable setPassengerIDs(int[] passengerIDs) {
+    public EntityLocatable<?, ?> setPassengerIDs(int[] passengerIDs) {
         this.passengerIDs = passengerIDs == null ? new int[0] : passengerIDs.clone();
         return this;
     }
@@ -270,7 +270,7 @@ public class NettyEntityLocatable implements EntityLocatable {
     }
 
     @Override
-    public EntityLocatable setPacketReplayData(Object packetReplayData) {
+    public EntityLocatable<?, ?> setPacketReplayData(Object packetReplayData) {
         this.packetReplayData = packetReplayData;
         return this;
     }

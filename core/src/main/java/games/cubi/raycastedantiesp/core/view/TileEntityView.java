@@ -1,7 +1,7 @@
 package games.cubi.raycastedantiesp.core.view;
 
 import games.cubi.locatables.BlockLocatable;
-import games.cubi.locatables.TileEntityLocatable;
+import games.cubi.locatables.minecraft.TileEntityLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
 import java.util.Collection;

@@ -18,7 +18,7 @@ import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.view.TileEntityView;
 import games.cubi.raycastedantiesp.core.view.TileEntityViewTransition;
-import games.cubi.locatables.TileEntityLocatable;
+import games.cubi.locatables.minecraft.TileEntityLocatable;
 import games.cubi.raycastedantiesp.packetevents.BlockInfoResolver;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsTileEntityReplayData;
 
