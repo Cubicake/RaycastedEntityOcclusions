@@ -7,7 +7,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
@@ -23,6 +25,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
 
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -113,6 +116,7 @@ public class CommandsManager {
                         WrappedBlockState wrappedData = SpigotConversionUtil.fromBukkitBlockData(data);
                         sender.sendRichMessage("Global ID of that block is "+wrappedData.getGlobalId()+". In Paper terms, that is "+data.getAsString());
                         sender.sendRichMessage("According to PacketEventsPaperBlockInfoResolver, that block is "+ PacketEventsPaperBlockInfoResolver.get.isOccluding(wrappedData.getGlobalId()));
+                        sender.sendRichMessage("According to bukkit that block is " +data.getMaterial().isOccluding());
                         return Command.SINGLE_SUCCESS;
                     }))
                 .then(Commands.literal("dump").executes(context -> {
@@ -138,6 +142,7 @@ public class CommandsManager {
                     return Command.SINGLE_SUCCESS;
                 }
                 ))
+                .then(Commands.literal("debug").executes(CommandsManager::testCommand))
             .build();
     }
 
@@ -151,6 +156,21 @@ public class CommandsManager {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static void testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+    private static int testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player player = (Player) context.getSource().getSender();
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+        Entity closestEntity = player.getNearbyEntities(10,10,10).getFirst();
+        if (closestEntity == null) return -1;
+        player.sendRichMessage("Closest entity is "+closestEntity.getName());
+        Locatable entityLocatable = playerData.entityView().getLocation(closestEntity.getUniqueId());
+        Location bukkitLoc = closestEntity.getLocation().clone();
+        player.sendRichMessage("Entity location according to PacketEvents is "+entityLocatable);
+        player.sendRichMessage("Entity location according to Bukkit is "+bukkitLoc);
+        double driftX = Math.abs(entityLocatable.x() - bukkitLoc.getX());
+        double driftZ = Math.abs(entityLocatable.z() - bukkitLoc.getZ());
+        if (driftX < 0.001) driftX = 0;
+        if (driftZ < 0.001) driftZ = 0;
+        Logger.debug("Drift is X: "+driftX+" Z: "+driftZ);
+        return Command.SINGLE_SUCCESS;
     }
 }
