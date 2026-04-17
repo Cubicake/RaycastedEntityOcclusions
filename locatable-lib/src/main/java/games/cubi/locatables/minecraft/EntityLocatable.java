@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * Per-player platform-independent representation of an entity
  */
-public interface EntityLocatable<EntityType, Direction> extends MutableLocatable {
+public interface EntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> extends MutableLocatable {
     enum SpawnType {
         LIVING,
         ENTITY,
@@ -21,53 +21,53 @@ public interface EntityLocatable<EntityType, Direction> extends MutableLocatable
     UUID entityUUID();
 
     boolean visible();
-    EntityLocatable setVisible(boolean visible);
+    EntityLocatable<?, ?, ?, ?> setVisible(boolean visible);
 
     int lastChecked();
-    EntityLocatable setLastChecked(int lastChecked);
+    EntityLocatable<?, ?, ?, ?> setLastChecked(int lastChecked);
 
     boolean clientVisible();
-    EntityLocatable setClientVisible(boolean clientVisible);
+    EntityLocatable<?, ?, ?, ?> setClientVisible(boolean clientVisible);
 
     SpawnType spawnType();
 
     float yaw();
-    EntityLocatable setYaw(float yaw);
+    EntityLocatable<?, ?, ?, ?> setYaw(float yaw);
 
     float pitch();
-    EntityLocatable setPitch(float pitch);
+    EntityLocatable<?, ?, ?, ?> setPitch(float pitch);
 
     float headYaw();
-    EntityLocatable setHeadYaw(float headYaw);
+    EntityLocatable<?, ?, ?, ?> setHeadYaw(float headYaw);
 
     double velocityX();
     double velocityY();
     double velocityZ();
-    EntityLocatable setVelocity(double velocityX, double velocityY, double velocityZ);
+    EntityLocatable<?, ?, ?, ?> setVelocity(double velocityX, double velocityY, double velocityZ);
 
     boolean onGround();
-    EntityLocatable setOnGround(boolean onGround);
+    EntityLocatable<?, ?, ?, ?> setOnGround(boolean onGround);
 
     EntityType entityType();
 
     int entityData();
-    EntityLocatable setEntityData(int entityData);
+    EntityLocatable<?, ?, ?, ?> setEntityData(int entityData);
 
-    EntityType paintingType();
+    PaintingType paintingType();
 
     Direction paintingDirection();
 
     List<?> metadata();
-    EntityLocatable<?, ?> setMetadata(List<?> metadata);
+    EntityLocatable<?, ?, ?, ?> setMetadata(List<?> metadata);
 
     List<?> equipment();
-    EntityLocatable<?, ?> setEquipment(List<?> equipment);
+    EntityLocatable<?, ?, ?, ?> setEquipment(List<?> equipment);
 
     int[] passengerIDs();
-    EntityLocatable<?, ?> setPassengerIDs(int[] passengerIDs);
+    EntityLocatable<?, ?, ?, ?> setPassengerIDs(int[] passengerIDs);
 
-    Object packetReplayData();
-    EntityLocatable<?, ?> setPacketReplayData(Object packetReplayData);
+    PacketReplayData packetReplayData();
+    EntityLocatable<?, ?, ?, ?> setPacketReplayData(PacketReplayData packetReplayData);
 
     default <T> T cast() {
         return (T) this;

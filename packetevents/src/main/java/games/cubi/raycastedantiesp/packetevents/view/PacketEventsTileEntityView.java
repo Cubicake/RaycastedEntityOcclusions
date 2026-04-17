@@ -6,6 +6,7 @@ import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.locatables.minecraft.NettyTileEntity;
 import games.cubi.raycastedantiesp.core.view.TileEntityView;
 import games.cubi.raycastedantiesp.core.view.TileEntityViewTransition;
+import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsTileEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,20 +16,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class PacketEventsTileEntityView implements TileEntityView {
-    private final Map<ImmutableBlockLocatable, NettyTileEntity> knownTileEntities = new ConcurrentHashMap<>();
+    private final Map<ImmutableBlockLocatable, PacketEventsTileEntity> knownTileEntities = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<TileEntityViewTransition> transitions = new ConcurrentLinkedQueue<>();
 
     @Override
     public void upsertTileEntity(BlockLocatable location, int currentTick) {
         ImmutableBlockLocatable key = toImmutable(location);
         knownTileEntities.compute(key, (ignored, existing) ->
-                existing == null ? new NettyTileEntity(key, false, currentTick) : (NettyTileEntity) existing.setLastChecked(currentTick));
+                existing == null ? new PacketEventsTileEntity(key, false, currentTick) : (PacketEventsTileEntity) existing.setLastChecked(currentTick));
     }
 
     @Override
     public void insertIfAbsent(BlockLocatable location) {
         ImmutableBlockLocatable key = toImmutable(location);
-        knownTileEntities.computeIfAbsent(key, ignored -> new NettyTileEntity(key, false, 0));
+        knownTileEntities.computeIfAbsent(key, ignored -> new PacketEventsTileEntity(key, false, 0));
     }
 
     @Override
@@ -51,14 +52,14 @@ public class PacketEventsTileEntityView implements TileEntityView {
 
     @Override
     public boolean isVisible(BlockLocatable location, int currentTick) {
-        NettyTileEntity state = knownTileEntities.get(toImmutable(location));
+        PacketEventsTileEntity state = knownTileEntities.get(toImmutable(location));
         return state == null || state.visible();
     }
 
     @Override
     public void setVisibility(BlockLocatable location, boolean visible, int currentTick) {
         ImmutableBlockLocatable key = toImmutable(location);
-        NettyTileEntity existing = knownTileEntities.get(key);
+        PacketEventsTileEntity existing = knownTileEntities.get(key);
         if (existing == null) {
             return;
         }
@@ -80,8 +81,8 @@ public class PacketEventsTileEntityView implements TileEntityView {
     @Override
     public Collection<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTick) {
         List<BlockLocatable> needingRecheck = new ArrayList<>();
-        for (Map.Entry<ImmutableBlockLocatable, NettyTileEntity> entry : knownTileEntities.entrySet()) {
-            NettyTileEntity state = entry.getValue();
+        for (Map.Entry<ImmutableBlockLocatable, PacketEventsTileEntity> entry : knownTileEntities.entrySet()) {
+            PacketEventsTileEntity state = entry.getValue();
             if (state.visible() && currentTick - state.lastChecked() < recheckTicks) {
                 continue;
             }

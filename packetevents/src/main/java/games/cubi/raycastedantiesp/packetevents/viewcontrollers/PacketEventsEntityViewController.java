@@ -38,6 +38,7 @@ import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
+import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsEntity;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsEntityReplayData;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsPlayerReplayData;
 
@@ -289,7 +290,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
     ) {
         if (entityUUID == null) return null;
 
-        NettyEntityLocatable entity = new NettyEntityLocatable(world, x, y, z, entityID, entityUUID, spawnType, entityType);
+        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, entityType);
         entityView.insertEntity(entity);
 
         //entity.setLastChecked(currentTick); //test that this is safe to remove
@@ -297,8 +298,8 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         return entity;
     }
 
-    private EntityLocatable trackEntitySpawn(
-            EntityView<NettyEntityLocatable> entityView,
+    private PacketEventsEntity trackEntitySpawn(
+            EntityView<PacketEventsEntity> entityView,
             UUID entityUUID,
             int entityID,
             UUID world,
@@ -312,7 +313,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
     ) {
         if (entityUUID == null) return null;
 
-        NettyEntityLocatable entity = new NettyEntityLocatable(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection);
+        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection);
         entityView.insertEntity(entity);
 
         //entity.setLastChecked(currentTick); //test that this is safe to remove

@@ -10,12 +10,13 @@ import java.util.UUID;
  * Designed for use with netty-based systems, where entity data updates only ever come from one thread, but reads may come from multiple threads. This is however not enforced, and must be kept in mind when using this class.
  * A representation of an entity for a specific player.
  */
-public class NettyEntityLocatable<EntityType, Direction> implements EntityLocatable<EntityType, Direction> {
+public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> implements EntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> {
     // immutable fields
     private final int entityID;
     private final UUID entityUUID;
     private final SpawnType spawnType;
-    private final EntityType entityType; // PacketEvents stores EntityType and PaintingType here
+    private final EntityType entityType; // Null if type is painting
+    private final PaintingType paintingType; // Null if type is not painting
     private final Direction paintingDirection; //Null if type is not painting
 
     // Netty mutatable fields. Should NEVER be mutated from the engine thread, but reads are fine.
@@ -33,7 +34,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     private volatile List<?> metadata = List.of();
     private volatile List<?> equipment = List.of();
     private volatile int[] passengerIDs = new int[0];
-    private volatile Object packetReplayData; // For use storing the packets we can't be bothered to directly store, with all cached packets being sent back out to the client when entity is visible again.
+    private volatile PacketReplayData packetReplayData; // For use storing the packets we can't be bothered to directly store, with all cached packets being sent back out to the client when entity is visible again.
 
     // mutatable by several threads (engine and netty), may need to investigate atomic updates for thread safety
     private volatile int lastChecked;
@@ -51,17 +52,19 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
         this.spawnType = spawnType;
         this.entityType = entityType;
         this.paintingDirection = null;
+        this.paintingType = null;
     }
 
-    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType paintingType, Direction paintingDirection) {
+    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
 
         this.entityID = entityID;
         this.entityUUID = entityUUID;
         this.spawnType = spawnType;
-        this.entityType = paintingType;
+        this.entityType = null;
         this.paintingDirection = paintingDirection;
+        this.paintingType = paintingType;
     }
 
     @Override
@@ -88,7 +91,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * Wherever possible, effort should be made to only call this from the engine thread, for thread safety reasons.
      */
     @Override
-    public EntityLocatable<?, ?> setVisible(boolean visible) {
+    public EntityLocatable<?, ?, ?, ?> setVisible(boolean visible) {
         this.visible = visible;
         return this;
     }
@@ -99,7 +102,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     }
 // todo it may be that this is only ever set by the engine thread? If so, just volatile annotation may be safe enough, as no two engine threads should update a single player at the same time (add guard lock for this)
     @Override
-    public EntityLocatable<?, ?> setLastChecked(int lastChecked) {
+    public EntityLocatable<?, ?, ?, ?> setLastChecked(int lastChecked) {
         this.lastChecked = lastChecked;
         return this;
     }
@@ -110,7 +113,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     }
 
     @Override
-    public EntityLocatable<?, ?> setClientVisible(boolean clientVisible) {
+    public EntityLocatable<?, ?, ?, ?> setClientVisible(boolean clientVisible) {
         this.clientVisible = clientVisible;
         return this;
     }
@@ -129,7 +132,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setYaw(float yaw) {
+    public EntityLocatable<?, ?, ?, ?> setYaw(float yaw) {
         this.yaw = yaw;
         return this;
     }
@@ -143,7 +146,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setPitch(float pitch) {
+    public EntityLocatable<?, ?, ?, ?> setPitch(float pitch) {
         this.pitch = pitch;
         return this;
     }
@@ -157,7 +160,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setHeadYaw(float headYaw) {
+    public EntityLocatable<?, ?, ?, ?> setHeadYaw(float headYaw) {
         this.headYaw = headYaw;
         return this;
     }
@@ -181,7 +184,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setVelocity(double velocityX, double velocityY, double velocityZ) {
+    public EntityLocatable<?, ?, ?, ?> setVelocity(double velocityX, double velocityY, double velocityZ) {
         this.velocityX = velocityX;
         this.velocityY = velocityY;
         this.velocityZ = velocityZ;
@@ -197,7 +200,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setOnGround(boolean onGround) {
+    public EntityLocatable<?, ?, ?, ?> setOnGround(boolean onGround) {
         this.onGround = onGround;
         return this;
     }
@@ -213,14 +216,14 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     }
 
     @Override
-    public EntityLocatable<?, ?> setEntityData(int entityData) {
+    public EntityLocatable<?, ?, ?, ?> setEntityData(int entityData) {
         this.entityData = entityData;
         return this;
     }
 
     @Override
-    public EntityType paintingType() {
-        return entityType;
+    public PaintingType paintingType() {
+        return paintingType;
     }
 
     @Override
@@ -237,7 +240,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
      * THIS METHOD IS ONLY SAFE TO CALL FROM THE PLAYER's NETTY THREAD
      */
     @Override
-    public EntityLocatable<?, ?> setMetadata(List<?> metadata) {
+    public EntityLocatable<?, ?, ?, ?> setMetadata(List<?> metadata) {
         this.metadata = metadata == null ? List.of() : List.copyOf(metadata);
         return this;
     }
@@ -248,7 +251,7 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     }
 
     @Override
-    public EntityLocatable<?, ?> setEquipment(List<?> equipment) {
+    public EntityLocatable<?, ?, ?, ?> setEquipment(List<?> equipment) {
         this.equipment = equipment == null ? List.of() : List.copyOf(equipment);
         return this;
     }
@@ -259,18 +262,18 @@ public class NettyEntityLocatable<EntityType, Direction> implements EntityLocata
     }
 
     @Override
-    public EntityLocatable<?, ?> setPassengerIDs(int[] passengerIDs) {
+    public EntityLocatable<?, ?, ?, ?> setPassengerIDs(int[] passengerIDs) {
         this.passengerIDs = passengerIDs == null ? new int[0] : passengerIDs.clone();
         return this;
     }
 
     @Override
-    public Object packetReplayData() {
+    public PacketReplayData packetReplayData() {
         return packetReplayData;
     }
 
     @Override
-    public EntityLocatable<?, ?> setPacketReplayData(Object packetReplayData) {
+    public EntityLocatable<?, ?, ?, ?> setPacketReplayData(PacketReplayData packetReplayData) {
         this.packetReplayData = packetReplayData;
         return this;
     }

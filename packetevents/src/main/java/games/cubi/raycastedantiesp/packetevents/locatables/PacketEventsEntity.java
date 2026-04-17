@@ -1,0 +1,19 @@
+package games.cubi.raycastedantiesp.packetevents.locatables;
+
+import com.github.retrooper.packetevents.protocol.entity.type.EntityType;
+import com.github.retrooper.packetevents.protocol.world.Direction;
+import com.github.retrooper.packetevents.protocol.world.PaintingType;
+import games.cubi.locatables.minecraft.NettyEntityLocatable;
+import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsEntityReplayData;
+
+import java.util.UUID;
+
+public class PacketEventsEntity extends NettyEntityLocatable<EntityType, PaintingType, Direction, PacketEventsEntityReplayData> {
+    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType) {
+        super(world, x, y, z, entityID, entityUUID, spawnType, entityType);
+    }
+
+    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection) {
+        super(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection);
+    }
+}

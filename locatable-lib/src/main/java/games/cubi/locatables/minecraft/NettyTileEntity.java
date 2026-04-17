@@ -2,7 +2,7 @@ package games.cubi.locatables.minecraft;
 
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
-public class NettyTileEntity<PacketReplayData> implements TileEntityLocatable<PacketReplayData> {
+public abstract class NettyTileEntity<PacketReplayData> implements TileEntityLocatable<PacketReplayData> {
     private final ImmutableBlockLocatable delegate;
     private volatile boolean visible;
     private volatile int lastChecked;

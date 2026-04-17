@@ -5,6 +5,7 @@ import games.cubi.locatables.minecraft.NettyEntityLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
+import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,13 +15,13 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> {
-    private final Map<UUID, NettyEntityLocatable> entitiesByUUID = new ConcurrentHashMap<>();
+public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
+    private final Map<UUID, PacketEventsEntity> entitiesByUUID = new ConcurrentHashMap<>();
     private final Map<Integer, UUID> entityUUIDsByID = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<EntityViewTransition> transitions = new ConcurrentLinkedQueue<>();
 
     @Override
-    public void insertEntity(NettyEntityLocatable entity) {
+    public void insertEntity(PacketEventsEntity entity) {
         if (entity == null || entity.entityUUID() == null) {
             Logger.error(new RuntimeException("Attempted to insert null entity or entity with null UUID into EntityView"), 2, PacketEventsEntityView.class);
             return;
@@ -31,7 +32,7 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
 
     @Override
     public void moveRelative(int entityID, double deltaX, double deltaY, double deltaZ, int currentTick) {
-        NettyEntityLocatable existing = getTrackedEntity(entityID);
+        PacketEventsEntity existing = getTrackedEntity(entityID);
         if (existing == null) {
             return;
         }
@@ -40,7 +41,7 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
 
     @Override
     public void moveAbsolute(int entityID, double x, double y, double z, int currentTick) {
-        NettyEntityLocatable existing = getTrackedEntity(entityID);
+        PacketEventsEntity existing = getTrackedEntity(entityID);
         if (existing == null) {
             return;
         }
@@ -53,7 +54,7 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
         if (entityUUID == null) {
             return;
         }
-        NettyEntityLocatable removed = entitiesByUUID.remove(entityUUID);
+        PacketEventsEntity removed = entitiesByUUID.remove(entityUUID);
         if (removed != null) {
             transitions.add(new EntityViewTransition(EntityViewTransition.Type.FORGET, removed.entityUUID(), removed.entityID()));
         }
@@ -67,18 +68,18 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
     }
 
     @Override
-    public NettyEntityLocatable getEntity(UUID entityUUID) {
+    public PacketEventsEntity getEntity(UUID entityUUID) {
         return entitiesByUUID.get(entityUUID);
     }
 
     @Override
-    public NettyEntityLocatable getEntity(int entityID) {
+    public PacketEventsEntity getEntity(int entityID) {
         return getTrackedEntity(entityID);
     }
 
     @Override
     public Locatable getLocation(UUID entityUUID) {
-        NettyEntityLocatable entity = entitiesByUUID.get(entityUUID);
+        PacketEventsEntity entity = entitiesByUUID.get(entityUUID);
         if (entity == null || entity.spawnType() == null) {
             return null;
         }
@@ -87,19 +88,19 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
 
     @Override
     public int getEntityID(UUID entityUUID) {
-        NettyEntityLocatable entity = entitiesByUUID.get(entityUUID);
+        PacketEventsEntity entity = entitiesByUUID.get(entityUUID);
         return entity == null ? -1 : entity.entityID();
     }
 
     @Override
     public boolean isVisible(UUID entityUUID, int currentTick) {
-        NettyEntityLocatable entity = entitiesByUUID.get(entityUUID);
+        PacketEventsEntity entity = entitiesByUUID.get(entityUUID);
         return entity == null || entity.visible();
     }
 
     @Override
     public void setVisibility(UUID entityUUID, boolean visible, int currentTick) {
-        NettyEntityLocatable existing = entitiesByUUID.get(entityUUID);
+        PacketEventsEntity existing = entitiesByUUID.get(entityUUID);
         if (existing == null) {
             Logger.debug("EntityView.setVisibility missing uuid=" + entityUUID
                     + " requestedVisible=" + visible
@@ -125,7 +126,7 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
     @Override
     public Collection<UUID> getNeedingRecheck(int recheckTicks, int currentTick) {
         List<UUID> needingRecheck = new ArrayList<>();
-        for (NettyEntityLocatable state : entitiesByUUID.values()) {
+        for (PacketEventsEntity state : entitiesByUUID.values()) {
             if (state.spawnType() == null) {
                 continue;
             }
@@ -152,7 +153,7 @@ public class PacketEventsEntityView implements EntityView<NettyEntityLocatable> 
         return drained;
     }
 
-    private NettyEntityLocatable getTrackedEntity(int entityID) {
+    private PacketEventsEntity getTrackedEntity(int entityID) {
         UUID entityUUID = entityUUIDsByID.get(entityID);
         return entityUUID == null ? null : entitiesByUUID.get(entityUUID);
     }

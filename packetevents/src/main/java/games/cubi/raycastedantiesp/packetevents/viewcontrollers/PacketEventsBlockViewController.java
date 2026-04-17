@@ -5,6 +5,8 @@ import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.User;
+import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityType;
+import com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes;
 import com.github.retrooper.packetevents.protocol.world.chunk.BaseChunk;
 import com.github.retrooper.packetevents.protocol.world.chunk.Column;
 import com.github.retrooper.packetevents.protocol.world.chunk.TileEntity;
@@ -361,9 +363,8 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         );
     }
 
-    @SuppressWarnings("deprecation")
-    private com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityType packetTileEntityType(TileEntity tileEntity) {
-        return com.github.retrooper.packetevents.protocol.world.blockentity.BlockEntityTypes.getById(
+    private BlockEntityType packetTileEntityType(TileEntity tileEntity) {
+        return BlockEntityTypes.getById(
                 PacketEvents.getAPI().getServerManager().getVersion().toClientVersion(),
                 tileEntity.getType()
         );
