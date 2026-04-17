@@ -19,7 +19,7 @@ dependencies {
     compileOnly(project(":logging"))
 }
 
-val coreVersion = "0.1.0-SNAPSHOT"
+val coreVersion = "0.1.1-SNAPSHOT"
 
 val isRelease = gradle.startParameter.taskNames.any {
     it.contains("buildRelease")
@@ -63,6 +63,7 @@ tasks {
             "build_time" to buildTime.get(),
             "version" to getBasicVersionString()
         )
+        inputs.properties(gitProps)
         filesMatching("build-properties/core.yml") {
             expand(gitProps)
         }

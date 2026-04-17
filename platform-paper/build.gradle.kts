@@ -34,7 +34,7 @@ java {
 
 group = "games.cubi.raycastedantiesp.paper"
 
-val platformPaperVersion: String = "0.1.4-SNAPSHOT"
+val platformPaperVersion: String = "0.1.9-SNAPSHOT"
 val coreVersion = project(":core").version.toString()
 
 val commitShort = providers.exec {
@@ -83,6 +83,7 @@ tasks {
 
     processResources {
         val props = mapOf("version" to version.toString())
+        inputs.properties(props)
         filesMatching("plugin.yml") {
             expand(props)
         }
@@ -92,6 +93,7 @@ tasks {
             "build_time" to buildTime.get(),
             "version" to getBasicVersionString()
         )
+        inputs.properties(gitProps)
         filesMatching("build-properties/platform.yml") {
             expand(gitProps)
         }
@@ -113,6 +115,7 @@ tasks.jar {
     archiveBaseName.set("Incorrectly-Compiled-Without-ShadowJar")
 }
 
+// This is the task to run to test if changes to the plugin are working
 tasks.register("buildSnapshot") {
     group = "raycasted anti-esp" //Not caps sensitive so using spacing and hyphen
     description = "Builds a snapshot version of the plugin with git and build-time metadata included in the file name."
