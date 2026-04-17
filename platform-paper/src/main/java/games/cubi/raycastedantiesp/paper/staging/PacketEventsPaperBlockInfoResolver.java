@@ -27,42 +27,54 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
     private void initialize() {
         boolean run = true;
         int airs = 0;
-        Map<Integer, Boolean> occlusion = new HashMap<>(3775); //500 more than max capacity that was observed using this system on 1.21.11, however it will vary with versions and will increase as blocks are added. Doesn't really matter anyways, this is computed once
-        Map<Integer, Boolean> tileEntity = new HashMap<>(3775);
+        int lastNonAirID = 0;
+        Map<Integer, Boolean> occlusion = new HashMap<>(110000); //Tests show 30,000 block IDs in 1.21.11, and we scan forwards for 80k air ids just in case, so 110k is enough. This is a pointless micro optimization but why not
+        Map<Integer, Boolean> tileEntity = new HashMap<>(110000);
         int iterator = 0;
         while (run) {
             Material material = SpigotReflectionUtil.getBlockDataByCombinedId(iterator).getItemType(); //Unfortunately doesn't seem to be a way to do this without both using an internal PE api and the deprecated for removal MaterialData
             if (material == null) {
+                Logger.debug("Material for block state ID " + iterator + " is null, stopping iteration. This is not expected to happen.");
                 run = false;
                 continue;
             }
             if (material == Material.AIR) {
                 airs++;
-                if (airs > 100) { // There is a sequence of ~40 air blocks around ID 100, so 100 should be a safe number which never fails even if mojang does some weird stuff
+                if (airs > 80000) { // There is a sequence of ~40 air blocks around ID 100, and another of several hundred at ~3000. We scan forwards 80k to future-proof any mojank. Since it runs once at startup, perf is irrelevant here
                     run = false;
                     continue;
                 }
             }
             else {
                 airs = 0;
+                lastNonAirID = iterator;
+                //Logger.debug(material.name() + iterator);
             }
+
             occlusion.put(iterator, material.isOccluding());
-            BlockData data = material.createBlockData();
-            if (data != null && data.createBlockState() instanceof TileState) {
-                tileEntity.put(iterator, true);
-            } else {
+            try {
+                BlockData data = material.createBlockData();
+                if (data.createBlockState() instanceof TileState) {
+                    //Logger.debug("tile at" + iterator + " is tile entity" + material.name());
+                    tileEntity.put(iterator, true);
+                } else {
+                    tileEntity.put(iterator, false);
+                }
+            } catch (Exception a) {
                 tileEntity.put(iterator, false);
+                // will sometimes inconsistently happen, just ignore it ig?
             }
             iterator++;
         }
-        occlusionArray = new boolean[occlusion.size()];
-        tileEntityArray = new boolean[tileEntity.size()];
-        for (int i = 0; i < occlusion.size() - 95 /*Ignore the trailing airs*/; i++) {
+        //Logger.debug(iterator+" was the finish point, last non-air ID was "+lastNonAirID);
+        occlusionArray = new boolean[lastNonAirID + 1];
+        tileEntityArray = new boolean[lastNonAirID + 1];
+        for (int i = 0; i < (lastNonAirID + 1) /*Ignore the trailing airs*/; i++) {
             occlusionArray[i] = occlusion.get(i);
             tileEntityArray[i] = tileEntity.get(i);
             //Logger.debug("BlockState ID " + i + ": occluding=" + occlusionArray[i] + ", tileEntity=" + tileEntityArray[i]);
         }
-        for (int j = 0; j < occlusionArray.length; j++) {
+        for (int j = 0; j < occlusionArray.length; j++) { // just a sanity check
             //Logger.debug("ID " + j + ": occludingArray=" + occlusionArray[j] + ", occludingMap=" + occlusion.get(j));
             if (occlusionArray[j] != occlusion.get(j)) {
                 Logger.warning("Mismatch at ID " + j + ": occlusionArray=" + occlusionArray[j] + ", occlusionMap=" + occlusion.get(j), 3);
