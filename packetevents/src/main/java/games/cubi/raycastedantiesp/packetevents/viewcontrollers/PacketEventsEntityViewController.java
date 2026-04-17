@@ -552,7 +552,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 yield new WrapperPlayServerSpawnLivingEntity(
                         entity.entityID(),
                         entity.entityUUID(),
-                        cast(entity.entityType()),
+                        entity.entityType(),
                         new Vector3d(entity.x(), entity.y(), entity.z()),
                         entity.yaw(),
                         entity.pitch(),
@@ -564,7 +564,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             case ENTITY -> new WrapperPlayServerSpawnEntity(
                     entity.entityID(),
                     Optional.of(entity.entityUUID()),
-                    cast(entity.entityType()),
+                    entity.entityType(),
                     new Vector3d(entity.x(), entity.y(), entity.z()),
                     entity.pitch(),
                     entity.yaw(),
@@ -575,9 +575,9 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             case PAINTING -> new WrapperPlayServerSpawnPainting(
                     entity.entityID(),
                     entity.entityUUID(),
-                    cast(entity.paintingType()),
+                    entity.paintingType(),
                     new Vector3i(entity.blockX(), entity.blockY(), entity.blockZ()),
-                    cast(entity.paintingDirection())
+                    entity.paintingDirection()
             );
             case PLAYER -> {
                 List<EntityData<?>> metadata = copyEntityMetadata(cast(entity.metadata()));
@@ -749,7 +749,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
     }
 
     private PacketEventsEntityReplayData ensureReplayData(PacketEventsEntity entity) {
-        PacketEventsEntityReplayData replayData = cast(entity.packetReplayData());
+        PacketEventsEntityReplayData replayData = entity.packetReplayData();
         if (replayData == null) {
             replayData = PacketEventsEntityReplayData.create();
             entity.setPacketReplayData(replayData);
