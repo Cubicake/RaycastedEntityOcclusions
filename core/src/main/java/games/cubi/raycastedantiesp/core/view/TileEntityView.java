@@ -1,6 +1,7 @@
 package games.cubi.raycastedantiesp.core.view;
 
 import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.TileEntityLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 
 import java.util.Collection;
@@ -13,9 +14,9 @@ public interface TileEntityView {
 
     void removeTileEntity(BlockLocatable location);
 
-    TrackedTileEntity<?> getTrackedTileEntity(BlockLocatable location);
+    TileEntityLocatable<?> getTrackedTileEntity(BlockLocatable location);
 
-    TrackedTileEntity<?> getTrackedTileEntity(ImmutableBlockLocatable location);
+    TileEntityLocatable<?> getTrackedTileEntity(ImmutableBlockLocatable location);
 
     boolean isVisible(BlockLocatable location, int currentTick);
 
