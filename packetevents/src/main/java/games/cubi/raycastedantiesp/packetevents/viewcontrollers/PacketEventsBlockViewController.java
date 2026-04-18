@@ -116,7 +116,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             }
         } else if (event.getPacketType() == PacketType.Play.Server.CHUNK_DATA) {
             WrapperPlayServerChunkData packet = new WrapperPlayServerChunkData(event);
-            Column strippedColumn = ingestChunk(
+            Column column = ingestChunk(
                     playerData,
                     world,
                     packet.getColumn().getX(),
@@ -126,7 +126,21 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                     currentTick
             );
             //reapplyHiddenChunkCovers(viewer, playerData, world, packet.getColumn().getX(), packet.getColumn().getZ(), currentTick);
-            Column tileEntitiesRemoved = new Column(strippedColumn.getX(), strippedColumn.getZ(), strippedColumn.isFullChunk(), strippedColumn.getChunks(), new TileEntity[0]);
+            Column tileEntitiesRemoved;
+            if (column.hasBiomeData()) {
+                int[] biomeInts = column.getBiomeDataInts();
+                byte[] biomeBytes = column.getBiomeDataBytes();
+                if (biomeInts.length >= biomeBytes.length) {
+                    tileEntitiesRemoved = new Column(column.getX(), column.getZ(), column.isFullChunk(), column.getChunks(), new TileEntity[0], column.getHeightMaps(), biomeInts);
+                }
+                else {
+                    tileEntitiesRemoved = new Column(column.getX(), column.getZ(), column.isFullChunk(), column.getChunks(), new TileEntity[0], column.getHeightMaps(), biomeBytes);
+                }
+            }
+            else {
+                if (common.v_1_21_5_orAbove) tileEntitiesRemoved = new Column(column.getX(), column.getZ(), column.isFullChunk(), column.getChunks(), new TileEntity[0], column.getHeightmaps());
+                else tileEntitiesRemoved = new Column(column.getX(), column.getZ(), column.isFullChunk(), column.getChunks(), new TileEntity[0], column.getHeightMaps());
+            }
             packet.setColumn(tileEntitiesRemoved);
             event.markForReEncode(true);
 

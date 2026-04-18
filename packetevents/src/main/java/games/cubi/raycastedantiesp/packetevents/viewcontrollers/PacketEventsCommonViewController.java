@@ -1,7 +1,10 @@
 package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
+import com.github.retrooper.packetevents.manager.server.ServerVersion;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.ClientVersion;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
@@ -13,6 +16,7 @@ import java.util.function.IntSupplier;
 public class PacketEventsCommonViewController {
     private static PacketEventsCommonViewController INSTANCE;
     private final  IntSupplier currentTickSupplier;
+    public final boolean v_1_21_5_orAbove = PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_21_5);
 
     private PacketEventsCommonViewController(IntSupplier currentTick) {
         this.currentTickSupplier = currentTick;
