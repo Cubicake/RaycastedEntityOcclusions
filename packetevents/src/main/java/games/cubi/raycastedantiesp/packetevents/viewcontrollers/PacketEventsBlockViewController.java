@@ -49,6 +49,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
+        if (!blockInfoResolver.isInitialised()) {
+            event.setCancelled(true);
+            return;
+        }
         UUID viewerUUID = event.getUser().getUUID();
         if (viewerUUID == null) {
             return;

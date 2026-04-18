@@ -15,8 +15,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
-    private boolean[] occlusionArray;
-    private boolean[] tileEntityArray;
+    private boolean[] occlusionArray = null;
+    private boolean[] tileEntityArray = null;
 
     public static PacketEventsPaperBlockInfoResolver get;
 
@@ -24,6 +24,11 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         get = this;
         Bukkit.getAsyncScheduler().runDelayed(RaycastedAntiESP.get(), ignored -> initialize(), 2, TimeUnit.SECONDS);
         //Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), this::initialize, 5);
+    }
+
+    @Override
+    public boolean isInitialised() {
+        return occlusionArray != null && tileEntityArray != null;
     }
 
     private void initialize() {
