@@ -102,9 +102,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                     tileEntityView.insertIfAbsent(location);
                     TileEntityLocatable<PacketEventsTileEntityReplayData> trackedTileEntity = getTrackedTileEntity(tileEntityView, location);
                     trackedTileEntity.setBlockID(blockID);
-                    //if (!tileEntityView.isVisible(location, currentTick)) {
-                        sendHiddenBlock(viewer, location);
-                    //}
+                    if (!tileEntityView.isVisible(location, currentTick)) {
+                        change.setBlockId(getHiddenBlockId(location.blockY()));
+                        event.markForReEncode(true);
+                    }
                 } else {
                     tileEntityView.removeTileEntity(location);
                 }
