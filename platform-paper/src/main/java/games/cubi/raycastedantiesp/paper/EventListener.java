@@ -7,6 +7,7 @@ import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
 import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsEntityViewController;
+import games.cubi.raycastedantiesp.paper.utils.PaperListener;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -22,7 +23,7 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 
 import static games.cubi.raycastedantiesp.paper.UpdateChecker.checkForUpdates;
 
-public class EventListener implements Listener {
+public class EventListener extends PaperListener {
     private final RaycastedAntiESP plugin;
     private final PaperSimpleEngine engine;
 
@@ -31,7 +32,6 @@ public class EventListener implements Listener {
     private EventListener(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
         this.plugin = plugin;
         this.engine = engine;
-        Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 
     public static EventListener initialise(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
@@ -89,8 +89,6 @@ public class EventListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST) //Runs first
     public void serverTickStartEvent(ServerTickStartEvent event) {
-        DataHolder.incrementTick();
-
         Bukkit.getAsyncScheduler().runNow(plugin, task -> engine.tick());
     }
 
