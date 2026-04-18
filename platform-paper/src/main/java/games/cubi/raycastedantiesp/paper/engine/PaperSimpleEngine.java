@@ -9,6 +9,8 @@ import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import org.bukkit.scheduler.BukkitScheduler;
 
+import java.util.function.IntSupplier;
+
 public class PaperSimpleEngine implements Engine {
     private final AsyncScheduler asyncScheduler;
     private final BukkitScheduler bukkitScheduler;
@@ -16,11 +18,11 @@ public class PaperSimpleEngine implements Engine {
     //private final BukkitESM entitySnapshotManager;
     private final games.cubi.raycastedantiesp.core.engine.SimpleEngine delegate;
 
-    public PaperSimpleEngine(RaycastedAntiESP plugin, ConfigManager cfg) {
+    public PaperSimpleEngine(RaycastedAntiESP plugin, ConfigManager cfg, IntSupplier currentTickSupplier) {
         this.plugin = plugin;
         asyncScheduler = plugin.getServer().getAsyncScheduler();
         bukkitScheduler = plugin.getServer().getScheduler();
-        delegate = new games.cubi.raycastedantiesp.core.engine.SimpleEngine(cfg, new PaperParticleSpawner(), PlayerRegistry.getInstance()::getAllPlayerData, DataHolder::getTick);
+        delegate = new games.cubi.raycastedantiesp.core.engine.SimpleEngine(cfg, new PaperParticleSpawner(), PlayerRegistry.getInstance()::getAllPlayerData, currentTickSupplier);
 
         //forceEntityLocationUpdate();
     }

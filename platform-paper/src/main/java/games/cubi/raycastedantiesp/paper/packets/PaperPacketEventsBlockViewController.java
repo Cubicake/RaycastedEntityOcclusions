@@ -20,14 +20,15 @@ import org.bukkit.event.world.WorldUnloadEvent;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.IntSupplier;
 
 public class PaperPacketEventsBlockViewController extends PacketEventsBlockViewController implements Listener {
     private final Map<NamespacedKey, UUID> worldIdByWorldKey = new ConcurrentHashMap<>();
     private final int stoneBlockId = SpigotConversionUtil.fromBukkitBlockData(Material.STONE.createBlockData()).getGlobalId();
     private final int deepslateBlockId = SpigotConversionUtil.fromBukkitBlockData(Material.DEEPSLATE.createBlockData()).getGlobalId();
 
-    public PaperPacketEventsBlockViewController() {
-        super(new PacketEventsPaperBlockInfoResolver(), DataHolder::getTick);
+    public PaperPacketEventsBlockViewController(IntSupplier currentTickSupplier) {
+        super(new PacketEventsPaperBlockInfoResolver(), currentTickSupplier);
         Bukkit.getPluginManager().registerEvents(this, RaycastedAntiESP.get());
         Bukkit.getWorlds().forEach(this::registerWorld);
         PacketEvents.getAPI().getEventManager().registerListener(this, PacketListenerPriority.NORMAL);

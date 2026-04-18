@@ -21,22 +21,26 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
+import java.util.function.IntSupplier;
+
 import static games.cubi.raycastedantiesp.paper.UpdateChecker.checkForUpdates;
 
 public class EventListener extends PaperListener {
     private final RaycastedAntiESP plugin;
     private final PaperSimpleEngine engine;
+    private final IntSupplier currentTickSupplier;
 
     private static EventListener instance = null;
 
-    private EventListener(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
+    private EventListener(RaycastedAntiESP plugin, PaperSimpleEngine engine, IntSupplier currentTickSupplier) {
         this.plugin = plugin;
         this.engine = engine;
+        this.currentTickSupplier = currentTickSupplier;
     }
 
-    public static EventListener initialise(RaycastedAntiESP plugin, PaperSimpleEngine engine) {
+    public static EventListener initialise(RaycastedAntiESP plugin, PaperSimpleEngine engine, IntSupplier currentTickSupplier) {
         if (instance == null) {
-            instance = new EventListener(plugin, engine);
+            instance = new EventListener(plugin, engine, currentTickSupplier);
         }
         return instance;
     }
@@ -56,7 +60,7 @@ public class EventListener extends PaperListener {
         boolean hasBypassPermission = player.hasPermission("raycastedantiesp.bypass");
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
         if (playerData == null) {
-            PlayerRegistry.getInstance().registerPlayer(player.getUniqueId(), hasBypassPermission, DataHolder.getTick());
+            PlayerRegistry.getInstance().registerPlayer(player.getUniqueId(), hasBypassPermission, currentTickSupplier.getAsInt());
             playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
         }
 

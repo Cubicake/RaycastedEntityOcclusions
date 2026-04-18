@@ -32,6 +32,14 @@ public abstract class PacketBlockSnapshotManager implements PlayerBlockSnapshotM
         return isBlockOccluding(location.world(), location.blockX(), location.blockY(), location.blockZ());
     }
 
+    public int loadedChunkCount() {
+        int count = 0;
+        for (Map<Long, ChunkSnapshot> chunks : worldChunks.values()) {
+            count += chunks.size();
+        }
+        return count;
+    }
+
     @Override
     public Set<ImmutableBlockLocatable> getKnownTileEntities() {
         final Set<ImmutableBlockLocatable> out = new HashSet<>();

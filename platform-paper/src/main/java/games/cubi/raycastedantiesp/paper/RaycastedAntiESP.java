@@ -16,6 +16,8 @@ import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.bStats.MetricsCollector;
 import games.cubi.logs.Logger;
 
+import games.cubi.raycastedantiesp.paper.utils.FoliaTicker;
+import games.cubi.raycastedantiesp.paper.utils.PaperTicker;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -24,6 +26,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.IntSupplier;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
@@ -32,10 +37,20 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static PaperSimpleEngine engine;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
+
+    public static final boolean isFolia = getClass("io.papermc.paper.threadedregions.RegionizedServer") != null;
     //todo: should probably rethink this entire class structure at some point. Too many static fields/methods. Also, a lot of the classes no longer need a reference to the main plugin class since Logger has been abstracted out and config could be given its own getter if needed
     {
         instance = this;
         Core.initialize(new PaperLoggerAdapter(getLogger()));
+    }
+
+    public static @Nullable Class<?> getClass(String className) {
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
     }
 
     @Override
@@ -50,14 +65,22 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onEnable() {
+        IntSupplier currentTickSupplier;
+        if (isFolia) {
+            Logger.info("Platform: Folia detected. Some features may not work as expected.", 5);
+            currentTickSupplier = new FoliaTicker();
+        }
+        else {
+            currentTickSupplier = new PaperTicker();
+        }
         ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, PacketEventsEntityView::new, PacketEventsTileEntityView::new);
-        packetEventsController = new PaperPacketEventsEntityViewController();
-        new PaperPacketEventsBlockViewController();
+        packetEventsController = new PaperPacketEventsEntityViewController(currentTickSupplier);
+        new PaperPacketEventsBlockViewController(currentTickSupplier);
 
         tracker = new MovementTracker(this, config);
-        engine = new PaperSimpleEngine(this, config);
+        engine = new PaperSimpleEngine(this, config, currentTickSupplier);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
-        EventListener.initialise(this, engine);
+        EventListener.initialise(this, engine, currentTickSupplier);
 
         initialiseCommands();
 
