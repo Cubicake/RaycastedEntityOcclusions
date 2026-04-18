@@ -5,7 +5,6 @@ import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.player.User;
 import games.cubi.raycastedantiesp.packetevents.viewcontrollers.PacketEventsEntityViewController;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;

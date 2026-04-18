@@ -5,7 +5,6 @@ import games.cubi.raycastedantiesp.core.engine.Engine;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.paper.PaperParticleSpawner;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import games.cubi.raycastedantiesp.paper.data.DataHolder;
 import io.papermc.paper.threadedregions.scheduler.AsyncScheduler;
 import org.bukkit.scheduler.BukkitScheduler;
 
