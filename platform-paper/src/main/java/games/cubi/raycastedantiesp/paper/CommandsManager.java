@@ -10,6 +10,7 @@ import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.logs.Logger;
+import games.cubi.raycastedantiesp.core.packets.core.PacketBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
@@ -142,7 +143,7 @@ public class CommandsManager {
                     return Command.SINGLE_SUCCESS;
                 }
                 ))
-                .then(Commands.literal("debug").executes(CommandsManager::testCommand))
+                .then(Commands.literal("debug").executes(CommandsManager::debugCommand))
             .build();
     }
 
@@ -171,6 +172,14 @@ public class CommandsManager {
         if (driftX < 0.001) driftX = 0;
         if (driftZ < 0.001) driftZ = 0;
         Logger.debug("Drift is X: "+driftX+" Z: "+driftZ);
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int debugCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        Player player = (Player) context.getSource().getSender();
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+        PacketBlockSnapshotManager pbsm = (PacketBlockSnapshotManager) playerData.blockSnapshotManager();
+        player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");
         return Command.SINGLE_SUCCESS;
     }
 }
