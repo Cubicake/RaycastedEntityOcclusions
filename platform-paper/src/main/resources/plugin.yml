@@ -21,4 +21,6 @@ permissions:
         default: false
 depend:
     - packetevents
+softdepend:
+    - WorldGuard
 folia-supported: true
