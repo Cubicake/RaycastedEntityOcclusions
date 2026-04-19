@@ -250,5 +250,33 @@ public class ThreadSafeLocatable implements MutableLocatable {
         });
         return this;
     }
+
+    @Override
+    public boolean strictlyEquals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof ThreadSafeLocatable that)) return false;
+
+        long thisStamp = lock.tryOptimisticRead();
+        long thatStamp = that.lock.tryOptimisticRead();
+        boolean equal = this.world.equals(that.world) &&
+                    Double.doubleToLongBits(this.x) == Double.doubleToLongBits(that.x) &&
+                    Double.doubleToLongBits(this.y) == Double.doubleToLongBits(that.y) &&
+                    Double.doubleToLongBits(this.z) == Double.doubleToLongBits(that.z);
+        if (!lock.validate(thisStamp) || !that.lock.validate(thatStamp)) {
+            // If either lock was invalid, we can't trust the result, so we have to retry with locks again
+            thisStamp = lock.readLock();
+            thatStamp = that.lock.readLock();
+            try {
+                equal = this.world.equals(that.world) &&
+                        Double.doubleToLongBits(this.x) == Double.doubleToLongBits(that.x) &&
+                        Double.doubleToLongBits(this.y) == Double.doubleToLongBits(that.y) &&
+                        Double.doubleToLongBits(this.z) == Double.doubleToLongBits(that.z);
+            } finally {
+                lock.unlockRead(thisStamp);
+                that.lock.unlockRead(thatStamp);
+            }
+        }
+        return equal;
+    }
 }
 

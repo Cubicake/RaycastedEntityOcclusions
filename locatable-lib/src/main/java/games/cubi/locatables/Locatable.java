@@ -5,7 +5,7 @@ import games.cubi.locatables.implementations.*;
 import java.util.UUID;
 
 // A vector-like interface representing a location in a 3D space within a specific world.
-public sealed interface Locatable extends ChunkSectionLocatable permits MutableLocatable, ImmutableLocatable, BlockLocatable {
+public sealed interface Locatable extends ChunkSectionLocatable, StrictEquality permits MutableLocatable, ImmutableLocatable, BlockLocatable {
 
     double x();
     double y();

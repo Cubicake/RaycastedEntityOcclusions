@@ -30,4 +30,11 @@ public record ImmutableBlockLocatable(UUID world, int blockX, int blockY, int bl
     public String toString() {
         return toStringForm();
     }
+
+    @Override
+    public boolean strictlyEquals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof ImmutableBlockLocatable(UUID world1, int x, int y, int z))) return false;
+        return blockX == x && blockY == y && blockZ == z && world.equals(world1);
+    }
 }

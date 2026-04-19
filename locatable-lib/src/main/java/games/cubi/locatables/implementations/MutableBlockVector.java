@@ -154,4 +154,19 @@ public class MutableBlockVector implements BlockLocatable, MutableLocatable {
     public String toString() {
         return toStringForm();
     }
+
+    @Override
+    public boolean strictlyEquals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof MutableBlockVector that)) return false;
+        if (!(this.world().equals(that.world()))) return false;
+
+        if (Double.doubleToLongBits(this.x()) != Double.doubleToLongBits(that.x())) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.y()) != Double.doubleToLongBits(that.y())) {
+            return false;
+        }
+        return Double.doubleToLongBits(this.z()) == Double.doubleToLongBits(that.z());
+    }
 }
