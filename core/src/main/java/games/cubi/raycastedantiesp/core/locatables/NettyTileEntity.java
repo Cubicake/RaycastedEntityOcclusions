@@ -101,7 +101,9 @@ public abstract class NettyTileEntity<PacketReplayData extends Clearable> implem
 
     @Override
     public void clear() {
-        extraData.clear();
+        if (extraData != null) {
+            extraData.clear();
+        }
     }
 
     @Override
