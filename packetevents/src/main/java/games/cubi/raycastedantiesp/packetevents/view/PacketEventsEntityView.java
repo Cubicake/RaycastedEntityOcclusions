@@ -153,6 +153,13 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
         return drained;
     }
 
+    @Override
+    public void clear() {
+        entitiesByUUID.clear();
+        entityUUIDsByID.clear();
+        transitions.clear();
+    }
+
     private PacketEventsEntity getTrackedEntity(int entityID) {
         UUID entityUUID = entityUUIDsByID.get(entityID);
         return entityUUID == null ? null : entitiesByUUID.get(entityUUID);

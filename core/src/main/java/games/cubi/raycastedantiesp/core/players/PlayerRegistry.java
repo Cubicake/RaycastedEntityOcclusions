@@ -22,7 +22,7 @@ public class PlayerRegistry {
     private final ConcurrentHashMap<UUID, PlayerData> playerDataMap = new ConcurrentHashMap<>();
 
     public void registerPlayer(UUID playerUUID, boolean hasBypassPermission, int joinTick) {
-        playerDataMap.put(playerUUID, new PlayerData(playerUUID, hasBypassPermission, joinTick));
+        playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, hasBypassPermission, joinTick));
     }
 
     public PlayerData registerAndGetPlayer(UUID playerUUID, boolean hasBypassPermission, int joinTick) {
@@ -32,7 +32,10 @@ public class PlayerRegistry {
     }
 
     public void unregisterPlayer(UUID playerUUID) {
-        playerDataMap.remove(playerUUID);
+        PlayerData unregisteredPlayer = playerDataMap.remove(playerUUID);
+        unregisteredPlayer.blockView().clear();
+        unregisteredPlayer.entityView().clear();
+        unregisteredPlayer.playerView().clear();
     }
 
     public PlayerData getPlayerData(UUID playerUUID) {
@@ -48,12 +51,5 @@ public class PlayerRegistry {
      * **/
     public Collection<PlayerData> getAllPlayerData() {
         return playerDataMap.values();
-    }
-
-    /**For use when an invalid tile entity is detected, to ensure all players have it removed from their data**/
-    public void removeTileEntityFromAllPlayers(BlockLocatable blockLocation) {
-        for (PlayerData playerData : playerDataMap.values()) {
-            playerData.tileEntityView().removeTileEntity(blockLocation);
-        }
     }
 }
