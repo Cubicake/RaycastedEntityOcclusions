@@ -11,7 +11,7 @@ public abstract class NettyTileEntity<PacketReplayData extends Clearable> implem
     private final int blockID;
     private volatile PacketReplayData extraData;
 
-    private int x, y, z;
+    private final int x, y, z;
     private final UUID world;
 
     public NettyTileEntity(Locatable location, boolean visible, int lastChecked, int blockID) {
