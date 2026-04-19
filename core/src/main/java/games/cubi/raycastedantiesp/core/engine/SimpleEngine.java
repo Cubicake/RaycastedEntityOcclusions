@@ -18,7 +18,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class SimpleEngine implements Engine {
@@ -26,12 +29,30 @@ public class SimpleEngine implements Engine {
     private final ParticleSpawner particleSpawner;
     private final Supplier<Collection<PlayerData>> playerSupplier;
     private final IntSupplier currentTickSupplier;
+    private final Predicate<PlayerData> viewerActivationPredicate;
+    private final BiPredicate<PlayerData, Locatable> targetActivationPredicate;
+    private final Consumer<PlayerData> viewerInactiveHandler;
 
     public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, Supplier<Collection<PlayerData>> playerSupplier, IntSupplier currentTickSupplier) {
+        this(config, particleSpawner, playerSupplier, currentTickSupplier, ignored -> true, (ignored, target) -> true, ignored -> {});
+    }
+
+    public SimpleEngine(
+            ConfigManager config,
+            ParticleSpawner particleSpawner,
+            Supplier<Collection<PlayerData>> playerSupplier,
+            IntSupplier currentTickSupplier,
+            Predicate<PlayerData> viewerActivationPredicate,
+            BiPredicate<PlayerData, Locatable> targetActivationPredicate,
+            Consumer<PlayerData> viewerInactiveHandler
+    ) {
         this.config = config;
         this.particleSpawner = particleSpawner;
         this.playerSupplier = playerSupplier;
         this.currentTickSupplier = currentTickSupplier;
+        this.viewerActivationPredicate = viewerActivationPredicate;
+        this.targetActivationPredicate = targetActivationPredicate;
+        this.viewerInactiveHandler = viewerInactiveHandler;
     }
 
     @Override
@@ -65,7 +86,10 @@ public class SimpleEngine implements Engine {
                                        boolean debugParticles, int currentTick) {
 
         for (PlayerData playerData : playerDataList) {
-            if (playerData.hasBypassPermission()) continue;
+            if (playerData.hasBypassPermission() || !viewerActivationPredicate.test(playerData)) {
+                viewerInactiveHandler.accept(playerData);
+                continue;
+            }
 
             BlockView blockView = playerData.blockView();
 
@@ -93,6 +117,10 @@ public class SimpleEngine implements Engine {
                         + " tick=" + currentTick);
                 continue;
             }
+            if (!targetActivationPredicate.test(player, entityLocation)) {
+                entityView.setVisibility(entityUUID, true, currentTick);
+                continue;
+            }
             boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockView, 1, particleSpawner);
             entityView.setVisibility(entityUUID, canSee, currentTick);
         }
@@ -111,6 +139,10 @@ public class SimpleEngine implements Engine {
                         + " tick=" + currentTick);
                 continue;
             }
+            if (!targetActivationPredicate.test(player, otherPlayerLocation)) {
+                playerView.setVisibility(otherPlayerUUID, true, currentTick);
+                continue;
+            }
             boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockView, 1, particleSpawner);
             playerView.setVisibility(otherPlayerUUID, canSee, currentTick);
         }
@@ -119,6 +151,10 @@ public class SimpleEngine implements Engine {
     private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, boolean debugParticles, BlockView blockView, int currentTick) {
         for (BlockLocatable tileEntityLocation : blockView.getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             if (tileEntityLocation.world() == null || !tileEntityLocation.world().equals(playerLocation.world())) {
+                continue;
+            }
+            if (!targetActivationPredicate.test(player, tileEntityLocation)) {
+                blockView.setVisibility(tileEntityLocation, true, currentTick);
                 continue;
             }
 
