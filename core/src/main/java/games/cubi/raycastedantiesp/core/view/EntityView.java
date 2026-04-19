@@ -38,6 +38,11 @@ public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>> {
 
     List<EntityViewTransition> drainTransitions();
 
+    /**
+     * For use when the player disconnects, clears all data and pending transitions from the view.
+     */
+    void clear();
+
     default <T> T cast() {
         return (T) this;
     }
