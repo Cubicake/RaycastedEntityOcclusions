@@ -10,9 +10,9 @@ import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.packets.core.PacketBlockSnapshotManager;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.view.AbstractBlockView;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -112,7 +112,7 @@ public class CommandsManager {
                         final BlockPosition blockPosition = commandContext.getArgument("loc", BlockPositionResolver.class).resolve(commandContext.getSource());
                         BlockLocatable location = new ImmutableBlockLocatable(player.getWorld().getUID(), blockPosition.x(), blockPosition.y(), blockPosition.z());
                         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
-                        sender.sendRichMessage("That block is "+playerData.blockSnapshotManager().isBlockOccluding(location));
+                        sender.sendRichMessage("That block is "+playerData.blockView().isBlockOccluding(location));
                         BlockData data = player.getWorld().getBlockData(new Location(player.getWorld(), blockPosition.x(), blockPosition.y(), blockPosition.z()));
                         WrappedBlockState wrappedData = SpigotConversionUtil.fromBukkitBlockData(data);
                         sender.sendRichMessage("Global ID of that block is "+wrappedData.getGlobalId()+". In Paper terms, that is "+data.getAsString());
@@ -178,7 +178,7 @@ public class CommandsManager {
     private static int debugCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Player player = (Player) context.getSource().getSender();
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
-        PacketBlockSnapshotManager pbsm = (PacketBlockSnapshotManager) playerData.blockSnapshotManager();
+        AbstractBlockView<?> pbsm = (AbstractBlockView<?>) playerData.blockView();
         player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");
         return Command.SINGLE_SUCCESS;
     }
