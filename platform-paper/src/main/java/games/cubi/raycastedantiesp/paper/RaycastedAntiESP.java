@@ -5,6 +5,8 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
+import games.cubi.raycastedantiesp.paper.worldguard.RegionActivationService;
+import games.cubi.raycastedantiesp.paper.worldguard.WorldGuardRegionActivationService;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsBlockView;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
@@ -34,6 +36,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     private static MovementTracker tracker;
     private static PaperPacketEventsEntityViewController packetEventsController;
     private static PaperSimpleEngine engine;
+    private static RegionActivationService regionActivationService;
     private static MetricsCollector metricsCollector;
     private static RaycastedAntiESP instance;
 
@@ -55,6 +58,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     @Override
     public void onLoad() {
         config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
+        initialiseWorldGuardSupport();
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents == null) {
             throw new IllegalStateException("PacketEvents is required but was not found.");
@@ -75,6 +79,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         ViewRegistry.initialise(PacketEventsBlockView::new, PacketEventsEntityView::new);
         packetEventsController = new PaperPacketEventsEntityViewController(currentTickSupplier);
         new PaperPacketEventsBlockViewController(currentTickSupplier);
+        regionActivationService.start();
 
         tracker = new MovementTracker(this, config);
         engine = new PaperSimpleEngine(this, config, currentTickSupplier);
@@ -89,6 +94,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onDisable() {
+        regionActivationService.stop();
         metricsCollector.shutdown();
     }
 
@@ -118,10 +124,25 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public static PaperPacketEventsEntityViewController getPacketEventsController() {
         return packetEventsController;
     }
+    public static RegionActivationService getRegionActivationService() {
+        return regionActivationService;
+    }
     public static PaperSimpleEngine getEngine() {
         return engine;
     }
     public static RaycastedAntiESP get() {
         return instance;
+    }
+
+    private void initialiseWorldGuardSupport() {
+        boolean worldGuardPresent = Bukkit.getPluginManager().getPlugin("WorldGuard") != null;
+        if (worldGuardPresent) {
+            boolean registered = WorldGuardRegionActivationService.registerFlags();
+            if (registered) {
+                Logger.info("WorldGuard detected. Registered flags '" + WorldGuardRegionActivationService.ENABLED_FLAG_NAME + "' and '" + WorldGuardRegionActivationService.DISABLED_FLAG_NAME + "'.", 4, RaycastedAntiESP.class);
+            }
+        }
+
+        regionActivationService = WorldGuardRegionActivationService.create(() -> false);
     }
 }
