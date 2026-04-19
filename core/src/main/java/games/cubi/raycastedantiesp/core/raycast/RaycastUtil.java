@@ -5,12 +5,12 @@ import games.cubi.locatables.MutableLocatable;
 import games.cubi.locatables.implementations.MutableBlockVector;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
-import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.view.BlockView;
 
 public class RaycastUtil {
 
 //True: Has line-of-sight
-    public static boolean raycast(PlayerData player, Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, PlayerBlockSnapshotManager snap, int stepSize, ParticleSpawner particleSpawner) {
+    public static boolean raycast(PlayerData player, Locatable start, Locatable end, int maxOccluding, int alwaysShowRadius, int maxRaycastRadius, boolean debug, BlockView snap, int stepSize, ParticleSpawner particleSpawner) {
         if (!start.world().equals(end.world())) return false;
 
         MutableLocatable clonedEnd = end.clonePlainAndCentreIfBlockLocation();

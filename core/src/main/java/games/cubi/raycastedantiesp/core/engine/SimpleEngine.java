@@ -11,9 +11,8 @@ import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.raycast.ParticleSpawner;
 import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
-import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.view.BlockView;
 import games.cubi.raycastedantiesp.core.view.EntityView;
-import games.cubi.raycastedantiesp.core.view.TileEntityView;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,20 +67,20 @@ public class SimpleEngine implements Engine {
         for (PlayerData playerData : playerDataList) {
             if (playerData.hasBypassPermission()) continue;
 
-            PlayerBlockSnapshotManager blockSnapshotManager = playerData.blockSnapshotManager();
+            BlockView blockView = playerData.blockView();
 
             Locatable playerLocation = playerData.ownLocation();
             if (playerLocation == null) {
                 continue;
             }
 
-            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, blockSnapshotManager, currentTick);
-            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, blockSnapshotManager, currentTick);
-            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, debugParticles, blockSnapshotManager, currentTick);
+            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, blockView, currentTick);
+            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, blockView, currentTick);
+            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, debugParticles, blockView, currentTick);
         }
     }
 
-    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
+    private void checkEntities(PlayerData player, Locatable playerLocation, EntityConfig entityConfig, boolean debugParticles, BlockView blockView, int currentTick) {
         EntityView<?> entityView = player.entityView();
 
         for (UUID entityUUID : entityView.getNeedingRecheck(entityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
@@ -94,12 +93,12 @@ public class SimpleEngine implements Engine {
                         + " tick=" + currentTick);
                 continue;
             }
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, entityLocation, entityConfig.getMaxOccludingCount(), entityConfig.getAlwaysShowRadius(), entityConfig.getRaycastRadius(), debugParticles, blockView, 1, particleSpawner);
             entityView.setVisibility(entityUUID, canSee, currentTick);
         }
     }
 
-    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
+    private void checkPlayers(PlayerData player, Locatable playerLocation, PlayerConfig playerConfig, boolean debugParticles, BlockView blockView, int currentTick) {
         EntityView<?> playerView = player.playerView();
 
         for (UUID otherPlayerUUID : playerView.getNeedingRecheck(playerConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
@@ -112,25 +111,23 @@ public class SimpleEngine implements Engine {
                         + " tick=" + currentTick);
                 continue;
             }
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, otherPlayerLocation, playerConfig.getMaxOccludingCount(), playerConfig.getAlwaysShowRadius(), playerConfig.getRaycastRadius(), debugParticles, blockView, 1, particleSpawner);
             playerView.setVisibility(otherPlayerUUID, canSee, currentTick);
         }
     }
 
-    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, boolean debugParticles, PlayerBlockSnapshotManager blockSnapshotManager, int currentTick) {
-        TileEntityView tileEntityView = player.tileEntityView();
-
-        for (BlockLocatable tileEntityLocation : tileEntityView.getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
+    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, boolean debugParticles, BlockView blockView, int currentTick) {
+        for (BlockLocatable tileEntityLocation : blockView.getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             if (tileEntityLocation.world() == null || !tileEntityLocation.world().equals(playerLocation.world())) {
                 continue;
             }
 
             if (playerLocation.distanceSquared(tileEntityLocation) > (double) tileEntityConfig.getRaycastRadius() * tileEntityConfig.getRaycastRadius()) {
-                tileEntityView.setVisibility(tileEntityLocation, false, currentTick);
+                blockView.setVisibility(tileEntityLocation, false, currentTick);
                 continue;
             }
-            boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockSnapshotManager, 1, particleSpawner);
-            tileEntityView.setVisibility(tileEntityLocation, canSee, currentTick);
+            boolean canSee = RaycastUtil.raycast(player, playerLocation, tileEntityLocation, tileEntityConfig.getMaxOccludingCount() + 1, tileEntityConfig.getAlwaysShowRadius(), tileEntityConfig.getRaycastRadius(), debugParticles, blockView, 1, particleSpawner);
+            blockView.setVisibility(tileEntityLocation, canSee, currentTick);
         }
     }
 }

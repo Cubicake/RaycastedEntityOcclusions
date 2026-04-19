@@ -73,7 +73,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         else {
             currentTickSupplier = new PaperTicker();
         }
-        ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, PacketEventsEntityView::new, PacketEventsTileEntityView::new);
+        ViewRegistry.initialise(PacketEventsBlockView::new, PacketEventsEntityView::new);
         packetEventsController = new PaperPacketEventsEntityViewController(currentTickSupplier);
         new PaperPacketEventsBlockViewController(currentTickSupplier);
 
