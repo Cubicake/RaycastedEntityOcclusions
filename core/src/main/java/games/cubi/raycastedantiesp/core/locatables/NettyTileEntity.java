@@ -111,7 +111,7 @@ public abstract class NettyTileEntity<PacketReplayData extends Clearable> implem
 
     @Override
     public int hashCode() {
-        return makeHash();
+        return blockHash();
     }
 
     @Override

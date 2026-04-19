@@ -23,7 +23,7 @@ public record ImmutableBlockLocatable(UUID world, int blockX, int blockY, int bl
 
     @Override
     public int hashCode() {
-        return hash();
+        return blockHash();
     }
 
     @Override

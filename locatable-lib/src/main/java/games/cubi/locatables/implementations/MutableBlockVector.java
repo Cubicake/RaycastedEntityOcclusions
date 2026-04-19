@@ -147,7 +147,7 @@ public class MutableBlockVector implements BlockLocatable, MutableLocatable {
 
     @Override
     public int hashCode() {
-        return hash();
+        return blockHash();
     }
 
     @Override
