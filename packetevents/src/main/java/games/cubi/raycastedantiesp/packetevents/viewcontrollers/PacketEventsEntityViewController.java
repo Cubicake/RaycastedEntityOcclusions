@@ -60,6 +60,14 @@ public abstract class PacketEventsEntityViewController implements PacketListener
 
     protected abstract int getHiddenBlockId(int blockY);
 
+    protected boolean isViewerCullingEnabled(PlayerData playerData) {
+        return true;
+    }
+
+    protected boolean shouldApplyCulling(PlayerData playerData, PacketEventsEntity targetEntity) {
+        return true;
+    }
+
     public void removeViewer(UUID viewerUUID) {
     }
 
@@ -83,11 +91,11 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         handleEntityPackets(event, event.getUser(), playerData, world, currentTick);
 
         if (playerData.entityView().hasPendingTransitions()) {
-            processEntityTransitions(viewerUUID, event.getUser(), cast(playerData.entityView()), false);
+            processEntityTransitions(viewerUUID, event.getUser(), playerData, cast(playerData.entityView()), false);
         }
 
         if (playerData.playerView().hasPendingTransitions()) {
-            processEntityTransitions(viewerUUID, event.getUser(), cast(playerData.playerView()), true);
+            processEntityTransitions(viewerUUID, event.getUser(), playerData, cast(playerData.playerView()), true);
         }
         
         event.getUser().flushPackets();
@@ -111,7 +119,8 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             WrapperPlayServerPlayerInfoRemove packet = new WrapperPlayServerPlayerInfoRemove(event);
             List<UUID> remaining = new ArrayList<>();
             for (UUID targetUUID : packet.getProfileIds()) {
-                if (playerData.playerView().isVisible(targetUUID, currentTick)) {
+                PacketEventsEntity entity = cast(playerData.playerView().getEntity(targetUUID));
+                if (entity == null || !shouldApplyCulling(playerData, entity) || playerData.playerView().isVisible(targetUUID, currentTick)) {
                     remaining.add(targetUUID);
                 }
             }
@@ -147,7 +156,10 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                     .setVelocity(packet.getVelocity().getX(), packet.getVelocity().getY(), packet.getVelocity().getZ())
                     .setMetadata(copyEntityMetadata(packet.getEntityMetadata()))
                     .setOnGround(true);
-            if (!entity.visible()) {
+            if (!shouldApplyCulling(playerData, entity)) {
+                entity.setVisible(true).setLastChecked(currentTick);
+                entity.setClientVisible(true);
+            } else if (!entity.visible()) {
                 entity.setClientVisible(false);
                 event.setCancelled(true);
             } else {
@@ -176,7 +188,10 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                     .setHeadYaw(packet.getHeadYaw())
                     .setVelocity(velocity.getX(), velocity.getY(), velocity.getZ())
                     .setOnGround(true);
-            if (!entity.visible()) {
+            if (!shouldApplyCulling(playerData, entity)) {
+                entity.setVisible(true).setLastChecked(currentTick);
+                entity.setClientVisible(true);
+            } else if (!entity.visible()) {
                 entity.setClientVisible(false);
                 event.setCancelled(true);
             } else {
@@ -197,7 +212,10 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                     .setHeadYaw(0.0F)
                     .setVelocity(0.0, 0.0, 0.0)
                     .setOnGround(true);
-            if (!entity.visible()) {
+            if (!shouldApplyCulling(playerData, entity)) {
+                entity.setVisible(true).setLastChecked(currentTick);
+                entity.setClientVisible(true);
+            } else if (!entity.visible()) {
                 entity.setClientVisible(false);
                 event.setCancelled(true);
             } else {
@@ -219,7 +237,10 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                     .setVelocity(0.0, 0.0, 0.0)
                     .setMetadata(copyEntityMetadata(packet.getEntityMetadata()))
                     .setOnGround(true);
-            if (!entity.visible()) {
+            if (!shouldApplyCulling(playerData, entity)) {
+                entity.setVisible(true).setLastChecked(currentTick);
+                entity.setClientVisible(true);
+            } else if (!entity.visible()) {
                 entity.setClientVisible(false);
                 event.setCancelled(true);
             } else {
@@ -327,7 +348,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.view().moveRelative(entityID, deltaX, deltaY, deltaZ, currentTick);
         lookup.entity().setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -350,7 +371,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.view().moveRelative(entityID, deltaX, deltaY, deltaZ, currentTick);
         lookup.entity().setYaw(yaw).setPitch(pitch).setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -366,7 +387,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 .setPitch(packet.getPitch())
                 .setVelocity(packet.getDeltaMovement().getX(), packet.getDeltaMovement().getY(), packet.getDeltaMovement().getZ())
                 .setOnGround(packet.isOnGround());
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -388,7 +409,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 .setPitch(packet.getValues().getPitch())
                 .setVelocity(packet.getValues().getDeltaMovement().getX(), packet.getValues().getDeltaMovement().getY(), packet.getValues().getDeltaMovement().getZ())
                 .setOnGround(packet.isOnGround());
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -399,7 +420,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             return;
         }
         lookup.entity().setYaw(yaw).setPitch(pitch).setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -410,7 +431,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             return;
         }
         lookup.entity().setHeadYaw(headYaw);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -422,7 +443,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.entity().setMetadata(copyEntityMetadata(packet.getEntityMetadata()));
         ensureReplayData(lookup.entity()).setMetadataPacket(copyEntityMetadataPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -434,7 +455,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.entity().setEquipment(copyEquipment(packet.getEquipment()));
         ensureReplayData(lookup.entity()).setEquipmentPacket(copyEntityEquipmentPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -446,7 +467,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.entity().setVelocity(packet.getVelocity().getX(), packet.getVelocity().getY(), packet.getVelocity().getZ());
         ensureReplayData(lookup.entity()).setVelocityPacket(copyEntityVelocityPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -457,7 +478,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             return;
         }
         ensureReplayData(lookup.entity()).addEffectPacket(copyEffectPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -469,7 +490,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
         lookup.entity().setPassengerIDs(packet.getPassengers().clone());
         ensureReplayData(lookup.entity()).setPassengersPacket(copySetPassengersPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
+        if (!ensureEntityIsClientVisible(event, playerData, lookup, currentTick) && !lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
             event.setCancelled(true);
         }
     }
@@ -484,7 +505,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 continue;
             }
 
-            boolean visible = lookup.view().isVisible(lookup.entity().entityUUID(), currentTick);
+            boolean visible = !shouldApplyCulling(playerData, lookup.entity()) || lookup.view().isVisible(lookup.entity().entityUUID(), currentTick);
             boolean clientVisible = lookup.entity().clientVisible();
             lookup.view().removeEntity(entityID, currentTick);
 
@@ -503,12 +524,21 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         }
     }
 
-    private void processEntityTransitions(UUID viewerUUID, User viewer, EntityView<PacketEventsEntity> entityView, boolean playerTargets) {
+    private void processEntityTransitions(UUID viewerUUID, User viewer, PlayerData playerData, EntityView<PacketEventsEntity> entityView, boolean playerTargets) {
         for (EntityViewTransition transition : entityView.drainTransitions()) {
             PacketEventsEntity entity = getTrackedEntity(entityView, transition.targetUUID());
 
             switch (transition.type()) {
                 case HIDE -> {
+                    if (entity != null && !shouldApplyCulling(playerData, entity)) {
+                        entity.setVisible(true);
+                        if (!entity.clientVisible() && entity.entityID() >= 0) {
+                            PacketEventsEntityReplayData replayData = ensureReplayData(entity);
+                            sendEntityShow(viewer, entity, replayData, playerTargets);
+                            entity.setClientVisible(true);
+                        }
+                        continue;
+                    }
                     if (entity != null && entity.clientVisible() && entity.entityID() >= 0) {
                         viewer.writePacketSilently(new WrapperPlayServerDestroyEntities(entity.entityID()));
                         entity.setClientVisible(false);
@@ -528,6 +558,20 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                 }
             }
         }
+    }
+
+    private boolean ensureEntityIsClientVisible(PacketSendEvent event, PlayerData playerData, EntityLookup lookup, int currentTick) {
+        if (shouldApplyCulling(playerData, lookup.entity())) {
+            return false;
+        }
+
+        lookup.entity().setVisible(true).setLastChecked(currentTick);
+        if (!lookup.entity().clientVisible() && lookup.entity().entityID() >= 0) {
+            PacketEventsEntityReplayData replayData = ensureReplayData(lookup.entity());
+            sendEntityShow(event.getUser(), lookup.entity(), replayData, lookup.view() == playerData.playerView());
+            lookup.entity().setClientVisible(true);
+        }
+        return true;
     }
 
     private EntityLookup lookupEntity(PlayerData playerData, int entityID) {
