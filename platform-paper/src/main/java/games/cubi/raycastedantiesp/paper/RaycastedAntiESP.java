@@ -66,7 +66,7 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public void onEnable() {
         IntSupplier currentTickSupplier;
         if (isFolia) {
-            Logger.info("Platform: Folia detected. Some features may not work as expected.", 5);
+            Logger.info("Folia detected. Some features may not work as expected.", 5);
             currentTickSupplier = new FoliaTicker();
         }
         else {
