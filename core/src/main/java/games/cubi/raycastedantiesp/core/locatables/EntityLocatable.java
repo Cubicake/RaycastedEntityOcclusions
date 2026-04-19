@@ -1,4 +1,4 @@
-package games.cubi.locatables.minecraft;
+package games.cubi.raycastedantiesp.core.locatables;
 
 import games.cubi.locatables.MutableLocatable;
 
