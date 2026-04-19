@@ -6,9 +6,10 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
-public class ConcurrentSelfMap<T> implements CanonicalSet<T> {
-    private final ConcurrentHashMap<T, T> backingMap = new ConcurrentHashMap<>();
+public class ConcurrentSelfMap<K, V extends K> implements CanonicalSet<K, V> {
+    private final ConcurrentHashMap<V, V> backingMap = new ConcurrentHashMap<>();
 
     public ConcurrentSelfMap() {}
 
@@ -23,29 +24,54 @@ public class ConcurrentSelfMap<T> implements CanonicalSet<T> {
     }
 
     @Override
-    public boolean contains(T keyValue) {
+    public boolean contains(K keyValue) {
         return backingMap.containsKey(keyValue);
     }
 
     @Override
-    public @Nullable T get(T keyValue) {
+    public @Nullable V get(K keyValue) {
         return backingMap.get(keyValue);
     }
 
     @Override
-    public @Nullable T add(T keyValue) {
+    public @Nullable V add(V keyValue) {
         return backingMap.put(keyValue, keyValue);
     }
 
     @Override
-    public void addAll(Set<? extends T> keyValues) {
-        for (T keyValue : keyValues) {
+    public void addAll(Set<? extends V> keyValues) {
+        for (V keyValue : keyValues) {
             backingMap.put(keyValue, keyValue);
         }
     }
 
     @Override
-    public @Nullable T remove(T keyValue) {
+    public @Nullable V computeIfAbsent(
+            K keyValue,
+            @NotNull Function<? super K, ? extends V> mappingFunction
+    ) {
+        V existing = backingMap.get(keyValue);
+        if (existing != null) {
+            return existing;
+        }
+
+        V canonicalValue = mappingFunction.apply(keyValue);
+        if (canonicalValue == null) {
+            return null;
+        }
+
+        if (!canonicalValue.equals(keyValue)) {
+            throw new IllegalArgumentException(
+                    "Computed canonical value must be equal to the key value."
+            );
+        }
+
+        V racedValue = backingMap.putIfAbsent(canonicalValue, canonicalValue);
+        return racedValue != null ? racedValue : canonicalValue;
+    }
+
+    @Override
+    public @Nullable V remove(K keyValue) {
         return backingMap.remove(keyValue);
     }
 
@@ -55,12 +81,12 @@ public class ConcurrentSelfMap<T> implements CanonicalSet<T> {
     }
 
     @Override
-    public @NotNull Set<T> keySet() {
+    public @NotNull Set<V> keySet() {
         return backingMap.keySet();
     }
 
     @Override
-    public @NotNull Collection<T> values() {
-        return backingMap.keySet();
+    public @NotNull Collection<V> values() {
+        return backingMap.values();
     }
 }

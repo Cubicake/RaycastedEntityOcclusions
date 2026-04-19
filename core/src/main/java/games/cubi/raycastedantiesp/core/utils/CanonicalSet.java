@@ -5,29 +5,36 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
- * A Set-like data structure that stores canonical instances of key values. Designed for use with locatables as all locatables exhibit the same `equals` and `hashcode` behavior regardless of their mutability or extra data, so this allows for storing a single canonical instance of each locatable and retrieving it based on any key value that is equal to it.
- * @param <T>
+ * A Set-like data structure that stores canonical instances of key values.
+ * Any compatible key type may be used for lookup, but only canonical values
+ * of type {@code V} may be stored.
+ *
+ * @param <K> key type used for lookup
+ * @param <V> stored canonical value type
  */
-public interface CanonicalSet<T> {
+public interface CanonicalSet<K, V extends K> {
     int size();
 
     boolean isEmpty();
 
-    boolean contains(T keyValue);
+    boolean contains(K keyValue);
 
-    @Nullable T get(T keyValue);
+    @Nullable V get(K keyValue);
 
-    @Nullable T add(T keyValue);
+    @Nullable V add(V keyValue);
 
-    void addAll(Set<? extends T> keyValues);
+    void addAll(Set<? extends V> keyValues);
 
-    @Nullable T remove(T keyValue);
+    @Nullable V computeIfAbsent(K keyValue, @NotNull Function<? super K, ? extends V> mappingFunction);
+
+    @Nullable V remove(K keyValue);
 
     void clear();
 
-    @NotNull Set<T> keySet();
+    @NotNull Set<V> keySet();
 
-    @NotNull Collection<T> values();
+    @NotNull Collection<V> values();
 }
