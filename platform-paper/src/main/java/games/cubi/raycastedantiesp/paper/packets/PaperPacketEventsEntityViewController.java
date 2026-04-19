@@ -3,6 +3,10 @@ package games.cubi.raycastedantiesp.paper.packets;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.player.User;
+import games.cubi.locatables.Locatable;
+import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsEntity;
 import games.cubi.raycastedantiesp.packetevents.viewcontrollers.PacketEventsEntityViewController;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
@@ -44,6 +48,35 @@ public class PaperPacketEventsEntityViewController extends PacketEventsEntityVie
     @Override
     protected int getHiddenBlockId(int blockY) {
         return blockY > 0 ? stoneBlockId : deepslateBlockId;
+    }
+
+    @Override
+    protected boolean isViewerCullingEnabled(PlayerData playerData) {
+        if (playerData == null || playerData.hasBypassPermission()) {
+            return false;
+        }
+        Locatable ownLocation = playerData.ownLocation();
+        if (ownLocation == null || ownLocation.world() == null) {
+            return false;
+        }
+        return RaycastedAntiESP.getRegionActivationService().isEnabled(ownLocation);
+    }
+
+    @Override
+    protected boolean shouldApplyCulling(PlayerData playerData, PacketEventsEntity targetEntity) {
+        if (!isViewerCullingEnabled(playerData) || targetEntity == null || targetEntity.world() == null) {
+            return false;
+        }
+
+        boolean checkEnabled = targetEntity.spawnType() == EntityLocatable.SpawnType.PLAYER
+                ? RaycastedAntiESP.getConfigManager().getPlayerConfig().isEnabled()
+                : RaycastedAntiESP.getConfigManager().getEntityConfig().isEnabled();
+        if (!checkEnabled) {
+            return false;
+        }
+
+        Locatable ownLocation = playerData.ownLocation();
+        return ownLocation != null && RaycastedAntiESP.getRegionActivationService().isEnabled(ownLocation, targetEntity);
     }
 
     @EventHandler
