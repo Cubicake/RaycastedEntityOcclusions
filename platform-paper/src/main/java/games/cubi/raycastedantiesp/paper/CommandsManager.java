@@ -8,10 +8,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.Locatable;
+import games.cubi.locatables.MutableLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.locatables.implementations.ImmutableLocatableImpl;
+import games.cubi.locatables.implementations.MutableLocatableImpl;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
 import games.cubi.raycastedantiesp.core.view.AbstractBlockView;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
 import io.github.retrooper.packetevents.util.SpigotConversionUtil;
@@ -21,6 +25,7 @@ import io.papermc.paper.command.brigadier.argument.ArgumentTypes;
 import io.papermc.paper.command.brigadier.argument.resolvers.BlockPositionResolver;
 import io.papermc.paper.math.BlockPosition;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.command.CommandSender;
@@ -176,10 +181,39 @@ public class CommandsManager {
     }
 
     private static int debugCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        //benchmark raycast speed by generating 1000 locatables normally distributed approx 50 blocks around the player and raycasting to them, then printing the average time taken
+
+        Locatable[] locatables = new Locatable[1000];
+        Player player = (Player) context.getSource().getSender();
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+        Locatable playerLocatable = playerData.ownLocation();
+        MutableLocatable unitDirection = new MutableLocatableImpl(playerLocatable.world(), 0, 0, 0);
+        for (int i = 0; i < locatables.length; i++) {
+            unitDirection.setX(Math.random() - 0.5);
+            unitDirection.setY(Math.random() - 0.5);
+            unitDirection.setZ(Math.random() - 0.5);
+            unitDirection.normalize();
+            unitDirection.scalarMultiply(50);
+            locatables[i] = playerLocatable.clonePlainAndCentreIfBlockLocation().add(unitDirection);
+        }
+        Bukkit.getAsyncScheduler().runNow(RaycastedAntiESP.get(), (ignored) -> {
+            long startTime = System.nanoTime();
+            for (Locatable locatable : locatables) {
+                RaycastUtil.raycast(playerData, playerLocatable, locatable, 3, 0, 100, false, playerData.blockView(), 1, null);
+            }
+            long endTime = System.nanoTime();
+            long duration = endTime - startTime;
+            double averageTime = duration / (double) locatables.length;
+            player.sendRichMessage("Average raycast time: " + averageTime + " nanoseconds");
+            player.sendRichMessage("Total raycast time: " + duration + " nanoseconds");
+        });
+
+
+        /*
         Player player = (Player) context.getSource().getSender();
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
         AbstractBlockView<?> pbsm = (AbstractBlockView<?>) playerData.blockView();
-        player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");
+        player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");*/
         return Command.SINGLE_SUCCESS;
     }
 }
