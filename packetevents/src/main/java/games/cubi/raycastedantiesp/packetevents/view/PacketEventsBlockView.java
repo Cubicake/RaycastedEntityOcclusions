@@ -4,9 +4,16 @@ import games.cubi.locatables.implementations.ImmutableBlockLocatable;
 import games.cubi.raycastedantiesp.core.view.AbstractBlockView;
 import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsTileEntity;
 
+import java.util.UUID;
+
 public class PacketEventsBlockView extends AbstractBlockView<PacketEventsTileEntity> {
     @Override
-    protected PacketEventsTileEntity createTrackedTileEntity(ImmutableBlockLocatable location, int lastChecked) {
-        return new PacketEventsTileEntity(location, false, lastChecked);
+    protected PacketEventsTileEntity createTrackedTileEntity(ImmutableBlockLocatable location, int blockID) {
+        return new PacketEventsTileEntity(location, false, 0, blockID);
+    }
+
+    @Override
+    protected PacketEventsTileEntity createTrackedTileEntity(UUID world, int x, int y, int z, int blockID) {
+        return new PacketEventsTileEntity(world, x, y, z, false, blockID);
     }
 }

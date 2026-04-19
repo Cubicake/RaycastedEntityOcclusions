@@ -1,6 +1,7 @@
 package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
 import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.PacketEvent;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -15,10 +16,11 @@ import com.github.retrooper.packetevents.wrapper.play.server.*;
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.BlockView;
 import games.cubi.raycastedantiesp.core.view.BlockViewTransition;
-import games.cubi.locatables.minecraft.TileEntityLocatable;
+import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
 import games.cubi.raycastedantiesp.packetevents.BlockInfoResolver;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsTileEntityReplayData;
 
@@ -95,12 +97,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                 int blockID = change.getBlockId();
                 boolean occluding = blockID != 0 && blockInfoResolver.isOccluding(blockID);
                 boolean tileEntity = blockInfoResolver.isTileEntity(blockID);
-                blockView.upsertBlock(world, change.getX(), change.getY(), change.getZ(), occluding, tileEntity);
+                blockView.upsertBlock(world, change.getX(), change.getY(), change.getZ(), occluding);
                 ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, change.getX(), change.getY(), change.getZ());
                 if (tileEntity) {
-                    blockView.insertIfAbsent(location);
-                    TileEntityLocatable<PacketEventsTileEntityReplayData> trackedTileEntity = getTrackedTileEntity(blockView, location);
-                    trackedTileEntity.setBlockID(blockID);
+                    blockView.insertTileEntityIfAbsent(location, blockID);
                     if (!blockView.isVisible(location, currentTick)) {
                         change.setBlockId(getHiddenBlockId(location.blockY()));
                         event.markForReEncode(true);
@@ -112,7 +112,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         } else if (event.getPacketType() == PacketType.Play.Server.BLOCK_ENTITY_DATA) {
             WrapperPlayServerBlockEntityData packet = new WrapperPlayServerBlockEntityData(event);
             ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
-            blockView.insertIfAbsent(location);
+            blockView.insertTileEntityIfAbsent(location, packet.getBlockEntityType().getId(event.getUser().getPacketVersion()));
             ensureTileReplayData(getTrackedTileEntity(blockView, location)).setBlockEntityData(packet.getBlockEntityType(), packet.getNBT());
             if (!blockView.isVisible(location, currentTick)) {
                 event.setCancelled(true);
@@ -127,7 +127,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                     packet.getColumn().getZ(),
                     packet.getColumn(),
                     event.getUser().getMinWorldHeight() >> 4,
-                    currentTick
+                    event
             );
             Column tileEntitiesRemoved;
             if (column.hasBiomeData()) {
@@ -201,11 +201,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         Vector3i position = packet.getBlockPosition();
         ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, position.getX(), position.getY(), position.getZ());
 
-        playerData.blockView().upsertBlock(world, position.getX(), position.getY(), position.getZ(), occluding, tileEntity);
+        playerData.blockView().upsertBlock(world, position.getX(), position.getY(), position.getZ(), occluding);
         if (tileEntity) {
-            playerData.blockView().insertIfAbsent(location);
-            TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(playerData.blockView(), location);
-            state.setBlockID(blockID);
+            playerData.blockView().insertTileEntityIfAbsent(location, blockID);
             if (!playerData.blockView().isVisible(location, currentTick)) {
                 event.setCancelled(true);
                 sendHiddenBlock(viewer, location);
@@ -222,7 +220,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             int chunkZ,
             Column column,
             int minimumChunkSectionY,
-            int currentTick
+            PacketSendEvent event
     ) {
         Map<Integer, boolean[][][]> occludingBySectionY = new HashMap<>();
         Map<Integer, Set<ImmutableBlockLocatable>> tileEntitiesBySectionY = new HashMap<>();
@@ -263,8 +261,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                             chunkSectionHasOccluding = true;
                             ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
                             tileEntities.add(location);
-                            blockView.insertIfAbsent(location);
-                            getTrackedTileEntity(blockView, location).setBlockID(blockID);
+                            blockView.insertTileEntityIfAbsent(location, blockID);
                             section.set(localX, localY, localZ, getHiddenBlockId(blockY));
                         }
                     }
@@ -284,9 +281,15 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                 int sectionY = blockY >> 4;
                 ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
                 tileEntitiesBySectionY.computeIfAbsent(sectionY, ignored -> new HashSet<>()).add(location);
-                blockView.insertIfAbsent(location);
 
                 TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(blockView, location);
+
+                if (state == null) {
+                    Logger.warning("Received block entity data for a tile entity that wasn't in the chunk's tile entity list. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                    blockView.insertTileEntityIfAbsent(location, packetTileEntityType(tileEntity).getId(event.getUser().getPacketVersion()));
+                    state = getTrackedTileEntity(blockView, location);
+                }
+
                 ensureTileReplayData(state).setBlockEntityData(packetTileEntityType(tileEntity), tileEntity.getNBT());
             }
         }

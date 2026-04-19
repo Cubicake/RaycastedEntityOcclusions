@@ -69,6 +69,11 @@ public interface EntityLocatable<EntityType, PaintingType, Direction, PacketRepl
     PacketReplayData packetReplayData();
     EntityLocatable<?, ?, ?, ?> setPacketReplayData(PacketReplayData packetReplayData);
 
+    /**
+     * For use when the player disconnects, clears all data.
+     */
+    void clear();
+
     default <T> T cast() {
         return (T) this;
     }

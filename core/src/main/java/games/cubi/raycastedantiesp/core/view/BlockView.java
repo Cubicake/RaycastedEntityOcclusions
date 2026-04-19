@@ -2,18 +2,17 @@ package games.cubi.raycastedantiesp.core.view;
 
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.locatables.minecraft.TileEntityLocatable;
+import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
+import games.cubi.raycastedantiesp.core.utils.Clearable;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public interface BlockView {
+public interface BlockView extends Clearable {
     boolean isBlockOccluding(BlockLocatable location);
 
-    void upsertTileEntity(BlockLocatable location, int currentTick);
-
-    void insertIfAbsent(BlockLocatable location);
+    void insertTileEntityIfAbsent(BlockLocatable location, int blockID);
 
     void removeTileEntity(BlockLocatable location);
 
@@ -33,13 +32,11 @@ public interface BlockView {
 
     List<BlockViewTransition> drainTransitions();
 
-    void upsertBlock(UUID world, int x, int y, int z, boolean occluding, boolean tileEntity);
+    void upsertBlock(UUID world, int x, int y, int z, boolean occluding);
 
     void removeChunk(UUID world, int chunkX, int chunkZ);
 
     void replaceChunk(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks);
-
-    void clear();
 
     default <T> T cast() {
         return (T) this;

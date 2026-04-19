@@ -2,8 +2,11 @@ package games.cubi.raycastedantiesp.core.view;
 
 import games.cubi.locatables.BlockLocatable;
 import games.cubi.locatables.ChunkSectionLocatable;
+import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ImmutableBlockLocatable;
-import games.cubi.locatables.minecraft.TileEntityLocatable;
+import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
+import games.cubi.raycastedantiesp.core.utils.CanonicalSet;
+import games.cubi.raycastedantiesp.core.utils.ConcurrentSelfMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,10 +21,14 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     private static final int LOCAL_MASK = CHUNK_SIZE - 1;
 
     private final Map<ChunkSectionLocatable, boolean[][][] /*true if that position is occluding. Positions are 0-15 for x,y,z*/> chunks = new ConcurrentHashMap<>();
-    private final Map<ImmutableBlockLocatable, T> knownTileEntities = new ConcurrentHashMap<>();
+    private final CanonicalSet<Locatable, T> knownTileEntities = new ConcurrentSelfMap<>();
     private final ConcurrentLinkedQueue<BlockViewTransition> transitions = new ConcurrentLinkedQueue<>();
 
-    protected abstract T createTrackedTileEntity(ImmutableBlockLocatable location, int lastChecked);
+    @Deprecated
+    protected abstract T createTrackedTileEntity(ImmutableBlockLocatable location, int blockID);
+
+    protected abstract T createTrackedTileEntity(UUID world, int x, int y, int z, int blockID);
+
 
     public boolean isBlockOccluding(UUID world, int x, int y, int z) {
         final boolean[][][] chunk = getChunk(world, x >> 4, y >> 4, z >> 4);
@@ -45,27 +52,18 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     }
 
     @Override
-    public void upsertTileEntity(BlockLocatable location, int currentTick) {
+    public void insertTileEntityIfAbsent(BlockLocatable location, int blockID) {
         ImmutableBlockLocatable key = toImmutable(location);
-        knownTileEntities.compute(key, (ignored, existing) -> {
-            if (existing == null) {
-                return createTrackedTileEntity(key, currentTick);
-            }
-            existing.setLastChecked(currentTick);
-            return existing;
-        });
-    }
-
-    @Override
-    public void insertIfAbsent(BlockLocatable location) {
-        ImmutableBlockLocatable key = toImmutable(location);
-        knownTileEntities.computeIfAbsent(key, ignored -> createTrackedTileEntity(key, 0));
+        knownTileEntities.computeIfAbsent(key, ignored -> createTrackedTileEntity(key, blockID));
     }
 
     @Override
     public void removeTileEntity(BlockLocatable location) {
         ImmutableBlockLocatable key = toImmutable(location);
-        knownTileEntities.remove(key);
+        T tileEntity = knownTileEntities.remove(key);
+        if (tileEntity != null) {
+            tileEntity.clear();
+        }
     }
 
     @Override
@@ -109,12 +107,11 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     @Override
     public Collection<BlockLocatable> getNeedingRecheck(int recheckTicks, int currentTick) {
         List<BlockLocatable> needingRecheck = new ArrayList<>();
-        for (Map.Entry<ImmutableBlockLocatable, T> entry : knownTileEntities.entrySet()) {
-            T state = entry.getValue();
-            if (state.visible() && currentTick - state.lastChecked() < recheckTicks) {
+        for (T tileEntity : knownTileEntities.values()) {
+            if (tileEntity.visible() && currentTick - tileEntity.lastChecked() < recheckTicks) {
                 continue;
             }
-            needingRecheck.add(entry.getKey());
+            needingRecheck.add(tileEntity);
         }
         return needingRecheck;
     }
@@ -135,16 +132,9 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     }
 
     @Override
-    public void upsertBlock(UUID world, int x, int y, int z, boolean occluding, boolean tileEntity) {
+    public void upsertBlock(UUID world, int x, int y, int z, boolean occluding) {
         final boolean[][][] chunk = getOrCreateChunk(world, x >> 4, y >> 4, z >> 4);
         chunk[x & LOCAL_MASK][y & LOCAL_MASK][z & LOCAL_MASK] = occluding;
-
-        ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, x, y, z);
-        if (tileEntity) {
-            insertIfAbsent(location);
-        } else {
-            removeTileEntity(location);
-        }
     }
 
     @Override

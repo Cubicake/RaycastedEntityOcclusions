@@ -31,9 +31,8 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSp
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPainting;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
-import games.cubi.locatables.minecraft.EntityLocatable;
+import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.locatables.Locatable;
-import games.cubi.locatables.minecraft.NettyEntityLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;
@@ -526,8 +525,6 @@ public abstract class PacketEventsEntityViewController implements PacketListener
                     PacketEventsEntityReplayData replayData = ensureReplayData(entity);
                     sendEntityShow(viewer, entity, replayData, playerTargets);
                     entity.setClientVisible(true);
-                }
-                case FORGET -> {
                 }
             }
         }
