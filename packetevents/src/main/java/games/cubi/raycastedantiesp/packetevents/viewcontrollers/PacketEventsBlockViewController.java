@@ -169,15 +169,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         }
     }
 
-    private void processTileEntityTransitions(User viewer, TileEntityView tileEntityView) {
-        for (TileEntityViewTransition transition : tileEntityView.drainTransitions()) {
-            ImmutableBlockLocatable location = new ImmutableBlockLocatable(
-                    transition.location().world(),
-                    transition.location().blockX(),
-                    transition.location().blockY(),
-                    transition.location().blockZ()
-            );
-            TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(tileEntityView, location);
+    private void processTileEntityTransitions(User viewer, BlockView blockView) {
+        for (BlockViewTransition transition : blockView.drainTransitions()) {
+            BlockLocatable location = transition.location();
+            TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(blockView, location);
 
             switch (transition.type()) {
                 case HIDE -> viewer.writePacketSilently(new WrapperPlayServerBlockChange(
