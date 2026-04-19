@@ -46,6 +46,14 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
     protected abstract int getHiddenBlockId(int blockY);
 
+    protected boolean isViewerCullingEnabled(PlayerData playerData) {
+        return true;
+    }
+
+    protected boolean shouldApplyCulling(PlayerData playerData, BlockLocatable targetLocation) {
+        return true;
+    }
+
     public void removeViewer(UUID viewerUUID) {
     }
 
@@ -72,7 +80,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         handleBlockPackets(event, event.getUser(), playerData, world, currentTick);
 
         if (playerData.blockView().hasPendingTransitions()) {
-            processTileEntityTransitions(event.getUser(), playerData.blockView());
+            processTileEntityTransitions(event.getUser(), playerData, playerData.blockView(), currentTick);
         }
         event.getUser().flushPackets();
     }
@@ -101,7 +109,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                 ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, change.getX(), change.getY(), change.getZ());
                 if (tileEntity) {
                     blockView.insertTileEntityIfAbsent(location, blockID);
-                    if (!blockView.isVisible(location, currentTick)) {
+                    if (!isViewerCullingEnabled(playerData) || !shouldApplyCulling(playerData, location)) {
+                        markTileEntityVisible(blockView, location, currentTick);
+                    } else if (!blockView.isVisible(location, currentTick)) {
                         change.setBlockId(getHiddenBlockId(location.blockY()));
                         event.markForReEncode(true);
                     }
@@ -114,7 +124,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
             blockView.insertTileEntityIfAbsent(location, packet.getBlockEntityType().getId(event.getUser().getPacketVersion()));
             ensureTileReplayData(getTrackedTileEntity(blockView, location)).setBlockEntityData(packet.getBlockEntityType(), packet.getNBT());
-            if (!blockView.isVisible(location, currentTick)) {
+            if (!isViewerCullingEnabled(playerData) || !shouldApplyCulling(playerData, location)) {
+                markTileEntityVisible(blockView, location, currentTick);
+            } else if (!blockView.isVisible(location, currentTick)) {
                 event.setCancelled(true);
                 sendHiddenBlock(viewer, location);
             }
@@ -167,16 +179,25 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         }
     }
 
-    private void processTileEntityTransitions(User viewer, BlockView blockView) {
+    private void processTileEntityTransitions(User viewer, PlayerData playerData, BlockView blockView, int currentTick) {
         for (BlockViewTransition transition : blockView.drainTransitions()) {
             BlockLocatable location = transition.location();
             TileEntityLocatable<PacketEventsTileEntityReplayData> state = getTrackedTileEntity(blockView, location);
 
             switch (transition.type()) {
-                case HIDE -> viewer.writePacketSilently(new WrapperPlayServerBlockChange(
-                        new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
-                        getHiddenBlockId(location.blockY())
-                ));
+                case HIDE -> {
+                    if (!isViewerCullingEnabled(playerData) || !shouldApplyCulling(playerData, location)) {
+                        if (state != null) {
+                            state.setVisible(true);
+                            state.setLastChecked(currentTick);
+                        }
+                        continue;
+                    }
+                    viewer.writePacketSilently(new WrapperPlayServerBlockChange(
+                            new Vector3i(location.blockX(), location.blockY(), location.blockZ()),
+                            getHiddenBlockId(location.blockY())
+                    ));
+                }
                 case SHOW -> {
                     if (state == null || state.blockID() == 0) {
                         continue;
@@ -204,7 +225,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         playerData.blockView().upsertBlock(world, position.getX(), position.getY(), position.getZ(), occluding);
         if (tileEntity) {
             playerData.blockView().insertTileEntityIfAbsent(location, blockID);
-            if (!playerData.blockView().isVisible(location, currentTick)) {
+            if (!isViewerCullingEnabled(playerData) || !shouldApplyCulling(playerData, location)) {
+                markTileEntityVisible(playerData.blockView(), location, currentTick);
+            } else if (!playerData.blockView().isVisible(location, currentTick)) {
                 event.setCancelled(true);
                 sendHiddenBlock(viewer, location);
             }
@@ -262,7 +285,11 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                             ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
                             tileEntities.add(location);
                             blockView.insertTileEntityIfAbsent(location, blockID);
-                            section.set(localX, localY, localZ, getHiddenBlockId(blockY));
+                            if (!isViewerCullingEnabled(playerData) || !shouldApplyCulling(playerData, location)) {
+                                markTileEntityVisible(blockView, location, currentTickSupplier.getAsInt());
+                            } else {
+                                section.set(localX, localY, localZ, getHiddenBlockId(blockY));
+                            }
                         }
                     }
                 }
@@ -378,6 +405,15 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
     private Vector3i copyBlockVector(Vector3i vector) {
         return new Vector3i(vector.getX(), vector.getY(), vector.getZ());
+    }
+
+    private void markTileEntityVisible(BlockView blockView, BlockLocatable location, int currentTick) {
+        TileEntityLocatable<PacketEventsTileEntityReplayData> trackedTileEntity = getTrackedTileEntity(blockView, location);
+        if (trackedTileEntity == null) {
+            return;
+        }
+        trackedTileEntity.setVisible(true);
+        trackedTileEntity.setLastChecked(currentTick);
     }
 
     @SuppressWarnings("unchecked")
