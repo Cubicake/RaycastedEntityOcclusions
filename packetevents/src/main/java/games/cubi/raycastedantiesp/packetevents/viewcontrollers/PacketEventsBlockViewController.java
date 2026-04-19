@@ -112,8 +112,12 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         } else if (event.getPacketType() == PacketType.Play.Server.BLOCK_ENTITY_DATA) {
             WrapperPlayServerBlockEntityData packet = new WrapperPlayServerBlockEntityData(event);
             ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ());
-            blockView.insertTileEntityIfAbsent(location, packet.getBlockEntityType().getId(event.getUser().getPacketVersion()));
-            ensureTileReplayData(getTrackedTileEntity(blockView, location)).setBlockEntityData(packet.getBlockEntityType(), packet.getNBT());
+            TileEntityLocatable<PacketEventsTileEntityReplayData> tileEntity = getTrackedTileEntity(blockView, location);
+            if (tileEntity == null) {
+                Logger.warning("Received standalone block entity data for an uncached tile entity. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                return;
+            }
+            ensureTileReplayData(tileEntity).setBlockEntityData(packet.getBlockEntityType(), packet.getNBT());
             if (!blockView.isVisible(location, currentTick)) {
                 event.setCancelled(true);
                 sendHiddenBlock(viewer, location);
@@ -286,10 +290,35 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
                 if (state == null) {
                     Logger.warning("Received block entity data for a tile entity that wasn't in the chunk's tile entity list. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
-                    blockView.insertTileEntityIfAbsent(location, packetTileEntityType(tileEntity).getId(event.getUser().getPacketVersion()));
-                    state = getTrackedTileEntity(blockView, location);
-                }
+                    int sectionIndex = sectionY - minimumChunkSectionY;
+                    if (sectionIndex < 0 || sectionIndex >= sections.length) {
+                        Logger.warning("Skipping uncached chunk block entity with out-of-bounds section index. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                        continue;
+                    }
 
+                    BaseChunk sourceSection = sections[sectionIndex];
+                    if (sourceSection == null) {
+                        Logger.warning("Skipping uncached chunk block entity because its section data is missing. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                        continue;
+                    }
+
+                    int blockID = sourceSection.getBlockId(tileEntity.getX(), blockY & 15, tileEntity.getZ());
+                    if (blockID <= 0) {
+                        Logger.warning("Skipping uncached chunk block entity because the recovered block state was air or invalid (" + blockID + "). Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                        continue;
+                    }
+
+                    if (!blockInfoResolver.isTileEntity(blockID)) {
+                        Logger.warning("Recovered uncached chunk block entity from chunk sections with a non-tile-entity block state ID (" + blockID + "). Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                    }
+
+                    blockView.insertTileEntityIfAbsent(location, blockID);
+                    state = getTrackedTileEntity(blockView, location);
+                    if (state == null) {
+                        Logger.warning("Skipping uncached chunk block entity because caching recovery failed. Location: " + location.world() + " " + location.blockX() + "," + location.blockY() + "," + location.blockZ(), 3, PacketEventsBlockViewController.class);
+                        continue;
+                    }
+                }
                 ensureTileReplayData(state).setBlockEntityData(packetTileEntityType(tileEntity), tileEntity.getNBT());
             }
         }
