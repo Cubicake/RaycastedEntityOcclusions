@@ -3,6 +3,9 @@ package games.cubi.raycastedantiesp.paper.packets;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListenerPriority;
 import com.github.retrooper.packetevents.protocol.player.User;
+import games.cubi.locatables.BlockLocatable;
+import games.cubi.locatables.Locatable;
+import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.packetevents.viewcontrollers.PacketEventsBlockViewController;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
@@ -45,6 +48,30 @@ public class PaperPacketEventsBlockViewController extends PacketEventsBlockViewC
     @Override
     protected int getHiddenBlockId(int blockY) {
         return blockY > 0 ? stoneBlockId : deepslateBlockId;
+    }
+
+    @Override
+    protected boolean isViewerCullingEnabled(PlayerData playerData) {
+        if (playerData == null || playerData.hasBypassPermission()) {
+            return false;
+        }
+        if (!RaycastedAntiESP.getConfigManager().getTileEntityConfig().isEnabled()) {
+            return false;
+        }
+        Locatable ownLocation = playerData.ownLocation();
+        if (ownLocation == null || ownLocation.world() == null) {
+            return false;
+        }
+        return RaycastedAntiESP.getRegionActivationService().isEnabled(ownLocation);
+    }
+
+    @Override
+    protected boolean shouldApplyCulling(PlayerData playerData, BlockLocatable targetLocation) {
+        if (!isViewerCullingEnabled(playerData) || targetLocation == null || targetLocation.world() == null) {
+            return false;
+        }
+        Locatable ownLocation = playerData.ownLocation();
+        return ownLocation != null && RaycastedAntiESP.getRegionActivationService().isEnabled(ownLocation, targetLocation);
     }
 
     @EventHandler
