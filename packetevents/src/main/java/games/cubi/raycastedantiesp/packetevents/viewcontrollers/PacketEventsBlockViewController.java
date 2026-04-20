@@ -261,7 +261,6 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                             chunkSectionHasOccluding = true;
                         }
                         if (blockInfoResolver.isTileEntity(blockID)) {
-                            chunkSectionHasOccluding = true;
                             ImmutableBlockLocatable location = new ImmutableBlockLocatable(worldID, blockX, blockY, blockZ);
                             tileEntities.add(location);
                             blockView.insertTileEntityIfAbsent(location, blockID);
