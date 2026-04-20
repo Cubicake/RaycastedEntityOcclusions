@@ -99,7 +99,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                 blockView.upsertBlock(world, change.getX(), change.getY(), change.getZ(), occluding);
                 ImmutableBlockLocatable location = new ImmutableBlockLocatable(world, change.getX(), change.getY(), change.getZ());
                 if (tileEntity) {
-                    blockView.insertTileEntityIfAbsent(location, blockID);
+                    TileEntityLocatable<?> existing = blockView.getTrackedTileEntity(location);
+                    if (existing == null || existing.blockID() != blockID) {
+                        blockView.insertTileEntity(location, blockID);
+                    }
                     if (!blockView.isVisible(location, currentTick)) {
                         change.setBlockId(getHiddenBlockId(location.blockY()));
                         event.markForReEncode(true);
@@ -206,7 +209,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
         playerData.blockView().upsertBlock(world, position.getX(), position.getY(), position.getZ(), occluding);
         if (tileEntity) {
-            playerData.blockView().insertTileEntityIfAbsent(location, blockID);
+            TileEntityLocatable<?> existing = playerData.blockView().getTrackedTileEntity(location);
+            if (existing == null || existing.blockID() != blockID) {
+                playerData.blockView().insertTileEntity(location, blockID);
+            }
             if (!playerData.blockView().isVisible(location, currentTick)) {
                 event.setCancelled(true);
                 sendHiddenBlock(viewer, location);
