@@ -54,6 +54,9 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
             return;
         }
         PacketEventsEntity removed = entitiesByUUID.remove(entityUUID);
+        if (removed == null) {
+            return;
+        }
         removed.clear();
     }
 
