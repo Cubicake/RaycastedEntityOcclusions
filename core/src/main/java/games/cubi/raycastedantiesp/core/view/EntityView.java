@@ -1,0 +1,49 @@
+package games.cubi.raycastedantiesp.core.view;
+
+import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
+import games.cubi.locatables.Locatable;
+import games.cubi.raycastedantiesp.core.utils.Clearable;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+
+public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>>  extends Clearable {
+    void insertEntity(T entity);
+
+    void moveRelative(int entityID, double deltaX, double deltaY, double deltaZ, int currentTick);
+
+    void moveAbsolute(int entityID, double x, double y, double z, int currentTick);
+
+    void removeEntity(int entityID, int currentTick);
+
+    void removeEntity(UUID entityUUID, int currentTick);
+
+    T getEntity(UUID entityUUID);
+
+    T getEntity(int entityID);
+
+    Locatable getLocation(UUID entityUUID);
+
+    int getEntityID(UUID entityUUID);
+
+    boolean isVisible(UUID entityUUID, int currentTick);
+
+    void setVisibility(UUID entityUUID, boolean visible, int currentTick);
+
+    Collection<UUID> getKnownEntities();
+
+    Collection<UUID> getNeedingRecheck(int recheckTicks, int currentTick);
+
+    boolean hasPendingTransitions();
+
+    List<EntityViewTransition> drainTransitions();
+
+    default <T> T cast() {
+        return (T) this;
+    }
+
+    interface Factory {
+        EntityView<?> createEntityView();
+    }
+}

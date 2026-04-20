@@ -5,7 +5,7 @@ import games.cubi.locatables.implementations.*;
 import java.util.UUID;
 
 // A vector-like interface representing a location in a 3D space within a specific world.
-public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, BlockLocatable {
+public sealed interface Locatable extends ChunkSectionLocatable, StrictEquality permits MutableLocatable, ImmutableLocatable, BlockLocatable {
 
     double x();
     double y();
@@ -22,11 +22,17 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
         return (int) Math.floor(z());
     }
 
+    @Override
     default int chunkX() {
         return blockX() >> 4;
     }
+    @Override
     default int chunkZ() {
         return blockZ() >> 4;
+    }
+    @Override
+    default int chunkY() {
+        return blockY() >> 4;
     }
 
     default double length() {
@@ -87,9 +93,9 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
         int hash = 3;
 
         hash = 19 * hash + this.world().hashCode();
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.x()) ^ (Double.doubleToLongBits(this.x()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.y()) ^ (Double.doubleToLongBits(this.y()) >>> 32));
-        hash = 19 * hash + (int) (Double.doubleToLongBits(this.z()) ^ (Double.doubleToLongBits(this.z()) >>> 32));
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(x()));
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(y()));
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(z()));
         return hash;
     }
 
@@ -105,6 +111,8 @@ public sealed interface Locatable permits MutableLocatable, ImmutableLocatable, 
 
     enum LocatableType {
         ThreadSafe,
+        NettyEntity,
+        NettyTileEntity,
         MutableBlockVector,
         ImmutableBlockLocation,
         Immutable,

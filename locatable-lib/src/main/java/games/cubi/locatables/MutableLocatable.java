@@ -22,6 +22,13 @@ public non-sealed interface MutableLocatable extends Locatable {
         return this;
     }
 
+    default MutableLocatable add(double x, double y, double z) {
+        setX(x() + x);
+        setY(y() + y);
+        setZ(z() + z);
+        return this;
+    }
+
     /**@return The same Locatable, now mutated.*/
     default MutableLocatable subtract(Locatable locatable) {
         setX(x() - locatable.x());

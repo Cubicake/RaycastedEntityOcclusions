@@ -24,7 +24,7 @@ public class UpdateChecker {
     private static CompletableFuture<String> fetchFeaturedVersion(RaycastedAntiESP plugin) {
         CompletableFuture<String> future = new CompletableFuture<>();
 
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        Bukkit.getAsyncScheduler().runNow(plugin, ignored -> {
             try (final InputStreamReader reader = new InputStreamReader(new URI(VERSION_API_ENDPOINT).toURL().openConnection().getInputStream())) {
                 final JsonArray array = new JsonArray();
                 array.add(new BufferedReader(reader).readLine());

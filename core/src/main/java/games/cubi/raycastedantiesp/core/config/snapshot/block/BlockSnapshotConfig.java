@@ -31,7 +31,7 @@ public class BlockSnapshotConfig implements Config {
 
     public static final BlockSnapshotConfig DEFAULT =
             new BlockSnapshotConfig(
-                    BlockMode.SYNC_BUKKIT
+                    BlockMode.PACKETEVENTS
             );
 
     public static class Factory implements ConfigFactory<BlockSnapshotConfig> {
@@ -49,15 +49,17 @@ public class BlockSnapshotConfig implements Config {
                 Logger.warning("Invalid block snapshot mode in config, defaulting to " + DEFAULT.getMode().getName(), Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
                 mode = DEFAULT.getMode();
             }
+            if (mode != BlockMode.PACKETEVENTS) {
+                Logger.warning("Block snapshot mode '" + mode.getName() + "' is no longer supported, coercing to packetevents.", Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
+                mode = BlockMode.PACKETEVENTS;
+            }
 
             return switch (mode) {
-                case SYNC_BUKKIT, UNSAFE_ASYNC_BUKKIT ->
-                        new BukkitBlockSnapshotConfig.Factory(mode).getFromConfig(config);
                 case PACKETEVENTS ->
-                        throw new UnsupportedOperationException("PacketEvents block snapshot mode is not yet implemented.");
+                        new PacketEventsBlockSnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on sync-bukkit"), Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
-                    yield new BukkitBlockSnapshotConfig.Factory(BlockMode.SYNC_BUKKIT).getFromConfig(config);
+                    Logger.error(new RuntimeException("Unsupported block snapshot mode enum value: " + mode + ", falling back on packetevents"), Frequency.CONFIG_LOAD.value, BlockSnapshotConfig.class);
+                    yield new PacketEventsBlockSnapshotConfig.Factory().getFromConfig(config);
                 }
             };
         }
@@ -71,6 +73,7 @@ public class BlockSnapshotConfig implements Config {
         public @NotNull ConfigFactory<BlockSnapshotConfig> setDefaults(ConfigurationNode config) {
             ConfigNodeUtil.addDefault(config, getFullPath()+".mode", DEFAULT.getMode().getName());
             new BukkitBlockSnapshotConfig.Factory(null).setDefaults(config);
+            new PacketEventsBlockSnapshotConfig.Factory().setDefaults(config);
             return this;
         }
     }

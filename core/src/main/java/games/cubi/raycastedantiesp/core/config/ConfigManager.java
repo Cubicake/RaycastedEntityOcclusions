@@ -257,7 +257,7 @@ public class ConfigManager {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create config.yml", e);
+            throw new RuntimeException("Failed to createPlayerEntitySnapshotManager config.yml", e);
         }
     }
 

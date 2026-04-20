@@ -79,4 +79,19 @@ public class MutableLocatableImpl implements MutableLocatable {
     public String toString() {
         return toStringForm();
     }
+
+    @Override
+    public boolean strictlyEquals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof MutableLocatableImpl that)) return false;
+        if (!(this.world().equals(that.world()))) return false;
+
+        if (Double.doubleToLongBits(this.x()) != Double.doubleToLongBits(that.x())) {
+            return false;
+        }
+        if (Double.doubleToLongBits(this.y()) != Double.doubleToLongBits(that.y())) {
+            return false;
+        }
+        return Double.doubleToLongBits(this.z()) == Double.doubleToLongBits(that.z());
+    }
 }
