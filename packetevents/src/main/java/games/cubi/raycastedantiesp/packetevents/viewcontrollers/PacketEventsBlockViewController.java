@@ -332,7 +332,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         for (int sectionY : sectionYs) {
             boolean[][][] occluding = occludingBySectionY.get(sectionY);
             if (occluding != null) {
-                blockView.replaceChunk(worldID, chunkX, sectionY, chunkZ, occluding);
+                blockView.replaceChunkSection(worldID, chunkX, sectionY, chunkZ, occluding);
+            }
+            else {
+                blockView.removeChunkSection(worldID, chunkX, sectionY, chunkZ);
             }
             //reconcileSectionTileEntities(blockView, worldID, chunkX, sectionY, chunkZ, tileEntitiesBySectionY.getOrDefault(sectionY, Set.of()));
         }
