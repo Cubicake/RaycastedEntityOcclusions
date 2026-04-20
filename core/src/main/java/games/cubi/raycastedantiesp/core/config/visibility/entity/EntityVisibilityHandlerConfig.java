@@ -28,7 +28,7 @@ public class EntityVisibilityHandlerConfig implements Config {
     }
 
     public static final EntityVisibilityHandlerConfig DEFAULT =
-        new EntityVisibilityHandlerConfig(EntityVisibilityHandlerMode.BUKKIT);
+        new EntityVisibilityHandlerConfig(EntityVisibilityHandlerMode.PACKETEVENTS);
 
     public static class Factory implements ConfigFactory<EntityVisibilityHandlerConfig> {
         public static final String PATH = ".entity";
@@ -45,8 +45,12 @@ public class EntityVisibilityHandlerConfig implements Config {
         @Override
         public @NotNull EntityVisibilityHandlerConfig getFromConfig(ConfigurationNode config) {
             EntityVisibilityHandlerMode mode = readMode(config);
+            if (mode != EntityVisibilityHandlerMode.PACKETEVENTS) {
+                Logger.warning("Entity visibility handler mode '" + mode.getName() + "' is no longer supported, coercing to packetevents.", 3, EntityVisibilityHandlerConfig.class);
+                mode = EntityVisibilityHandlerMode.PACKETEVENTS;
+            }
             return switch (mode) {
-                case BUKKIT -> bukkitFactory.getFromConfig(config);
+                case BUKKIT -> packetEventsFactory.getFromConfig(config);
                 case PACKETEVENTS -> packetEventsFactory.getFromConfig(
                     config);
             };
@@ -68,7 +72,6 @@ public class EntityVisibilityHandlerConfig implements Config {
             ConfigNodeUtil.addDefault(config, getFullPath() + ".mode", fallback.getName());
             EntityVisibilityHandlerMode mode = fallback.getMode();
             switch (mode) {
-                case BUKKIT -> bukkitFactory.setDefaults(config);
                 case PACKETEVENTS -> packetEventsFactory.setDefaults(config);
             }
             return this;

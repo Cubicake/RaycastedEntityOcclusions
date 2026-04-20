@@ -1,7 +1,7 @@
 name: RaycastedAntiESP
 version: ${version}
 main: games.cubi.raycastedantiesp.paper.RaycastedAntiESP
-api-version: '1.21'
+api-version: '1.20.6'
 prefix: RaycastedAntiESP
 authors: [ _Cubicake ]
 load: STARTUP
@@ -19,5 +19,6 @@ permissions:
     raycastedentityocclusions.receivelogmessages:
         description: Permission to receive log messages which are sent to the console
         default: false
-softdepend:
+depend:
     - packetevents
+folia-supported: true

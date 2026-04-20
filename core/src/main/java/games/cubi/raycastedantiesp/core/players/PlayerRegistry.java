@@ -25,8 +25,20 @@ public class PlayerRegistry {
         playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, hasBypassPermission, joinTick));
     }
 
+    public PlayerData registerAndGetPlayer(UUID playerUUID, boolean hasBypassPermission, int joinTick) {
+        PlayerData newData = new PlayerData(playerUUID, hasBypassPermission, joinTick);
+        PlayerData existingData = playerDataMap.putIfAbsent(playerUUID, newData);
+        return existingData != null ? existingData : newData;
+    }
+
     public void unregisterPlayer(UUID playerUUID) {
-        playerDataMap.remove(playerUUID);
+        PlayerData unregisteredPlayer = playerDataMap.remove(playerUUID);
+        if (unregisteredPlayer == null) {
+            return;
+        }
+        unregisteredPlayer.blockView().clear();
+        unregisteredPlayer.entityView().clear();
+        unregisteredPlayer.playerView().clear();
     }
 
     public PlayerData getPlayerData(UUID playerUUID) {
@@ -42,12 +54,5 @@ public class PlayerRegistry {
      * **/
     public Collection<PlayerData> getAllPlayerData() {
         return playerDataMap.values();
-    }
-
-    /**For use when an invalid tile entity is detected, to ensure all players have it removed from their data**/
-    public void removeTileEntityFromAllPlayers(BlockLocatable blockLocation) {
-        for (PlayerData playerData : playerDataMap.values()) {
-            playerData.tileVisibility().remove(blockLocation);
-        }
     }
 }

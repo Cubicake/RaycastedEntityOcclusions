@@ -22,7 +22,7 @@ public class EntitySnapshotConfig implements Config {
 
     public static final EntitySnapshotConfig DEFAULT =
             new EntitySnapshotConfig(
-                    EntityMode.BUKKIT
+                    EntityMode.PACKETEVENTS
             );
 
     public static class Factory implements ConfigFactory<EntitySnapshotConfig> {
@@ -41,15 +41,17 @@ public class EntitySnapshotConfig implements Config {
                 Logger.warning("Invalid entity snapshot mode in config, defaulting to " + fallback.getMode().getName(), Frequency.CONFIG_LOAD.value, EntitySnapshotConfig.class);
                 mode = fallback.getMode();
             }
+            if (mode != EntityMode.PACKETEVENTS) {
+                Logger.warning("Entity snapshot mode '" + mode.getName() + "' is no longer supported, coercing to packetevents.", Frequency.CONFIG_LOAD.value, EntitySnapshotConfig.class);
+                mode = EntityMode.PACKETEVENTS;
+            }
 
             return switch (mode) {
-                case BUKKIT ->
-                        new BukkitEntitySnapshotConfig.Factory().getFromConfig(config);
                 case PACKETEVENTS ->
                         new PacketEventsEntitySnapshotConfig.Factory().getFromConfig(config);
                 default -> {
-                    Logger.error(new RuntimeException("Unsupported entity snapshot mode enum value: " + mode + ", falling back on bukkit"), Frequency.CONFIG_LOAD.value, EntitySnapshotConfig.class);
-                    yield new BukkitEntitySnapshotConfig.Factory().getFromConfig(config);
+                    Logger.error(new RuntimeException("Unsupported entity snapshot mode enum value: " + mode + ", falling back on packetevents"), Frequency.CONFIG_LOAD.value, EntitySnapshotConfig.class);
+                    yield new PacketEventsEntitySnapshotConfig.Factory().getFromConfig(config);
                 }
             };
         }

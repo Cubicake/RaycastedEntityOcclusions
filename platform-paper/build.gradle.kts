@@ -15,8 +15,8 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
-    compileOnly("com.github.retrooper:packetevents-spigot:2.8.0")
+    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
+    compileOnly("com.github.retrooper:packetevents-spigot:2.12.0")
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 
@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":locatable-lib"))
     implementation(project(":logging"))
     implementation(project(":core"))
+    implementation(project(":packetevents"))
 }
 
 java {
@@ -33,7 +34,7 @@ java {
 
 group = "games.cubi.raycastedantiesp.paper"
 
-val platformPaperVersion: String = "0.1.4-SNAPSHOT"
+val platformPaperVersion: String = "0.2.0-SNAPSHOT"
 val coreVersion = project(":core").version.toString()
 
 val commitShort = providers.exec {
@@ -82,6 +83,7 @@ tasks {
 
     processResources {
         val props = mapOf("version" to version.toString())
+        inputs.properties(props)
         filesMatching("plugin.yml") {
             expand(props)
         }
@@ -91,6 +93,7 @@ tasks {
             "build_time" to buildTime.get(),
             "version" to getBasicVersionString()
         )
+        inputs.properties(gitProps)
         filesMatching("build-properties/platform.yml") {
             expand(gitProps)
         }
@@ -102,6 +105,7 @@ tasks.shadowJar {
         include(project(":logging"))
         include(project(":locatable-lib"))
         include(project(":core"))
+        include(project(":packetevents"))
     }
     archiveBaseName.set("RaycastedAntiESP")
     archiveClassifier.set("")
@@ -111,6 +115,7 @@ tasks.jar {
     archiveBaseName.set("Incorrectly-Compiled-Without-ShadowJar")
 }
 
+// This is the task to run to test if changes to the plugin are working
 tasks.register("buildSnapshot") {
     group = "raycasted anti-esp" //Not caps sensitive so using spacing and hyphen
     description = "Builds a snapshot version of the plugin with git and build-time metadata included in the file name."
