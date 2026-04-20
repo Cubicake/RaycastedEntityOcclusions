@@ -14,6 +14,8 @@ public interface BlockView extends Clearable {
 
     void insertTileEntityIfAbsent(BlockLocatable location, int blockID);
 
+    void insertTileEntity(BlockLocatable location, int blockID);
+
     void removeTileEntity(BlockLocatable location);
 
     TileEntityLocatable<?> getTrackedTileEntity(BlockLocatable location);
