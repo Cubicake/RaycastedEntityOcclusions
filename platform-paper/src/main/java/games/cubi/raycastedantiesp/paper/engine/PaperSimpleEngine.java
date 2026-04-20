@@ -1,7 +1,9 @@
 package games.cubi.raycastedantiesp.paper.engine;
 
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.engine.AsyncRunner;
 import games.cubi.raycastedantiesp.core.engine.Engine;
+import games.cubi.raycastedantiesp.core.engine.SimpleEngine;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.paper.PaperParticleSpawner;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
@@ -15,13 +17,13 @@ public class PaperSimpleEngine implements Engine {
     private final BukkitScheduler bukkitScheduler;
     private final RaycastedAntiESP plugin;
     //private final BukkitESM entitySnapshotManager;
-    private final games.cubi.raycastedantiesp.core.engine.SimpleEngine delegate;
+    private final SimpleEngine delegate;
 
     public PaperSimpleEngine(RaycastedAntiESP plugin, ConfigManager cfg, IntSupplier currentTickSupplier) {
         this.plugin = plugin;
         asyncScheduler = plugin.getServer().getAsyncScheduler();
         bukkitScheduler = plugin.getServer().getScheduler();
-        delegate = new games.cubi.raycastedantiesp.core.engine.SimpleEngine(cfg, new PaperParticleSpawner(), PlayerRegistry.getInstance()::getAllPlayerData, currentTickSupplier);
+        delegate = new SimpleEngine(cfg, new PaperParticleSpawner(), PlayerRegistry.getInstance()::getAllPlayerData, currentTickSupplier, new PaperAsyncRunner(asyncScheduler));
 
         //forceEntityLocationUpdate();
     }
@@ -30,21 +32,17 @@ public class PaperSimpleEngine implements Engine {
     public void tick() {
         delegate.tick();
     }
-/*
-    private void forceEntityLocationUpdate() {  //todo: Quite frankly idk if this is needed, disabled for now since the config option doesn't even exist
-        int recheckInterval = -1;//ConfigManager.get().getSnapshotConfig().getEntityLocationRefreshInterval();
-        if (recheckInterval <= 0) {
-            //bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, 20 * 30); // Check again in 30 secs if config has changed
-            return;
+
+    //should be folia compatible too
+    public static class PaperAsyncRunner implements AsyncRunner {
+        private final AsyncScheduler asyncScheduler;
+
+        public PaperAsyncRunner(AsyncScheduler asyncScheduler) {
+            this.asyncScheduler = asyncScheduler;
         }
 
-        HashMap<UUID, ThreadSafeLocatable> entities = new HashMap<>();
-        for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                entities.put(entity.getUniqueId(), LocatableAdapterUtils.toLocatable(entity.getLocation(), entity.getHeight(), ThreadSafeLocatable.class));
-            }
+        public void runNow(Runnable task) {
+            asyncScheduler.runNow(RaycastedAntiESP.get(), (ignored) -> task.run());
         }
-        entitySnapshotManager.updateEntireEntityLocationMap(entities);
-        bukkitScheduler.runTaskLater(plugin, this::forceEntityLocationUpdate, recheckInterval);
-    }*/
+    }
 }

@@ -14,7 +14,7 @@ public non-sealed interface BlockLocatable extends Locatable {
         return this.blockX() == other.blockX() && this.blockY() == other.blockY() && this.blockZ() == other.blockZ() && world().equals(other.world());
     }
 
-    default int hash() {
+    default int blockHash() {
         int result = 17;
         result = 31 * result + (this.world() != null ? this.world().hashCode() : 0);
         result = 31 * result + this.blockX();

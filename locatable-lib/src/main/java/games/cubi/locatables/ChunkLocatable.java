@@ -2,7 +2,7 @@ package games.cubi.locatables;
 
 import java.util.UUID;
 
-public sealed interface ChunkLocatable permits ChunkLocatable.ImmutableChunkLocatable, Locatable {
+public sealed interface ChunkLocatable permits ChunkLocatable.ImmutableChunkLocatable, ChunkSectionLocatable {
     UUID world();
     int chunkX();
     int chunkZ();

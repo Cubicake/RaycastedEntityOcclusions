@@ -6,10 +6,14 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
 
+import games.cubi.raycastedantiesp.core.utils.Clearable;
+
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public sealed interface PacketEventsEntityReplayData permits PacketEventsEntityReplayData.Impl, PacketEventsPlayerReplayData{
+public sealed interface PacketEventsEntityReplayData extends Clearable permits PacketEventsEntityReplayData.Impl, PacketEventsPlayerReplayData {
 
     void addEffectPacket(WrapperPlayServerEntityEffect packet);
 
@@ -41,7 +45,7 @@ public sealed interface PacketEventsEntityReplayData permits PacketEventsEntityR
     }
 
     sealed class Impl implements PacketEventsEntityReplayData permits PacketEventsPlayerReplayData.Impl {
-        private final ConcurrentLinkedQueue<WrapperPlayServerEntityEffect> effectPackets = new ConcurrentLinkedQueue<>();
+        private final Queue<WrapperPlayServerEntityEffect> effectPackets = new ArrayDeque<>();
         private volatile WrapperPlayServerEntityMetadata metadataPacket;
         private volatile WrapperPlayServerEntityEquipment equipmentPacket;
         private volatile WrapperPlayServerEntityVelocity velocityPacket;
@@ -89,6 +93,15 @@ public sealed interface PacketEventsEntityReplayData permits PacketEventsEntityR
 
         public PacketEventsPlayerReplayData asPlayerReplayData() {
             return null;
+        }
+
+        @Override
+        public void clear() {
+            effectPackets.clear();
+            metadataPacket = null;
+            equipmentPacket = null;
+            velocityPacket = null;
+            passengersPacket = null;
         }
     }
 

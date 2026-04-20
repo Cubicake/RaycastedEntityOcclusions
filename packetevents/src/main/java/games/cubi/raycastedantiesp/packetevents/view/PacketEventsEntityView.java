@@ -1,7 +1,6 @@
 package games.cubi.raycastedantiesp.packetevents.view;
 
 import games.cubi.locatables.Locatable;
-import games.cubi.locatables.minecraft.NettyEntityLocatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
@@ -55,9 +54,10 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
             return;
         }
         PacketEventsEntity removed = entitiesByUUID.remove(entityUUID);
-        if (removed != null) {
-            transitions.add(new EntityViewTransition(EntityViewTransition.Type.FORGET, removed.entityUUID(), removed.entityID()));
+        if (removed == null) {
+            return;
         }
+        removed.clear();
     }
 
     @Override
@@ -151,6 +151,13 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
             drained.add(transition);
         }
         return drained;
+    }
+
+    @Override
+    public void clear() {
+        entitiesByUUID.clear();
+        entityUUIDsByID.clear();
+        transitions.clear();
     }
 
     private PacketEventsEntity getTrackedEntity(int entityID) {

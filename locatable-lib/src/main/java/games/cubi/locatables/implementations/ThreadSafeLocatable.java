@@ -32,16 +32,62 @@ public class ThreadSafeLocatable implements MutableLocatable {
 
     @Override
     public boolean equals(Object o) {
-        return isEqualTo(o);
+        if (this == o) return true;
+        if (!(o instanceof Locatable that)) return false;
+
+        long stamp = lock.tryOptimisticRead();
+
+        UUID thatWorld = that.world();
+        double[] thatPos = that.getAtomicPositionArray();
+
+        boolean equal = this.world.equals(thatWorld) &&
+                    Double.doubleToLongBits(this.x) == Double.doubleToLongBits(thatPos[0]) &&
+                    Double.doubleToLongBits(this.y) == Double.doubleToLongBits(thatPos[1]) &&
+                    Double.doubleToLongBits(this.z) == Double.doubleToLongBits(thatPos[2]);
+        if (!lock.validate(stamp)) {
+            // If the lock was invalid, we can't trust the result, so we have to retry with locks again
+            stamp = lock.readLock();
+            thatWorld = that.world();
+            thatPos = that.getAtomicPositionArray();
+            try {
+                equal = this.world.equals(thatWorld) &&
+                        Double.doubleToLongBits(this.x) == Double.doubleToLongBits(thatPos[0]) &&
+                        Double.doubleToLongBits(this.y) == Double.doubleToLongBits(thatPos[1]) &&
+                        Double.doubleToLongBits(this.z) == Double.doubleToLongBits(thatPos[2]);
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return equal;
     }
 
     @Override
     public int hashCode() {
-        return makeHash();
+        long stamp = lock.tryOptimisticRead();
+        int hash = 3;
+        // while we could just grab the values, release the lock, and then calculate the hash, that would marginally increase ram use for a marginal performance gain and this looks neater
+        hash = 19 * hash + this.world.hashCode();
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.x));
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.y));
+        hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.z));
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                hash = 3;
+                hash = 19 * hash + this.world.hashCode();
+                hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.x));
+                hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.y));
+                hash = 19 * hash + Long.hashCode(Double.doubleToLongBits(this.z));
+            } finally {
+                lock.unlockRead(stamp);
+            }
+        }
+        return hash;
     }
 
     @Override
     public String toString() {
+        // It's a string, who cares if it's not thread safe?
         return toStringForm();
     }
 
@@ -249,6 +295,34 @@ public class ThreadSafeLocatable implements MutableLocatable {
             this.x = x; this.y = y; this.z = z;
         });
         return this;
+    }
+
+    @Override
+    public boolean strictlyEquals(Object other) {
+        if (this == other) return true;
+        if (!(other instanceof ThreadSafeLocatable that)) return false;
+
+        long thisStamp = lock.tryOptimisticRead();
+        long thatStamp = that.lock.tryOptimisticRead();
+        boolean equal = this.world.equals(that.world) &&
+                    Double.doubleToLongBits(this.x) == Double.doubleToLongBits(that.x) &&
+                    Double.doubleToLongBits(this.y) == Double.doubleToLongBits(that.y) &&
+                    Double.doubleToLongBits(this.z) == Double.doubleToLongBits(that.z);
+        if (!lock.validate(thisStamp) || !that.lock.validate(thatStamp)) {
+            // If either lock was invalid, we can't trust the result, so we have to retry with locks again
+            thisStamp = lock.readLock();
+            thatStamp = that.lock.readLock();
+            try {
+                equal = this.world.equals(that.world) &&
+                        Double.doubleToLongBits(this.x) == Double.doubleToLongBits(that.x) &&
+                        Double.doubleToLongBits(this.y) == Double.doubleToLongBits(that.y) &&
+                        Double.doubleToLongBits(this.z) == Double.doubleToLongBits(that.z);
+            } finally {
+                lock.unlockRead(thisStamp);
+                that.lock.unlockRead(thatStamp);
+            }
+        }
+        return equal;
     }
 }
 

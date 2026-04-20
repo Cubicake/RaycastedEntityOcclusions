@@ -1,13 +1,14 @@
 package games.cubi.raycastedantiesp.core.view;
 
-import games.cubi.locatables.minecraft.EntityLocatable;
+import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.locatables.Locatable;
+import games.cubi.raycastedantiesp.core.utils.Clearable;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>> {
+public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>>  extends Clearable {
     void insertEntity(T entity);
 
     void moveRelative(int entityID, double deltaX, double deltaY, double deltaZ, int currentTick);

@@ -1,7 +1,8 @@
-package games.cubi.locatables.minecraft;
+package games.cubi.raycastedantiesp.core.locatables;
 
 import games.cubi.locatables.MutableLocatable;
 import games.cubi.locatables.implementations.MutableLocatableImpl;
+import games.cubi.raycastedantiesp.core.utils.Clearable;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import java.util.UUID;
  * Designed for use with netty-based systems, where entity data updates only ever come from one thread, but reads may come from multiple threads. This is however not enforced, and must be kept in mind when using this class.
  * A representation of an entity for a specific player.
  */
-public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> implements EntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> {
+public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, PacketReplayData extends Clearable> implements EntityLocatable<EntityType, PaintingType, Direction, PacketReplayData> {
     // immutable fields
     private final int entityID;
     private final UUID entityUUID;
@@ -325,5 +326,30 @@ public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, 
     public MutableLocatable setWorld(UUID world) {
         this.world = world;
         return this;
+    }
+
+    @Override
+    public void clear() {
+        world = null;
+        metadata = null;
+        equipment = null;
+        passengerIDs = null;
+        packetReplayData.clear();
+        packetReplayData = null;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return isEqualTo(other);
+    }
+
+    @Override
+    public int hashCode() {
+        return makeHash();
+    }
+
+    @Override
+    public String toString() {
+        return toStringForm();
     }
 }

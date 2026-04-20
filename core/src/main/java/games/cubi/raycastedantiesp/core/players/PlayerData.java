@@ -2,9 +2,8 @@ package games.cubi.raycastedantiesp.core.players;
 
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
-import games.cubi.raycastedantiesp.core.snapshot.PlayerBlockSnapshotManager;
+import games.cubi.raycastedantiesp.core.view.BlockView;
 import games.cubi.raycastedantiesp.core.view.EntityView;
-import games.cubi.raycastedantiesp.core.view.TileEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
 
 import java.util.UUID;
@@ -15,25 +14,19 @@ public class PlayerData {
     private volatile boolean hasBypassPermission;
     private final ThreadSafeLocatable ownLocation;
 
-    private final TileEntityView tileEntityView;
+    private final BlockView blockView;
     private final EntityView<?> entityView;
     private final EntityView<?> playerView;
-    private final PlayerBlockSnapshotManager blockSnapshotManager;
 
     public PlayerData(UUID player, boolean hasBypassPermission, int joinTick) {
         this.joinTick = joinTick;
         this.playerUUID = player;
         this.hasBypassPermission = hasBypassPermission;
 
-        tileEntityView = ViewRegistry.createTileEntityView();
+        blockView = ViewRegistry.createBlockView();
         entityView = ViewRegistry.createEntityView();
         playerView = ViewRegistry.createEntityView();
-        blockSnapshotManager = ViewRegistry.createBlockSnapshotManager();
         ownLocation = new ThreadSafeLocatable(null, 0, 0, 0);
-    }
-
-    public TileEntityView tileEntityView() {
-        return tileEntityView;
     }
 
     public EntityView<?> entityView() {
@@ -44,8 +37,8 @@ public class PlayerData {
         return playerView;
     }
 
-    public PlayerBlockSnapshotManager blockSnapshotManager() {
-        return blockSnapshotManager;
+    public BlockView blockView() {
+        return blockView;
     }
 
     public void updateOwnLocation(UUID world, double x, double y, double z) {

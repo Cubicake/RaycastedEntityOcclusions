@@ -5,10 +5,9 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
 import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
+import games.cubi.raycastedantiesp.packetevents.view.PacketEventsBlockView;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsEntityView;
-import games.cubi.raycastedantiesp.packetevents.view.PacketEventsTileEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
-import games.cubi.raycastedantiesp.packetevents.PacketEventsBlockSnapshotManager;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsBlockViewController;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsEntityViewController;
 import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
@@ -67,13 +66,13 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
     public void onEnable() {
         IntSupplier currentTickSupplier;
         if (isFolia) {
-            Logger.info("Platform: Folia detected. Some features may not work as expected.", 5);
+            Logger.info("Folia detected. Some features may not work as expected.", 5);
             currentTickSupplier = new FoliaTicker();
         }
         else {
             currentTickSupplier = new PaperTicker();
         }
-        ViewRegistry.initialise(PacketEventsBlockSnapshotManager::new, PacketEventsEntityView::new, PacketEventsTileEntityView::new);
+        ViewRegistry.initialise(PacketEventsBlockView::new, PacketEventsEntityView::new);
         packetEventsController = new PaperPacketEventsEntityViewController(currentTickSupplier);
         new PaperPacketEventsBlockViewController(currentTickSupplier);
 
