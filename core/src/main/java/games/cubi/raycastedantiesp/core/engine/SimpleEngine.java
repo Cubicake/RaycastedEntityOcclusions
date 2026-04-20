@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -29,6 +30,7 @@ public class SimpleEngine implements Engine {
     private final Supplier<Collection<PlayerData>> playerSupplier;
     private final IntSupplier currentTickSupplier;
     private final AtomicInteger tickThreadsRunning = new AtomicInteger(0);
+    private final AtomicLong tickNanos = new AtomicLong(0);
     private final AsyncRunner asyncRunner;
 
     public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, Supplier<Collection<PlayerData>> playerSupplier, IntSupplier currentTickSupplier, AsyncRunner asyncRunner) {
@@ -48,6 +50,8 @@ public class SimpleEngine implements Engine {
             Logger.warning("RaycastedAntiESP is still ticking from the last tick! Skipping this tick to avoid concurrent modification issues. If you see this warning frequently, consider reducing the raycasting load by adjusting the configuration.", 2, SimpleEngine.class);
             return;
         }
+
+        tickNanos.set(System.nanoTime());
 
         final int currentTick = currentTickSupplier.getAsInt();
         Collection<PlayerData> allPlayers = playerSupplier.get();
@@ -88,6 +92,12 @@ public class SimpleEngine implements Engine {
                     if (threadsRemaining < 0) {
                         Logger.warning("tickThreadsRunning went below 0! This should never happen. Resetting to 0 to avoid further issues.", 2, SimpleEngine.class);
                         tickThreadsRunning.set(0);
+                    }
+                    if (threadsRemaining == 0) {
+                        long elapsedNanos = System.nanoTime() - tickNanos.get();
+                        if (elapsedNanos > 40 * 1000000) {//20 ms
+                            Logger.debug("Tick completed in " + (elapsedNanos / 1_000_000.0) + " ms");
+                        }
                     }
                 }
             });
