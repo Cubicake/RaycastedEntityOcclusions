@@ -245,7 +245,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             }
 
             int sectionY = minimumChunkSectionY + sectionIndex;
-            boolean[][][] occluding = new boolean[16][16][16];
+            boolean[][][] occluding = null;
             Set<ImmutableBlockLocatable> tileEntities = tileEntitiesBySectionY.computeIfAbsent(sectionY, ignored -> new HashSet<>());
 
             boolean chunkSectionHasOccluding = false;
@@ -263,6 +263,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
                         int blockZ = (chunkZ << 4) + localZ;
 
                         if (blockInfoResolver.isOccluding(blockID)) {
+                            if (occluding == null) {
+                                occluding = new boolean[16][16][16];
+                            }
                             occluding[localX][localY][localZ] = true;
                             chunkSectionHasOccluding = true;
                         }
