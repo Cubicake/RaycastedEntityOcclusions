@@ -33,6 +33,9 @@ public class PlayerRegistry {
 
     public void unregisterPlayer(UUID playerUUID) {
         PlayerData unregisteredPlayer = playerDataMap.remove(playerUUID);
+        if (unregisteredPlayer == null) {
+            return;
+        }
         unregisteredPlayer.blockView().clear();
         unregisteredPlayer.entityView().clear();
         unregisteredPlayer.playerView().clear();
