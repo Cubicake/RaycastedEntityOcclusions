@@ -1,7 +1,6 @@
 package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
 import com.github.retrooper.packetevents.PacketEvents;
-import com.github.retrooper.packetevents.event.PacketEvent;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
@@ -328,7 +327,10 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         for (int sectionY : sectionYs) {
             boolean[][][] occluding = occludingBySectionY.get(sectionY);
             if (occluding != null) {
-                blockView.replaceChunk(worldID, chunkX, sectionY, chunkZ, occluding);
+                blockView.replaceChunkSection(worldID, chunkX, sectionY, chunkZ, occluding);
+            }
+            else {
+                blockView.removeChunkSection(worldID, chunkX, sectionY, chunkZ);
             }
             //reconcileSectionTileEntities(blockView, worldID, chunkX, sectionY, chunkZ, tileEntitiesBySectionY.getOrDefault(sectionY, Set.of()));
         }

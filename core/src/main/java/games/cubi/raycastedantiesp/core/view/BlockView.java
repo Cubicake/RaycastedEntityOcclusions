@@ -36,7 +36,9 @@ public interface BlockView extends Clearable {
 
     void removeChunk(UUID world, int chunkX, int chunkZ);
 
-    void replaceChunk(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks);
+    void removeChunkSection(UUID world, int chunkX, int chunkY, int chunkZ);
+
+    void replaceChunkSection(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks);
 
     default <T> T cast() {
         return (T) this;

@@ -147,10 +147,13 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     }
 
     @Override
-    public void replaceChunk(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks) {
-        chunks.put(
-                new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ),
-                occludingBlocks
+    public void removeChunkSection(UUID world, int chunkX, int chunkY, int chunkZ) {
+        chunks.remove(new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ));
+    }
+
+    @Override
+    public void replaceChunkSection(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks) {
+        chunks.put(new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ), occludingBlocks
         );
     }
 
