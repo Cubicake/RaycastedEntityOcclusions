@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
@@ -26,20 +28,45 @@ public class SimpleEngine implements Engine {
     private final ParticleSpawner particleSpawner;
     private final Supplier<Collection<PlayerData>> playerSupplier;
     private final IntSupplier currentTickSupplier;
+    private final AtomicInteger tickThreadsRunning = new AtomicInteger(0);
+    private final AsyncRunner asyncRunner;
 
-    public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, Supplier<Collection<PlayerData>> playerSupplier, IntSupplier currentTickSupplier) {
+    public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, Supplier<Collection<PlayerData>> playerSupplier, IntSupplier currentTickSupplier, AsyncRunner asyncRunner) {
         this.config = config;
         this.particleSpawner = particleSpawner;
         this.playerSupplier = playerSupplier;
         this.currentTickSupplier = currentTickSupplier;
+        this.asyncRunner = asyncRunner;
     }
 
     @Override
     public void tick() {
-        final int currentTick = currentTickSupplier.getAsInt();
-        Collection<PlayerData> allPlayers = playerSupplier.get();
         int threads = 1; //TODO Don't hardcode
         if (threads < 1) threads = 1;
+
+        if (!tickThreadsRunning.compareAndSet(0, threads)) {
+            Logger.warning("RaycastedAntiESP is still ticking from the last tick! Skipping this tick to avoid concurrent modification issues. If you see this warning frequently, consider reducing the raycasting load by adjusting the configuration.", 2, SimpleEngine.class);
+            return;
+        }
+
+        final int currentTick = currentTickSupplier.getAsInt();
+        Collection<PlayerData> allPlayers = playerSupplier.get();
+
+        EntityConfig entityConfig = config.getEntityConfig();
+        PlayerConfig playerConfig = config.getPlayerConfig();
+        PlatformTileEntityConfig<?> tileEntityConfig = config.getTileEntityConfig();
+        DebugConfig debugConfig = config.getDebugConfig();
+
+        // If only one thread is configured, just use the current async thread to avoid the overhead of scheduling tasks and context switching.
+        if (threads == 1) {
+            try {
+                processTickForPlayers(new ArrayList<>(allPlayers), entityConfig, playerConfig, tileEntityConfig, debugConfig.showDebugParticles(), currentTick);
+            }
+            finally {
+                tickThreadsRunning.set(0);
+            }
+            return;
+        }
 
         List<List<PlayerData>> batches = new ArrayList<>(threads);
         for (int i = 0; i < threads; i++) {
@@ -51,13 +78,19 @@ public class SimpleEngine implements Engine {
             batches.get(index++ % threads).add(playerData);
         }
 
-        EntityConfig entityConfig = config.getEntityConfig();
-        PlayerConfig playerConfig = config.getPlayerConfig();
-        PlatformTileEntityConfig<?> tileEntityConfig = config.getTileEntityConfig();
-        DebugConfig debugConfig = config.getDebugConfig();
-
         for (List<PlayerData> batch : batches) {
-            processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, debugConfig.showDebugParticles(), currentTick);
+            asyncRunner.runNow(() -> {
+                try {
+                    processTickForPlayers(batch, entityConfig, playerConfig, tileEntityConfig, debugConfig.showDebugParticles(), currentTick);
+                }
+                finally {
+                    int threadsRemaining = tickThreadsRunning.decrementAndGet();
+                    if (threadsRemaining < 0) {
+                        Logger.warning("tickThreadsRunning went below 0! This should never happen. Resetting to 0 to avoid further issues.", 2, SimpleEngine.class);
+                        tickThreadsRunning.set(0);
+                    }
+                }
+            });
         }
     }
 
