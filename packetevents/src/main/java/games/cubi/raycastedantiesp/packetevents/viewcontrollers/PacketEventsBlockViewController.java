@@ -23,12 +23,11 @@ import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
 import games.cubi.raycastedantiesp.packetevents.BlockInfoResolver;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsTileEntityReplayData;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.IntSupplier;
+
+import static games.cubi.raycastedantiesp.core.view.AbstractBlockView.CHUNK_SIZE;
+import static games.cubi.raycastedantiesp.core.view.AbstractBlockView.pack;
 
 public abstract class PacketEventsBlockViewController implements PacketListener {
     private final BlockInfoResolver blockInfoResolver;
@@ -231,7 +230,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             int minimumChunkSectionY,
             PacketSendEvent event
     ) {
-        Map<Integer, boolean[][][]> occludingBySectionY = new HashMap<>();
+        Map<Integer, BitSet> occludingBySectionY = new HashMap<>();
         Map<Integer, Set<ImmutableBlockLocatable>> tileEntitiesBySectionY = new HashMap<>();
         BlockView blockView = playerData.blockView();
 
@@ -245,7 +244,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             }
 
             int sectionY = minimumChunkSectionY + sectionIndex;
-            boolean[][][] occluding = null;
+            BitSet occluding = null;
             Set<ImmutableBlockLocatable> tileEntities = tileEntitiesBySectionY.computeIfAbsent(sectionY, ignored -> new HashSet<>());
 
             boolean chunkSectionHasOccluding = false;
@@ -264,9 +263,9 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
 
                         if (blockInfoResolver.isOccluding(blockID)) {
                             if (occluding == null) {
-                                occluding = new boolean[16][16][16];
+                                occluding = new BitSet(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE);
                             }
-                            occluding[localX][localY][localZ] = true;
+                            occluding.set(pack(localX, localY, localZ));
                             chunkSectionHasOccluding = true;
                         }
                         if (blockInfoResolver.isTileEntity(blockID)) {
@@ -333,7 +332,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
         Set<Integer> sectionYs = new HashSet<>(tileEntitiesBySectionY.keySet());
         sectionYs.addAll(occludingBySectionY.keySet());
         for (int sectionY : sectionYs) {
-            boolean[][][] occluding = occludingBySectionY.get(sectionY);
+            BitSet occluding = occludingBySectionY.get(sectionY);
             if (occluding != null) {
                 blockView.replaceChunkSection(worldID, chunkX, sectionY, chunkZ, occluding);
             }

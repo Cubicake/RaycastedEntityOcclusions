@@ -8,19 +8,15 @@ import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
 import games.cubi.raycastedantiesp.core.utils.CanonicalSet;
 import games.cubi.raycastedantiesp.core.utils.ConcurrentSelfMap;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implements BlockView {
-    private static final int CHUNK_SIZE = 16;
-    private static final int LOCAL_MASK = CHUNK_SIZE - 1;
+    public static final int CHUNK_SIZE = 16;
+    public static final int LOCAL_MASK = CHUNK_SIZE - 1;
 
-    private final Map<ChunkSectionLocatable, boolean[][][] /*true if that position is occluding. Positions are 0-15 for x,y,z*/> chunks = new ConcurrentHashMap<>();
+    private final Map<ChunkSectionLocatable, BitSet /*true if that position is occluding. Positions are 0-15 for x,y,z*/> chunks = new ConcurrentHashMap<>();
     private final CanonicalSet<Locatable, T> knownTileEntities = new ConcurrentSelfMap<>();
     private final ConcurrentLinkedQueue<BlockViewTransition> transitions = new ConcurrentLinkedQueue<>();
 
@@ -31,13 +27,13 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
 
 
     public boolean isBlockOccluding(UUID world, int x, int y, int z) {
-        final boolean[][][] chunk = getChunk(world, x >> 4, y >> 4, z >> 4);
+        final BitSet chunk = getChunk(world, x >> 4, y >> 4, z >> 4);
         if (chunk == null) {
             // chunks may be empty if there are no occluding blocks in that chunk
             return false;
         }
 
-        return chunk[x & LOCAL_MASK][y & LOCAL_MASK][z & LOCAL_MASK];
+        return chunk.get(maskAndPack(x, y, z));
     }
 
     @Override
@@ -136,8 +132,8 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
 
     @Override
     public void upsertBlock(UUID world, int x, int y, int z, boolean occluding) {
-        final boolean[][][] chunk = getOrCreateChunk(world, x >> 4, y >> 4, z >> 4);
-        chunk[x & LOCAL_MASK][y & LOCAL_MASK][z & LOCAL_MASK] = occluding;
+        final BitSet chunk = getOrCreateChunk(world, x >> 4, y >> 4, z >> 4);
+        chunk.set(maskAndPack(x, y, z), occluding);
     }
 
     @Override
@@ -155,7 +151,7 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     }
 
     @Override
-    public void replaceChunkSection(UUID world, int chunkX, int chunkY, int chunkZ, boolean[][][] occludingBlocks) {
+    public void replaceChunkSection(UUID world, int chunkX, int chunkY, int chunkZ, BitSet occludingBlocks) {
         chunks.put(new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ), occludingBlocks
         );
     }
@@ -167,14 +163,34 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
         transitions.clear();
     }
 
-    private boolean[][][] getChunk(UUID world, int chunkX, int chunkY, int chunkZ) {
+    public static int maskAndPack(int x, int y, int z) {
+        return pack(x & LOCAL_MASK, y & LOCAL_MASK, z & LOCAL_MASK);
+    }
+
+    public static int pack(int x, int y, int z) {
+        return (x & LOCAL_MASK) | ((y & LOCAL_MASK) << 4) | ((z & LOCAL_MASK) << 8);
+    }
+
+    public static int unpackX(int packed) {
+        return packed & LOCAL_MASK;
+    }
+
+    public static int unpackY(int packed) {
+        return (packed >> 4) & LOCAL_MASK;
+    }
+
+    public static int unpackZ(int packed) {
+        return (packed >> 8) & LOCAL_MASK;
+    }
+
+    private BitSet getChunk(UUID world, int chunkX, int chunkY, int chunkZ) {
         return chunks.get(new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ));
     }
 
-    private boolean[][][] getOrCreateChunk(UUID world, int chunkX, int chunkY, int chunkZ) {
+    private BitSet getOrCreateChunk(UUID world, int chunkX, int chunkY, int chunkZ) {
         return chunks.computeIfAbsent(
                 new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ),
-                ignored -> new boolean[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]
+                ignored -> new BitSet(CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE)
         );
     }
 }
