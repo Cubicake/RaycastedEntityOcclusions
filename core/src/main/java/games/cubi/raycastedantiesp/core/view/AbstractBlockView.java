@@ -25,7 +25,7 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
     private final ConcurrentLinkedQueue<BlockViewTransition> transitions = new ConcurrentLinkedQueue<>();
 
     @Deprecated
-    protected abstract T createTrackedTileEntity(ImmutableBlockLocatable location, int blockID);
+    protected abstract T createTrackedTileEntity(BlockLocatable location, int blockID);
 
     protected abstract T createTrackedTileEntity(UUID world, int x, int y, int z, int blockID);
 
@@ -53,14 +53,18 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
 
     @Override
     public void insertTileEntityIfAbsent(BlockLocatable location, int blockID) {
-        ImmutableBlockLocatable key = toImmutable(location);
-        knownTileEntities.computeIfAbsent(key, ignored -> createTrackedTileEntity(key, blockID));
+        knownTileEntities.computeIfAbsent(location, ignored -> createTrackedTileEntity(location, blockID));
+    }
+
+    @Override
+    public void insertTileEntity(BlockLocatable location, int blockID) {
+        knownTileEntities.remove(location);
+        knownTileEntities.add(createTrackedTileEntity(location, blockID));
     }
 
     @Override
     public void removeTileEntity(BlockLocatable location) {
-        ImmutableBlockLocatable key = toImmutable(location);
-        T tileEntity = knownTileEntities.remove(key);
+        T tileEntity = knownTileEntities.remove(location);
         if (tileEntity != null) {
             tileEntity.clear();
         }
@@ -68,7 +72,7 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
 
     @Override
     public T getTrackedTileEntity(BlockLocatable location) {
-        return knownTileEntities.get(toImmutable(location));
+        return knownTileEntities.get(location);
     }
 
     @Override
@@ -78,21 +82,20 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
 
     @Override
     public boolean isVisible(BlockLocatable location, int currentTick) {
-        T state = knownTileEntities.get(toImmutable(location));
+        T state = knownTileEntities.get(location);
         return state == null || state.visible();
     }
 
     @Override
     public void setVisibility(BlockLocatable location, boolean visible, int currentTick) {
-        ImmutableBlockLocatable key = toImmutable(location);
-        T existing = knownTileEntities.get(key);
+        T existing = knownTileEntities.get(location);
         if (existing == null) {
             return;
         }
         if (existing.visible() != visible) {
             transitions.add(new BlockViewTransition(
                     visible ? BlockViewTransition.Type.SHOW : BlockViewTransition.Type.HIDE,
-                    key
+                    location
             ));
         }
         existing.setVisible(visible);
@@ -170,9 +173,5 @@ public abstract class AbstractBlockView<T extends TileEntityLocatable<?>> implem
                 new ChunkSectionLocatable.ImmutableChunkSectionLocatable(world, chunkX, chunkY, chunkZ),
                 ignored -> new boolean[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE]
         );
-    }
-
-    private ImmutableBlockLocatable toImmutable(BlockLocatable location) {
-        return new ImmutableBlockLocatable(location.world(), location.blockX(), location.blockY(), location.blockZ());
     }
 }
