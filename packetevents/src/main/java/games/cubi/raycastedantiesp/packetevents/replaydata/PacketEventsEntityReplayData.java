@@ -36,7 +36,7 @@ public sealed interface PacketEventsEntityReplayData extends Clearable permits P
     void setPassengersPacket(WrapperPlayServerSetPassengers passengersPacket);
 
     /**
-     * @return The same object as a {@link PacketEventsPlayerReplayData}, or null if this is not a player entity
+     * @return The same object, as a {@link PacketEventsPlayerReplayData}, or null if this is not a player entity
      */
     PacketEventsPlayerReplayData asPlayerReplayData();
 
