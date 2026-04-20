@@ -95,7 +95,7 @@ public class SimpleEngine implements Engine {
                     }
                     if (threadsRemaining == 0) {
                         long elapsedNanos = System.nanoTime() - tickNanos.get();
-                        if (elapsedNanos > 40 * 1000000) {//20 ms
+                        if (elapsedNanos > 40 * 1000000) {//40 ms
                             Logger.debug("Tick completed in " + (elapsedNanos / 1_000_000.0) + " ms");
                         }
                     }
