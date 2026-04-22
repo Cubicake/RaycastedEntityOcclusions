@@ -771,7 +771,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             }
         }
 
-        viewer.writePacket(buildSpawnPacket(entity));
+        viewer.writePacketSilently(buildSpawnPacket(entity));
         sendEntityAbsoluteCorrection(viewer, entity);
         common.writeIfPresent(viewer, replayData.metadataPacket() != null ? replayData.metadataPacket() : buildMetadataPacket(entity));
         common.writeIfPresent(viewer, replayData.equipmentPacket() != null ? replayData.equipmentPacket() : buildEquipmentPacket(entity));
