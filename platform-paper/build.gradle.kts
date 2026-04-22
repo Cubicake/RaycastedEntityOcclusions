@@ -34,7 +34,7 @@ java {
 
 group = "games.cubi.raycastedantiesp.paper"
 
-val platformPaperVersion: String = "0.2.0-SNAPSHOT"
+val platformPaperVersion: String = "0.2.1-SNAPSHOT"
 val coreVersion = project(":core").version.toString()
 
 val commitShort = providers.exec {
