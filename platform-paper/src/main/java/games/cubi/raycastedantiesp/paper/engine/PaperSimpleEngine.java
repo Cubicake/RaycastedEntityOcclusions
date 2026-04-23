@@ -23,7 +23,7 @@ public class PaperSimpleEngine implements Engine {
         this.plugin = plugin;
         asyncScheduler = plugin.getServer().getAsyncScheduler();
         bukkitScheduler = plugin.getServer().getScheduler();
-        delegate = new SimpleEngine(cfg, new PaperParticleSpawner(), PlayerRegistry.getInstance()::getAllPlayerData, currentTickSupplier, new PaperAsyncRunner(asyncScheduler));
+        delegate = new SimpleEngine(cfg, new PaperParticleSpawner(), currentTickSupplier, new PaperAsyncRunner(asyncScheduler));
 
         //forceEntityLocationUpdate();
     }

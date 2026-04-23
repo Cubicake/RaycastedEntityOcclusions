@@ -9,6 +9,7 @@ import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.raycast.ParticleSpawner;
 import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
 import games.cubi.raycastedantiesp.core.view.BlockView;
@@ -18,25 +19,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntSupplier;
-import java.util.function.Supplier;
 
 public class SimpleEngine implements Engine {
     private final ConfigManager config;
     private final ParticleSpawner particleSpawner;
-    private final Supplier<Collection<PlayerData>> playerSupplier;
     private final IntSupplier currentTickSupplier;
     private final AtomicInteger tickThreadsRunning = new AtomicInteger(0);
     private final AtomicLong tickNanos = new AtomicLong(0);
     private final AsyncRunner asyncRunner;
 
-    public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, Supplier<Collection<PlayerData>> playerSupplier, IntSupplier currentTickSupplier, AsyncRunner asyncRunner) {
+    public SimpleEngine(ConfigManager config, ParticleSpawner particleSpawner, IntSupplier currentTickSupplier, AsyncRunner asyncRunner) {
         this.config = config;
         this.particleSpawner = particleSpawner;
-        this.playerSupplier = playerSupplier;
         this.currentTickSupplier = currentTickSupplier;
         this.asyncRunner = asyncRunner;
     }
@@ -54,7 +51,7 @@ public class SimpleEngine implements Engine {
         tickNanos.set(System.nanoTime());
 
         final int currentTick = currentTickSupplier.getAsInt();
-        Collection<PlayerData> allPlayers = playerSupplier.get();
+        Collection<PlayerData> allPlayers = PlayerRegistry.getInstance().getAllPlayerData();
 
         EntityConfig entityConfig = config.getEntityConfig();
         PlayerConfig playerConfig = config.getPlayerConfig();
