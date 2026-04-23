@@ -35,8 +35,8 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         boolean run = true;
         int airs = 0;
         int lastNonAirID = 0;
-        Map<Integer, Boolean> occlusion = new HashMap<>(110000); //Tests show 30,000 block IDs in 1.21.11, and we scan forwards for 80k air ids just in case, so 110k is enough. This is a pointless micro optimization but why not
-        Map<Integer, Boolean> tileEntity = new HashMap<>(110000);
+        Map<Integer, Boolean> occlusion = new HashMap<>(111000); //Tests show 30,000 block IDs in 1.21.11, and we scan forwards for 80k air ids just in case, so 111k is enough. This is a pointless micro optimization but why not
+        Map<Integer, Boolean> tileEntity = new HashMap<>(111000);
         int iterator = 0;
         while (run) {
             Material material = SpigotReflectionUtil.getBlockDataByCombinedId(iterator).getItemType(); //Unfortunately doesn't seem to be a way to do this without both using an internal PE api and the deprecated for removal MaterialData
