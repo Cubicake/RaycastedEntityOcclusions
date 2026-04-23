@@ -15,23 +15,22 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
-    private boolean[] occlusionArray = null;
-    private boolean[] tileEntityArray = null;
+    private final boolean[] occlusionArray;
+    private final boolean[] tileEntityArray;
 
     public static PacketEventsPaperBlockInfoResolver get;
 
     public PacketEventsPaperBlockInfoResolver() {
         get = this;
-        Bukkit.getAsyncScheduler().runDelayed(RaycastedAntiESP.get(), ignored -> initialize(), 2, TimeUnit.SECONDS);
-        //Bukkit.getScheduler().runTaskLater(RaycastedAntiESP.get(), this::initialize, 5);
+        boolean[][] result = iterateBlockIDs(false);
+        occlusionArray = result[0];
+        tileEntityArray = result[1];
     }
 
-    @Override
-    public boolean isInitialised() {
-        return occlusionArray != null && tileEntityArray != null;
-    }
-
-    private void initialize() {
+    /**
+     * @return Boolean array with two nested boolean arrays. <code>boolean[0]</code> returns the occlusion status array, <code>boolean[1]</code> returns the tile entity status array. Both arrays are indexed by block state ID. Air blocks and invalid IDs are treated as non-occluding and non-tile-entity, and trailing air IDs are ignored to save memory.
+     */
+    public boolean[][] iterateBlockIDs(boolean materialToIDMode) {
         boolean run = true;
         int airs = 0;
         int lastNonAirID = 0;
@@ -41,7 +40,7 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         while (run) {
             Material material = SpigotReflectionUtil.getBlockDataByCombinedId(iterator).getItemType(); //Unfortunately doesn't seem to be a way to do this without both using an internal PE api and the deprecated for removal MaterialData
             if (material == null) {
-                Logger.debug("Material for block state ID " + iterator + " is null, stopping iteration. This is not expected to happen.");
+                Logger.warning("Material for block state ID " + iterator + " is null, stopping iteration. This is not expected to happen.", 5, PacketEventsPaperBlockInfoResolver.class);
                 run = false;
                 continue;
             }
@@ -55,7 +54,9 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
             else {
                 airs = 0;
                 lastNonAirID = iterator;
-                //Logger.debug(material.name() + iterator);
+                if (materialToIDMode) {
+                    Logger.debug(material.toString() + iterator);
+                }
             }
 
             occlusion.put(iterator, material.isOccluding());
@@ -74,19 +75,13 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
             iterator++;
         }
         //Logger.debug(iterator+" was the finish point, last non-air ID was "+lastNonAirID);
-        occlusionArray = new boolean[lastNonAirID + 1];
-        tileEntityArray = new boolean[lastNonAirID + 1];
+        boolean[][] result = new boolean[2][lastNonAirID + 1];
         for (int i = 0; i < (lastNonAirID + 1) /*Ignore the trailing airs*/; i++) {
-            occlusionArray[i] = occlusion.get(i);
-            tileEntityArray[i] = tileEntity.get(i);
+            result[0][i] = occlusion.get(i);
+            result[1][i] = tileEntity.get(i);
             //Logger.debug("BlockState ID " + i + ": occluding=" + occlusionArray[i] + ", tileEntity=" + tileEntityArray[i]);
         }
-        for (int j = 0; j < occlusionArray.length; j++) { // just a sanity check
-            //Logger.debug("ID " + j + ": occludingArray=" + occlusionArray[j] + ", occludingMap=" + occlusion.get(j));
-            if (occlusionArray[j] != occlusion.get(j)) {
-                Logger.warning("Mismatch at ID " + j + ": occlusionArray=" + occlusionArray[j] + ", occlusionMap=" + occlusion.get(j), 3);
-            }
-        }
+        return result;
     }
 
     @Override

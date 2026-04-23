@@ -147,6 +147,7 @@ public class CommandsManager {
                 }
                 ))
                 .then(Commands.literal("debug").executes(CommandsManager::debugCommand))
+                .then(Commands.literal("print-block-ids").executes((ignored) -> {PacketEventsPaperBlockInfoResolver.get.iterateBlockIDs(true); return Command.SINGLE_SUCCESS;}))
             .build();
     }
 
