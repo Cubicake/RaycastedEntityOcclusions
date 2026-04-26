@@ -114,9 +114,9 @@ public class SimpleEngine implements Engine {
                 continue;
             }
 
-            if (entityConfig.isEnabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, blockView, currentTick);
-            if (playerConfig.isEnabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, blockView, currentTick);
-            if (tileEntityConfig.isEnabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, debugParticles, blockView, currentTick);
+            if (entityConfig.enabled()) checkEntities(playerData, playerLocation, entityConfig, debugParticles, blockView, currentTick);
+            if (playerConfig.enabled()) checkPlayers(playerData, playerLocation, playerConfig, debugParticles, blockView, currentTick);
+            if (tileEntityConfig.enabled()) checkTileEntities(playerData, playerLocation, tileEntityConfig, debugParticles, blockView, currentTick);
         }
     }
 
