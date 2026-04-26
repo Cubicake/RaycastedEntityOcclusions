@@ -42,9 +42,9 @@ public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, 
     private volatile boolean clientVisible = true;
 
     // engine thread mutable, reads from netty and engine.
-    private volatile boolean visible = true;
+    private volatile boolean visible;
 
-    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType) {
+    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType, boolean visible) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
 
@@ -54,9 +54,11 @@ public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, 
         this.entityType = entityType;
         this.paintingDirection = null;
         this.paintingType = null;
+
+        this.visible = visible;
     }
 
-    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection) {
+    public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection, boolean visible) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;
 
@@ -66,6 +68,8 @@ public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, 
         this.entityType = null;
         this.paintingDirection = paintingDirection;
         this.paintingType = paintingType;
+
+        this.visible = visible;
     }
 
     @Override
