@@ -31,6 +31,9 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSp
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPainting;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
+import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.locatables.Locatable;
 import games.cubi.logs.Logger;
@@ -50,6 +53,10 @@ import java.util.function.IntSupplier;
 public abstract class PacketEventsEntityViewController implements PacketListener {
     private final IntSupplier currentTickSupplier;
     private final PacketEventsCommonViewController common;
+    private EntityConfig entityConfig = null;
+    private PlayerConfig playerConfig = null;
+    private double hideOnSpawnEntityDistanceSquared = 0;
+    private double hideOnSpawnPlayerDistanceSquared = 0;
 
     protected PacketEventsEntityViewController(IntSupplier currentTickSupplier) {
         this.currentTickSupplier = currentTickSupplier;
@@ -73,6 +80,16 @@ public abstract class PacketEventsEntityViewController implements PacketListener
         PlayerData playerData = common.ensurePlayerData(viewerUUID, event);
         if (playerData == null) {
             return;
+        }
+
+        if (ConfigManager.get().getEntityConfig() != entityConfig) {
+            entityConfig = ConfigManager.get().getEntityConfig();
+            hideOnSpawnEntityDistanceSquared = entityConfig.hideOnSpawnDistance() * entityConfig.hideOnSpawnDistance();
+        }
+
+        if (ConfigManager.get().getPlayerConfig() != playerConfig) {
+            playerConfig = ConfigManager.get().getPlayerConfig();
+            hideOnSpawnPlayerDistanceSquared = playerConfig.hideOnSpawnDistance() * playerConfig.hideOnSpawnDistance();
         }
 
         Locatable ownLocation = playerData.ownLocation();
@@ -135,7 +152,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             }
             WrapperPlayServerSpawnLivingEntity packet = new WrapperPlayServerSpawnLivingEntity(event);
             PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getEntityUUID(), packet.getEntityId(), world,
-                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.LIVING, packet.getEntityType());
+                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.LIVING, packet.getEntityType());
             if (entity == null) {
                 Logger.error(new RuntimeException("Entity null after attempting to track entity spawn for living entity packet, uuid=" + packet.getEntityUUID() + " id=" + packet.getEntityId() + " tick=" + currentTick), 2, PacketEventsEntityViewController.class);;
                 return;
@@ -165,7 +182,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             UUID entityUUID = packet.getUUID().get();
 
             PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), entityUUID, packet.getEntityId(), world,
-                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.ENTITY, packet.getEntityType());
+                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.ENTITY, packet.getEntityType());
             if (entity == null) {
                 return;
             }
@@ -188,7 +205,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             }
             WrapperPlayServerSpawnPainting packet = new WrapperPlayServerSpawnPainting(event);
             PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getUUID(), packet.getEntityId(), world,
-                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.PAINTING, packet.getType().orElse(null), packet.getDirection());
+                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.PAINTING, packet.getType().orElse(null), packet.getDirection());
             if (entity == null) {
                 return;
             }
@@ -209,7 +226,7 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             }
             WrapperPlayServerSpawnPlayer packet = new WrapperPlayServerSpawnPlayer(event);
             PacketEventsEntity entity = trackEntitySpawn(playerData.playerView().cast(), packet.getUUID(), packet.getEntityId(), world,
-                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick, EntityLocatable.SpawnType.PLAYER, null);
+                    packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.PLAYER, null);
             if (entity == null) {
                 return;
             }
@@ -283,13 +300,22 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             double x,
             double y,
             double z,
-            int currentTick,
+            Locatable playerLocation,
             EntityLocatable.SpawnType spawnType,
             EntityType entityType
     ) {
         if (entityUUID == null) return null;
 
-        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, entityType);
+        double distanceSquared = playerLocation != null ? playerLocation.distanceSquared(x, y, z) : 0;
+        boolean visible;
+
+        if (spawnType == EntityLocatable.SpawnType.PLAYER) {
+            visible = distanceSquared <= hideOnSpawnPlayerDistanceSquared;
+        } else {
+            visible = distanceSquared <= hideOnSpawnEntityDistanceSquared;
+        }
+
+        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, entityType, visible);
         entityView.insertEntity(entity);
 
         //entity.setLastChecked(currentTick); //test that this is safe to remove
@@ -305,14 +331,23 @@ public abstract class PacketEventsEntityViewController implements PacketListener
             double x,
             double y,
             double z,
-            int currentTick,
+            Locatable playerLocation,
             EntityLocatable.SpawnType spawnType,
             PaintingType paintingType,
             Direction paintingDirection
     ) {
         if (entityUUID == null) return null;
 
-        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection);
+        double distanceSquared = playerLocation != null ? playerLocation.distanceSquared(x, y, z) : 0;
+        boolean visible;
+
+        if (spawnType == EntityLocatable.SpawnType.PLAYER) {
+            visible = distanceSquared <= hideOnSpawnPlayerDistanceSquared;
+        } else {
+            visible = distanceSquared <= hideOnSpawnEntityDistanceSquared;
+        }
+
+        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection, visible);
         entityView.insertEntity(entity);
 
         //entity.setLastChecked(currentTick); //test that this is safe to remove
