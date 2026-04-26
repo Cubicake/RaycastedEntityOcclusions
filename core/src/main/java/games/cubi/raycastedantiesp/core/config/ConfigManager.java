@@ -9,20 +9,23 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ConfigManager {
     private static final String REQUIRED_CONFIG_VERSION = "2.0";
     private static ConfigManager instance;
 
-    private final InputStream resource;
+    private final Supplier<InputStream> resourceSupplier;
     private final Path dataFolder;
     private final Path configPath;
     private final YamlConfigurationLoader loader;
@@ -32,8 +35,8 @@ public class ConfigManager {
     private RootConfig startupConfig;
     private volatile RootConfig activeConfig;
 
-    private ConfigManager(InputStream resource, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
-        this.resource = resource;
+    private ConfigManager(Supplier<InputStream> resourceSupplier, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
+        this.resourceSupplier = resourceSupplier;
         this.dataFolder = dataFolder;
         this.extensions = List.copyOf(extensions);
         this.configPath = dataFolder.resolve("config.yml");
@@ -44,9 +47,9 @@ public class ConfigManager {
         load();
     }
 
-    public static ConfigManager initialiseConfigManager(InputStream resource, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
+    public static ConfigManager initialiseConfigManager(Supplier<InputStream> resourceSupplier, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
         if (instance == null) {
-            instance = new ConfigManager(resource, dataFolder, extensions);
+            instance = new ConfigManager(resourceSupplier, dataFolder, extensions);
         }
         return instance;
     }
@@ -61,6 +64,10 @@ public class ConfigManager {
     public void load() {
         ensureConfigFileExists();
         ConfigurationNode loaded = loadConfigNode();
+        ConfigurationNode defaults = loadBundledDefaults();
+        if (defaults != null && mergeMissing(defaults, loaded)) {
+            saveConfigNode(loaded);
+        }
         RootConfig parsed = parse(loaded);
         validateReload(parsed);
         config = loaded;
@@ -258,8 +265,11 @@ public class ConfigManager {
         try {
             Files.createDirectories(dataFolder);
             if (!Files.exists(configPath)) {
+                InputStream resource = resourceSupplier.get();
                 if (resource != null) {
-                    Files.copy(resource, configPath);
+                    try (resource) {
+                        Files.copy(resource, configPath);
+                    }
                 } else {
                     Files.createFile(configPath);
                 }
@@ -275,6 +285,36 @@ public class ConfigManager {
         } catch (IOException e) {
             throw new ConfigLoadException("Failed to load config.yml", e);
         }
+    }
+
+    private ConfigurationNode loadBundledDefaults() {
+        InputStream resource = resourceSupplier.get();
+        if (resource == null) {
+            return null;
+        }
+        try (resource) {
+            return YamlConfigurationLoader.builder()
+                    .source(() -> new BufferedReader(new InputStreamReader(resource)))
+                    .build()
+                    .load();
+        } catch (IOException e) {
+            throw new ConfigLoadException("Failed to load bundled config defaults", e);
+        }
+    }
+
+    private boolean mergeMissing(ConfigurationNode defaults, ConfigurationNode target) {
+        if (target.virtual()) {
+            target.from(defaults);
+            return true;
+        }
+
+        boolean changed = false;
+        if (!defaults.childrenMap().isEmpty()) {
+            for (Map.Entry<Object, ? extends ConfigurationNode> entry : defaults.childrenMap().entrySet()) {
+                changed |= mergeMissing(entry.getValue(), target.node(entry.getKey()));
+            }
+        }
+        return changed;
     }
 
     private void saveConfigNode(ConfigurationNode node) {
