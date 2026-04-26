@@ -17,6 +17,7 @@ dependencies {
     implementation(project(":core"))
 
     compileOnly("com.github.retrooper:packetevents-api:2.12.0")
+    compileOnly("org.spongepowered:configurate-core:4.2.0")
 }
 
 java {

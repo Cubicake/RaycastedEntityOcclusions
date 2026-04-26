@@ -30,6 +30,15 @@ public class PaperLoggerAdapter implements PlatformLogger {
             default -> 1;
         };
     }
+
+    private DebugConfig.Severity getDebugSeverity(Level severity) {
+        return switch (severity) {
+            case INFO -> DebugConfig.Severity.INFO;
+            case WARN -> DebugConfig.Severity.WARN;
+            case ERROR -> DebugConfig.Severity.ERROR;
+            default -> DebugConfig.Severity.ERROR;
+        };
+    }
     /**
      * Logs a warning message and serves as an early return. Nothing called after this method will be executed.
      * @param throwable The throwable to log, used for the included stack trace. The message of the throwable will be used as the warning message
@@ -81,6 +90,9 @@ public class PaperLoggerAdapter implements PlatformLogger {
         if (configManager != null && configManager.getDebugConfig() != null) {
             DebugConfig debug = configManager.getDebugConfig();
 
+            if (debug.isExempted(getDebugSeverity(severity), source)) {
+                return;
+            }
             if (getLevel(severity, debug) < level) {
                 return;
             }

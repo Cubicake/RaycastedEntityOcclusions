@@ -6,8 +6,8 @@ import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.DebugConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
-import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.TileEntityConfig;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.raycast.ParticleSpawner;
@@ -40,11 +40,11 @@ public class SimpleEngine implements Engine {
 
     @Override
     public void tick() {
-        int threads = 1; //TODO Don't hardcode
+        int threads = config.getEngineConfig().simpleConfig().asyncProcessingThreads();
         if (threads < 1) threads = 1;
 
         if (!tickThreadsRunning.compareAndSet(0, threads)) {
-            Logger.warning("RaycastedAntiESP is still ticking from the last tick! Skipping this tick to avoid concurrent modification issues. If you see this warning frequently, consider reducing the raycasting load by adjusting the configuration.", 2, SimpleEngine.class);
+            Logger.warning("RaycastedAntiESP is still ticking from the last tick! Skipping this tick to avoid concurrent modification issues.", 2, SimpleEngine.class);
             return;
         }
 
@@ -55,7 +55,7 @@ public class SimpleEngine implements Engine {
 
         EntityConfig entityConfig = config.getEntityConfig();
         PlayerConfig playerConfig = config.getPlayerConfig();
-        PlatformTileEntityConfig<?> tileEntityConfig = config.getTileEntityConfig();
+        TileEntityConfig tileEntityConfig = config.getTileEntityConfig();
         DebugConfig debugConfig = config.getDebugConfig();
 
         // If only one thread is configured, just use the current async thread to avoid the overhead of scheduling tasks and context switching.
@@ -93,7 +93,7 @@ public class SimpleEngine implements Engine {
                     if (threadsRemaining == 0) {
                         long elapsedNanos = System.nanoTime() - tickNanos.get();
                         if (elapsedNanos > 40 * 1000000) {//40 ms
-                            Logger.debug("Tick completed in " + (elapsedNanos / 1_000_000.0) + " ms");
+                            Logger.warning("Tick completed in " + (elapsedNanos / 1_000_000.0) + " ms. If you see this warning frequently, consider reducing the raycasting load by adjusting the configuration.", 5, SimpleEngine.class);
                         }
                     }
                 }
@@ -101,7 +101,7 @@ public class SimpleEngine implements Engine {
         }
     }
 
-    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, PlatformTileEntityConfig<?> tileEntityConfig,
+    private void processTickForPlayers(List<PlayerData> playerDataList, EntityConfig entityConfig, PlayerConfig playerConfig, TileEntityConfig tileEntityConfig,
                                        boolean debugParticles, int currentTick) {
 
         for (PlayerData playerData : playerDataList) {
@@ -156,7 +156,7 @@ public class SimpleEngine implements Engine {
         }
     }
 
-    private void checkTileEntities(PlayerData player, Locatable playerLocation, PlatformTileEntityConfig<?> tileEntityConfig, boolean debugParticles, BlockView blockView, int currentTick) {
+    private void checkTileEntities(PlayerData player, Locatable playerLocation, TileEntityConfig tileEntityConfig, boolean debugParticles, BlockView blockView, int currentTick) {
         for (BlockLocatable tileEntityLocation : blockView.getNeedingRecheck(tileEntityConfig.getVisibleRecheckIntervalTicks(), currentTick)) {
             if (tileEntityLocation.world() == null || !tileEntityLocation.world().equals(playerLocation.world())) {
                 continue;

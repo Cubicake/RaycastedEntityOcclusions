@@ -1,16 +1,11 @@
 package games.cubi.raycastedantiesp.core.config;
 
-import games.cubi.logs.Frequency;
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
-import games.cubi.raycastedantiesp.core.config.raycast.PlatformTileEntityConfig;
-import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
-import games.cubi.raycastedantiesp.core.config.snapshot.SnapshotConfig;
-import games.cubi.raycastedantiesp.core.config.visibility.VisibilityHandlersConfig;
 import games.cubi.raycastedantiesp.core.config.engine.EngineConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
+import games.cubi.raycastedantiesp.core.config.raycast.TileEntityConfig;
 import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.loader.ConfigurationLoader;
-import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
@@ -20,36 +15,30 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class ConfigManager {
+    private static final String REQUIRED_CONFIG_VERSION = "2.0";
     private static ConfigManager instance;
 
+    private final Supplier<InputStream> resourceSupplier;
+    private final Path dataFolder;
     private final Path configPath;
     private final YamlConfigurationLoader loader;
+    private final List<ConfigExtension<? extends Config>> extensions;
+
     private ConfigurationNode config;
+    private RootConfig startupConfig;
+    private volatile RootConfig activeConfig;
 
-    // Config objects
-    private PlayerConfig playerConfig;
-    private EntityConfig entityConfig;
-    private PlatformTileEntityConfig<?> tileEntityConfig;
-    private SnapshotConfig snapshotConfig;
-    private DebugConfig debugConfig;
-    private EngineConfig engineConfig;
-    private VisibilityHandlersConfig visibilityHandlersConfig;
-
-    // Platform provided
-    public final InputStream resource;
-    public final Path dataFolder;
-    public final PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider; // This is getting ridiculous lol
-
-
-    private ConfigManager(InputStream resource, Path dataFolder, PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider) {
-        this.resource = resource;
+    private ConfigManager(Supplier<InputStream> resourceSupplier, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
+        this.resourceSupplier = resourceSupplier;
         this.dataFolder = dataFolder;
-        this.tileEntityConfigFactoryProvider = tileEntityConfigFactoryProvider;
-
+        this.extensions = List.copyOf(extensions);
         this.configPath = dataFolder.resolve("config.yml");
         this.loader = YamlConfigurationLoader.builder()
                 .path(configPath)
@@ -58,171 +47,144 @@ public class ConfigManager {
         load();
     }
 
-    public static ConfigManager initialiseConfigManager(InputStream resource, Path dataFolder, PlatformTileEntityConfig.Factory.FactoryProvider<?> tileEntityConfigFactoryProvider) {
+    public static ConfigManager initialiseConfigManager(Supplier<InputStream> resourceSupplier, Path dataFolder, List<ConfigExtension<? extends Config>> extensions) {
         if (instance == null) {
-            instance = new ConfigManager(resource, dataFolder, tileEntityConfigFactoryProvider);
+            instance = new ConfigManager(resourceSupplier, dataFolder, extensions);
         }
         return instance;
     }
+
     public static ConfigManager get() {
-        if (instance == null) Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this to the plugin developer."), 2, ConfigManager.class);
+        if (instance == null) {
+            Logger.errorAndReturn(new RuntimeException("ConfigManager accessed before being initiated. Please report this."), 2, ConfigManager.class);
+        }
         return instance;
     }
 
-    /**
-     * Load or reload the configuration from file
-     */
     public void load() {
         ensureConfigFileExists();
-        config = loadConfigNode();
-
+        ConfigurationNode loaded = loadConfigNode();
         ConfigurationNode defaults = loadBundledDefaults();
-        if (defaults != null) {
-            mergeMissing(defaults, config);
+        if (defaults != null && mergeMissing(defaults, loaded)) {
+            saveConfigNode(loaded);
         }
-
-        // Set defaults if they don't exist
-        ConfigFactory<?>[] factories = setDefaults();
-
-        // Load config objects
-        playerConfig = ((PlayerConfig.Factory) factories[0]).getFromConfig(config);
-        entityConfig = ((EntityConfig.Factory) factories[1]).getFromConfig(config);
-        tileEntityConfig = (PlatformTileEntityConfig<?>) factories[2].getFromConfig(config);
-        snapshotConfig = ((SnapshotConfig.Factory) factories[3]).getFromConfig(config);
-        debugConfig = ((DebugConfig.Factory) factories[4]).getFromConfig(config);
-        visibilityHandlersConfig = ((VisibilityHandlersConfig.Factory) factories[5]).getFromConfig(config);
-        engineConfig = ((EngineConfig.Factory) factories[6]).getFromConfig(config);
-
-        // Persist the config tree after load/default initialization
-        saveConfigNode();
-
+        RootConfig parsed = parse(loaded);
+        validateReload(parsed);
+        config = loaded;
+        if (startupConfig == null) {
+            startupConfig = parsed;
+        }
+        activeConfig = parsed;
     }
 
-    /**
-     * Set default values in the configuration file if they don't exist
-     */
-    private ConfigFactory<?>[] setDefaults() {
-        ConfigNodeUtil.addDefault(config, "config-version", "1.0");
+    public SetConfigResult setConfigValue(String path, String rawValue) {
+        ConfigurationNode candidate = loadConfigNode();
+        ConfigurationNode target = node(candidate, path);
+        if (target.virtual()) {
+            return SetConfigResult.invalid("Unknown config path: " + path);
+        }
 
-        PlayerConfig.Factory playerFactory = new PlayerConfig.Factory();
-        EntityConfig.Factory entityFactory = new EntityConfig.Factory();
-        PlatformTileEntityConfig.Factory<?,?> tileEntityFactory = tileEntityConfigFactoryProvider.getFactory();
-        SnapshotConfig.Factory snapshotFactory = new SnapshotConfig.Factory();
-        DebugConfig.Factory debugFactory = new DebugConfig.Factory();
-        VisibilityHandlersConfig.Factory visibilityFactory = new VisibilityHandlersConfig.Factory();
-        EngineConfig.Factory engineFactory = new EngineConfig.Factory();
+        ConfigReader.setRaw(target, ConfigReader.parseRawValue(rawValue));
 
-        ConfigFactory<?>[] factories = new ConfigFactory<?>[] {
-            playerFactory,
-            entityFactory,
-            tileEntityFactory,
-            snapshotFactory,
-            debugFactory,
-            visibilityFactory,
-            engineFactory,
+        return applyCandidate(candidate, false);
+    }
+
+    public SetConfigResult addConfigListValue(String path, String rawValue) {
+        return mutateConfigListValue(path, rawValue, ListMutation.ADD);
+    }
+
+    public SetConfigResult removeConfigListValue(String path, String rawValue) {
+        return mutateConfigListValue(path, rawValue, ListMutation.REMOVE);
+    }
+
+    private SetConfigResult mutateConfigListValue(String path, String rawValue, ListMutation mutation) {
+        ConfigurationNode candidate = loadConfigNode();
+        ConfigurationNode target = node(candidate, path);
+        if (target.virtual()) {
+            return SetConfigResult.invalid("Unknown config path: " + path);
+        }
+        if (!target.childrenMap().isEmpty()) {
+            return SetConfigResult.invalid(path + " is not a list path");
+        }
+
+        List<Object> values = new ArrayList<>(target.childrenList().stream().map(ConfigurationNode::raw).toList());
+        if (values.isEmpty() && target.raw() != null && !(target.raw() instanceof List<?>)) {
+            return SetConfigResult.invalid(path + " is not a list path");
+        }
+
+        Object parsedValue = ConfigReader.parseRawValue(rawValue);
+        boolean changed = switch (mutation) {
+            case ADD -> {
+                if (values.contains(parsedValue)) {
+                    yield false;
+                }
+                values.add(parsedValue);
+                yield true;
+            }
+            case REMOVE -> values.remove(parsedValue);
         };
 
-        playerFactory.setDefaults(config);
-        entityFactory.setDefaults(config);
-        tileEntityFactory.setDefaults(config);
-
-        snapshotFactory.setDefaults(config);
-        debugFactory.setDefaults(config);
-        visibilityFactory.setDefaults(config);
-        engineFactory.setDefaults(config);
-
-        return factories;
-    }
-
-    /**
-     * Update a single config value both in memory and in the file
-     * @param path The config path (e.g., "player.enabled")
-     * @param rawValue The raw string value to set
-     * @return 1 for success, 0 for out of range, -1 for invalid input  TODO: This is currently broken, and even if it worked it doesn't handle setting lists
-     */
-    public int setConfigValue(String path, String rawValue) {
-        if (!ConfigNodeUtil.contains(config, path)) {
-            return -1; // Path doesn't exist
+        if (!changed) {
+            return SetConfigResult.invalid("No change made for " + path);
         }
 
-        Object currentValue = ConfigNodeUtil.get(config, path);
-        Object parsedValue = null;
+        ConfigReader.setRaw(target, values);
+        return applyCandidate(candidate, true);
+    }
 
+    private SetConfigResult applyCandidate(ConfigurationNode candidate, boolean allowRestartRequired) {
+        RootConfig parsed;
         try {
-            switch (currentValue) {
-                case Boolean ignored -> {
-                    String lower = rawValue.toLowerCase();
-                    if (!lower.equals("true") && !lower.equals("false")) {
-                        return -1;
-                    }
-                    parsedValue = Boolean.parseBoolean(lower);
-                }
-                case Integer ignored -> parsedValue = Integer.parseInt(rawValue);
-                case Double ignored -> parsedValue = Double.parseDouble(rawValue);
-                case String ignored -> {
-                    //use ConfigEnum.getAllValues(); to validate that the string is an enum
-                    String[] enums = ConfigEnum.getAllValues(); //they are already formatted correctly
-                    boolean found = false;
-                    for (String enumVal : enums) {
-                        if (enumVal.equalsIgnoreCase(rawValue)) {
-                            parsedValue = enumVal;
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        return -1;
-                    }
-                }
-                case null, default -> {
-                    return -1;
-                }
+            parsed = parse(candidate);
+            validateReload(parsed);
+        } catch (RestartRequiredException e) {
+            if (!allowRestartRequired) {
+                return SetConfigResult.invalid(e.getMessage());
             }
-        } catch (NumberFormatException e) {
-            return -1;
+            config = candidate;
+            saveConfigNode(candidate);
+            return SetConfigResult.restartRequired(e.getMessage());
+        } catch (ConfigLoadException e) {
+            return SetConfigResult.invalid(e.getMessage());
         }
 
-        // Update the config file
-        ConfigNodeUtil.set(config, path, parsedValue);
-        saveConfigNode();
-
-        // Reload to update the config objects
-        load();
-
-        return 1;
+        config = candidate;
+        activeConfig = parsed;
+        saveConfigNode(candidate);
+        return SetConfigResult.ok();
     }
 
-    // Getters for current config objects
     public PlayerConfig getPlayerConfig() {
-        return playerConfig;
+        return activeConfig.checksConfig().playerConfig();
     }
 
     public EntityConfig getEntityConfig() {
-        return entityConfig;
+        return activeConfig.checksConfig().entityConfig();
     }
 
-    public PlatformTileEntityConfig<?> getTileEntityConfig() {
-        return tileEntityConfig;
-    }
-
-    public SnapshotConfig getSnapshotConfig() {
-        return snapshotConfig;
+    public TileEntityConfig getTileEntityConfig() {
+        return activeConfig.checksConfig().tileEntityConfig();
     }
 
     public DebugConfig getDebugConfig() {
-        return debugConfig;
+        RootConfig current = activeConfig;
+        return current == null ? null : current.debugConfig();
     }
 
-    public VisibilityHandlersConfig getVisibilityHandlersConfig() {
-        return visibilityHandlersConfig;
+    public EngineConfig getEngineConfig() {
+        return activeConfig.engineConfig();
+    }
+
+    public BlockProcessorConfig getBlockProcessorConfig() {
+        return activeConfig.blockProcessorConfig();
+    }
+
+    public <T extends Config> T getExtensionConfig(Class<T> type) {
+        return activeConfig.extensionConfig(type);
     }
 
     public ConfigurationNode getConfigFile() {
         return config;
-    }
-
-    public EngineConfig getEngineConfig() {
-        return engineConfig;
     }
 
     public Map<String, Object> getConfigValues() {
@@ -231,11 +193,64 @@ public class ConfigManager {
         return values;
     }
 
+    private RootConfig parse(ConfigurationNode loaded) {
+        String version = ConfigReader.string(ConfigReader.node(loaded, "config-version"), "config-version");
+        if (!REQUIRED_CONFIG_VERSION.equals(version)) {
+            throw new ConfigLoadException("Unsupported config-version '" + version + "'. RaycastedAntiESP requires config-version '2.0'.");
+        }
+
+        ChecksConfig checksConfig = ChecksConfig.load(loaded);
+        EngineConfig engineConfig = EngineConfig.load(loaded);
+        BlockProcessorConfig blockProcessorConfig = BlockProcessorConfig.load(loaded);
+        DebugConfig debugConfig = DebugConfig.load(loaded);
+        Map<Class<? extends Config>, Config> extensionConfigs = new LinkedHashMap<>();
+        for (ConfigExtension<? extends Config> extension : extensions) {
+            extensionConfigs.put(extension.type(), extension.load(loaded, blockProcessorConfig));
+        }
+
+        if (!blockProcessorConfig.trackAllBlocks() && checksConfig.chunkSectionConfig().enabled()) {
+            throw new ConfigLoadException("checks.chunk-section.enabled must be false when block-processor.track-all-blocks is false");
+        }
+
+        return new RootConfig(version, checksConfig, engineConfig, blockProcessorConfig, debugConfig, Map.copyOf(extensionConfigs));
+    }
+
+    private void validateReload(RootConfig next) {
+        if (startupConfig == null) {
+            return;
+        }
+        if (next.engineConfig().mode() != startupConfig.engineConfig().mode()) {
+            throw new RestartRequiredException("engine.mode cannot be changed without a restart");
+        }
+        if (!next.blockProcessorConfig().equals(startupConfig.blockProcessorConfig())) {
+            throw new RestartRequiredException("block-processor cannot be changed without a restart");
+        }
+        if (next.checksConfig().hasRestartOnlyChanges(startupConfig.checksConfig())) {
+            throw new RestartRequiredException("checks cannot be enabled or disabled without a restart");
+        }
+        for (ConfigExtension<? extends Config> extension : extensions) {
+            validateExtensionReload(extension, next);
+        }
+    }
+
+    private <T extends Config> void validateExtensionReload(ConfigExtension<T> extension, RootConfig next) {
+        T startupExtensionConfig = startupConfig.extensionConfig(extension.type());
+        T nextExtensionConfig = next.extensionConfig(extension.type());
+        if (extension.requiresRestart(startupExtensionConfig, nextExtensionConfig)) {
+            throw new RestartRequiredException("block-processor." + extension.type().getSimpleName() + " cannot be changed without a restart");
+        }
+    }
+
     private void collectConfigValues(ConfigurationNode node, String path, Map<String, Object> values) {
-        if (node.childrenMap().isEmpty()) {
+        if (node.childrenMap().isEmpty() && node.childrenList().isEmpty()) {
             if (!path.isEmpty() && !node.virtual()) {
                 values.put(path, node.raw());
             }
+            return;
+        }
+
+        if (!node.childrenList().isEmpty()) {
+            values.put(path, node.childrenList().stream().map(ConfigurationNode::raw).toList());
             return;
         }
 
@@ -250,14 +265,17 @@ public class ConfigManager {
         try {
             Files.createDirectories(dataFolder);
             if (!Files.exists(configPath)) {
+                InputStream resource = resourceSupplier.get();
                 if (resource != null) {
-                    Files.copy(resource, configPath);
+                    try (resource) {
+                        Files.copy(resource, configPath);
+                    }
                 } else {
                     Files.createFile(configPath);
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to createPlayerEntitySnapshotManager config.yml", e);
+            throw new ConfigLoadException("Failed to create config.yml", e);
         }
     }
 
@@ -265,45 +283,75 @@ public class ConfigManager {
         try {
             return loader.load();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load config.yml", e);
-        }
-    }
-
-    private void saveConfigNode() {
-        try {
-            loader.save(config);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save config.yml", e);
+            throw new ConfigLoadException("Failed to load config.yml", e);
         }
     }
 
     private ConfigurationNode loadBundledDefaults() {
-        try {
-            if (resource == null) return null;
-            ConfigurationLoader<? extends ConfigurationNode> resourceLoader = YamlConfigurationLoader.builder()
-                    .source(() -> new BufferedReader(new InputStreamReader(resource)))
-                    .build();
-            return resourceLoader.load();
-        } catch (IOException e) {
-            Logger.warning("Failed to read bundled config defaults: " + e.getMessage(), Frequency.CONFIG_LOAD.value, ConfigManager.class);
+        InputStream resource = resourceSupplier.get();
+        if (resource == null) {
             return null;
+        }
+        try (resource) {
+            return YamlConfigurationLoader.builder()
+                    .source(() -> new BufferedReader(new InputStreamReader(resource)))
+                    .build()
+                    .load();
+        } catch (IOException e) {
+            throw new ConfigLoadException("Failed to load bundled config defaults", e);
         }
     }
 
-    private void mergeMissing(ConfigurationNode defaults, ConfigurationNode target) {
-        if (defaults.childrenMap().isEmpty()) {
-            if (target.virtual() && defaults.raw() != null) {
-                try {
-                    target.set(defaults.raw());
-                } catch (SerializationException e) {
-                    throw new RuntimeException("Failed to merge config defaults", e);
-                }
-            }
-            return;
+    private boolean mergeMissing(ConfigurationNode defaults, ConfigurationNode target) {
+        if (target.virtual()) {
+            target.from(defaults);
+            return true;
         }
 
-        for (Map.Entry<Object, ? extends ConfigurationNode> entry : defaults.childrenMap().entrySet()) {
-            mergeMissing(entry.getValue(), target.node(entry.getKey()));
+        boolean changed = false;
+        if (!defaults.childrenMap().isEmpty()) {
+            for (Map.Entry<Object, ? extends ConfigurationNode> entry : defaults.childrenMap().entrySet()) {
+                changed |= mergeMissing(entry.getValue(), target.node(entry.getKey()));
+            }
+        }
+        return changed;
+    }
+
+    private void saveConfigNode(ConfigurationNode node) {
+        try {
+            loader.save(node);
+        } catch (IOException e) {
+            throw new ConfigLoadException("Failed to save config.yml", e);
+        }
+    }
+
+    private ConfigurationNode node(ConfigurationNode root, String path) {
+        String[] parts = path.split("\\.");
+        return ConfigReader.node(root, parts);
+    }
+
+    private enum ListMutation {
+        ADD,
+        REMOVE
+    }
+
+    private static final class RestartRequiredException extends ConfigLoadException {
+        private RestartRequiredException(String message) {
+            super(message);
+        }
+    }
+
+    public record SetConfigResult(boolean success, boolean restartRequired, String message) {
+        public static SetConfigResult ok() {
+            return new SetConfigResult(true, false, "Config value updated.");
+        }
+
+        public static SetConfigResult restartRequired(String message) {
+            return new SetConfigResult(true, true, message);
+        }
+
+        public static SetConfigResult invalid(String message) {
+            return new SetConfigResult(false, false, message);
         }
     }
 }

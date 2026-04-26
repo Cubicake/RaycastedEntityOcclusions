@@ -1,16 +1,14 @@
 package games.cubi.raycastedantiesp.paper;
 
-import com.mojang.brigadier.Command;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
-import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
+import games.cubi.raycastedantiesp.paper.commands.RaycastedAntiESPCommandBrigadier;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
+import games.cubi.raycastedantiesp.packetevents.config.PacketEventsBlockProcessorConfig;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsBlockView;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsBlockViewController;
 import games.cubi.raycastedantiesp.paper.packets.PaperPacketEventsEntityViewController;
-import games.cubi.raycastedantiesp.paper.raycast.MovementTracker;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.paper.bStats.MetricsCollector;
 import games.cubi.logs.Logger;
@@ -28,10 +26,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntSupplier;
+import java.util.List;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
-    private static MovementTracker tracker;
     private static PaperPacketEventsEntityViewController packetEventsController;
     private static PaperSimpleEngine engine;
     private static MetricsCollector metricsCollector;
@@ -54,7 +52,11 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onLoad() {
-        config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
+        config = ConfigManager.initialiseConfigManager(
+                () -> getResource("config.yml"),
+                getDataFolder().toPath(),
+                List.of(PacketEventsBlockProcessorConfig.EXTENSION)
+        );
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents == null) {
             throw new IllegalStateException("PacketEvents is required but was not found.");
@@ -76,13 +78,13 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         packetEventsController = new PaperPacketEventsEntityViewController(currentTickSupplier);
         new PaperPacketEventsBlockViewController(currentTickSupplier);
 
-        tracker = new MovementTracker(this, config);
         engine = new PaperSimpleEngine(this, config, currentTickSupplier);
         UpdateChecker.checkForUpdates(this, Bukkit.getConsoleSender());
         EventListener.initialise(this, engine, currentTickSupplier);
 
-        initialiseCommands();
-
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS.newHandler(event -> {
+        RaycastedAntiESPCommandBrigadier.register(event.registrar());
+        }));
         //bStats
         metricsCollector =  new MetricsCollector(this, config);
     }
@@ -92,28 +94,9 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
         metricsCollector.shutdown();
     }
 
-    @SuppressWarnings("UnstableApiUsage")
-    private void initialiseCommands() {
-        LiteralCommandNode<CommandSourceStack> buildCommand = CommandsManager.registerCommand(this, config);
-
-        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            commands.registrar().register(buildCommand);
-            //alias "antiesp"
-            commands.registrar().register(Commands.literal("antiesp")
-                    .requires(sender -> sender.getSender().hasPermission("raycastedantiesp.command"))
-                    .executes(context -> {
-                        CommandsManager.helpCommand(context, this);
-                        return Command.SINGLE_SUCCESS;
-                    })
-                    .redirect(buildCommand).build());
-        });
-    }
 
     public static ConfigManager getConfigManager() {
         return config;
-    }
-    public static MovementTracker getMovementTracker() {
-        return tracker;
     }
     public static PaperPacketEventsEntityViewController getPacketEventsController() {
         return packetEventsController;
