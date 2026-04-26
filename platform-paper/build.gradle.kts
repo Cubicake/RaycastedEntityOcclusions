@@ -2,7 +2,7 @@ import java.time.Instant
 
 plugins {
     id("java-library")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
     id("xyz.jpenilla.run-paper") version "3.0.2"
     id("com.gradleup.shadow") version "9.4.0"
 }
@@ -15,7 +15,8 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
+    //paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("26.1.2.build.+")
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.0")
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
@@ -32,12 +33,12 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
 group = "games.cubi.raycastedantiesp.paper"
 
-val platformPaperVersion: String = "0.2.1-SNAPSHOT"
+val platformPaperVersion: String = "0.2.2-SNAPSHOT"
 val coreVersion = project(":core").version.toString()
 
 val commitShort = providers.exec {
@@ -80,7 +81,7 @@ tasks {
         // Configure the Minecraft version for our task.
         // This is the only required configuration besides applying the plugin.
         // Your plugin's jar (or shadowJar if present) will be used automatically.
-        minecraftVersion("1.21.11")
+        minecraftVersion("26.1.2")
         jvmArgs("-Xms4G", "-Xmx4G", "-Dcom.mojang.eula.agree=true")
     }
 
