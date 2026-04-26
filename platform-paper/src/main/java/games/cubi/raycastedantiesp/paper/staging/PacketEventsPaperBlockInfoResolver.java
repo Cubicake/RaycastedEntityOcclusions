@@ -1,19 +1,17 @@
 package games.cubi.raycastedantiesp.paper.staging;
 
+import com.github.retrooper.packetevents.protocol.world.states.WrappedBlockState;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.packetevents.BlockInfoResolver;
 import games.cubi.raycastedantiesp.packetevents.config.PacketEventsBlockProcessorConfig;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
-import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
-import org.bukkit.Bukkit;
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import org.bukkit.Material;
-import org.bukkit.block.BlockType;
 import org.bukkit.block.TileState;
 import org.bukkit.block.data.BlockData;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
     private final boolean[] occlusionArray;
@@ -52,13 +50,13 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         Map<Integer, Boolean> tileEntity = new HashMap<>(111000);
         int iterator = 0;
         while (run) {
-            Material material = SpigotReflectionUtil.getBlockDataByCombinedId(iterator).getItemType(); //Unfortunately doesn't seem to be a way to do this without both using an internal PE api and the deprecated for removal MaterialData
-            if (material == null) {
+            BlockData blockData = SpigotConversionUtil.toBukkitBlockData(WrappedBlockState.getByGlobalId(iterator));
+            if (blockData == null) {
                 Logger.warning("Material for block state ID " + iterator + " is null, stopping iteration. This is not expected to happen.", 5, PacketEventsPaperBlockInfoResolver.class);
                 run = false;
                 continue;
             }
-            if (material == Material.AIR) {
+            if (blockData.getMaterial() == Material.AIR) {
                 airs++;
                 if (airs > 80000) { // There is a sequence of ~40 air blocks around ID 100, and another of several hundred at ~3000. We scan forwards 80k to future-proof any mojank. Since it runs once at startup, perf is irrelevant here
                     run = false;
@@ -69,14 +67,13 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
                 airs = 0;
                 lastNonAirID = iterator;
                 if (materialToIDMode) {
-                    Logger.debug(material.toString() + iterator);
+                    Logger.debug(blockData.getAsString() + iterator);
                 }
             }
 
-            occlusion.put(iterator, material.isOccluding());
+            occlusion.put(iterator, blockData.getMaterial().isOccluding());
             try {
-                BlockData data = material.createBlockData();
-                if (data.createBlockState() instanceof TileState) {
+                if (blockData.createBlockState() instanceof TileState) {
                     //Logger.debug("tile at" + iterator + " is tile entity" + material.name());
                     tileEntity.put(iterator, true);
                 } else {
@@ -88,12 +85,10 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
             }
             iterator++;
         }
-        //Logger.debug(iterator+" was the finish point, last non-air ID was "+lastNonAirID);
         boolean[][] result = new boolean[2][lastNonAirID + 1];
         for (int i = 0; i < (lastNonAirID + 1) /*Ignore the trailing airs*/; i++) {
             result[0][i] = occlusion.get(i);
             result[1][i] = tileEntity.get(i);
-            //Logger.debug("BlockState ID " + i + ": occluding=" + occlusionArray[i] + ", tileEntity=" + tileEntityArray[i]);
         }
         return result;
     }
