@@ -1,5 +1,6 @@
 package games.cubi.raycastedantiesp.core.config.raycast;
 
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.Config;
 import games.cubi.raycastedantiesp.core.config.ConfigLoadException;
 import games.cubi.raycastedantiesp.core.config.ConfigReader;
@@ -27,24 +28,29 @@ public class RaycastConfig implements Config {
 
     protected static RaycastConfig load(ConfigurationNode node, String path, boolean hasHideSoundsWhenHidden) {
         int maxOccludingCount = ConfigReader.integer(ConfigReader.node(node, "max-occluding-count"), path + ".max-occluding-count");
-        if (maxOccludingCount < 0 || maxOccludingCount > Byte.MAX_VALUE) {
-            throw new ConfigLoadException(path + ".max-occluding-count must be between 0 and " + Byte.MAX_VALUE + " but was " + maxOccludingCount);
+        if (maxOccludingCount < -1 || maxOccludingCount > Byte.MAX_VALUE) {
+            Logger.warning(path + ".max-occluding-count must be between -1 and " + Byte.MAX_VALUE + " but was " + maxOccludingCount +". Defaulting to 3.", 4, RaycastConfig.class);
+            maxOccludingCount = 3;
         }
         int alwaysShowRadius = ConfigReader.integer(ConfigReader.node(node, "always-show-radius"), path + ".always-show-radius");
-        if (alwaysShowRadius < 0 || alwaysShowRadius > Short.MAX_VALUE) {
-            throw new ConfigLoadException(path + ".always-show-radius must be between 0 and " + Short.MAX_VALUE + " but was " + alwaysShowRadius);
+        if (alwaysShowRadius < -1 || alwaysShowRadius > Short.MAX_VALUE) {
+            Logger.warning(path + ".always-show-radius must be between -1 and " + Short.MAX_VALUE + " but was " + alwaysShowRadius +". Defaulting to 8.", 4, RaycastConfig.class);
+            alwaysShowRadius = 8;
         }
         int raycastRadius = ConfigReader.integer(ConfigReader.node(node, "raycast-radius"), path + ".raycast-radius");
-        if (raycastRadius < 0 || raycastRadius > Short.MAX_VALUE) {
-            throw new ConfigLoadException(path + ".raycast-radius must be between 0 and " + Short.MAX_VALUE + " but was " + raycastRadius);
+        if (raycastRadius < -1 || raycastRadius > Short.MAX_VALUE) {
+            Logger.warning(path + ".raycast-radius must be between -1 and " + Short.MAX_VALUE + " but was " + raycastRadius +". Defaulting to 48.", 4, RaycastConfig.class);
+            raycastRadius = 48;
         }
         int hideOnSpawnDistance = ConfigReader.integer(ConfigReader.node(node, "hide-on-spawn-distance"), path + ".hide-on-spawn-distance");
-        if (hideOnSpawnDistance < 0 || hideOnSpawnDistance > Short.MAX_VALUE) {
-            throw new ConfigLoadException(path + ".hide-on-spawn-distance must be between 0 and " + Short.MAX_VALUE + " but was " + hideOnSpawnDistance);
+        if (hideOnSpawnDistance < -1 || hideOnSpawnDistance > Short.MAX_VALUE) {
+            Logger.warning(path + ".hide-on-spawn-distance must be between -1 and " + Short.MAX_VALUE + " but was " + hideOnSpawnDistance +". Defaulting to 32.", 4, RaycastConfig.class);
+            hideOnSpawnDistance = 32;
         }
         int visibleRecheckIntervalTicks = ConfigReader.integer(ConfigReader.node(node, "visible-recheck-interval-ticks"), path + ".visible-recheck-interval-ticks");
-        if (visibleRecheckIntervalTicks < 0 || visibleRecheckIntervalTicks > Short.MAX_VALUE) {
-            throw new ConfigLoadException(path + ".visible-recheck-interval-ticks must be between 0 and " + Short.MAX_VALUE + " but was " + visibleRecheckIntervalTicks);
+        if (visibleRecheckIntervalTicks < -1 || visibleRecheckIntervalTicks > Short.MAX_VALUE) {
+            Logger.warning(path + ".visible-recheck-interval-ticks must be between -1 and " + Short.MAX_VALUE + " but was " + visibleRecheckIntervalTicks +". Defaulting to 5.", 4, RaycastConfig.class);
+            visibleRecheckIntervalTicks = 5;
         }
         return new RaycastConfig(
                 ConfigReader.bool(ConfigReader.node(node, "enabled"), path + ".enabled"),
