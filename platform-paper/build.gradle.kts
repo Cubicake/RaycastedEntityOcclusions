@@ -5,13 +5,13 @@ plugins {
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
     id("xyz.jpenilla.run-paper") version "3.0.2"
     id("com.gradleup.shadow") version "9.4.0"
-
 }
 
 repositories {
     mavenCentral()
     maven { url = uri("https://repo.codemc.io/repository/maven-releases/") }
     maven { url = uri("https://repo.codemc.io/repository/maven-snapshots/") }
+    maven { url = uri("https://eldonexus.de/repository/maven-public/") }
 }
 
 dependencies {
@@ -19,6 +19,9 @@ dependencies {
     compileOnly("com.github.retrooper:packetevents-spigot:2.12.0")
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
+
+    compileOnly("net.strokkur.commands:annotations-paper:2.1.1")
+    annotationProcessor("net.strokkur.commands:processor-paper:2.1.1")
 
     implementation("org.jetbrains:annotations:24.0.1")
 
