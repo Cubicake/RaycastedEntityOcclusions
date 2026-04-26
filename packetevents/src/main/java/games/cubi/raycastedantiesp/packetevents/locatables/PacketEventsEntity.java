@@ -9,12 +9,12 @@ import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsEntityRep
 import java.util.UUID;
 
 public class PacketEventsEntity extends NettyEntityLocatable<EntityType, PaintingType, Direction, PacketEventsEntityReplayData> {
-    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType) {
-        super(world, x, y, z, entityID, entityUUID, spawnType, entityType);
+    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, EntityType entityType, boolean visible) {
+        super(world, x, y, z, entityID, entityUUID, spawnType, entityType, visible);
     }
 
-    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection) {
-        super(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection);
+    public PacketEventsEntity(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection, boolean visible) {
+        super(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection, visible);
     }
 
     @Override
