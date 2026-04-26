@@ -3,8 +3,8 @@ package games.cubi.raycastedantiesp.paper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import games.cubi.raycastedantiesp.core.Core;
-import games.cubi.raycastedantiesp.paper.config.PaperTileEntityConfig;
 import games.cubi.raycastedantiesp.paper.engine.PaperSimpleEngine;
+import games.cubi.raycastedantiesp.packetevents.config.PacketEventsBlockProcessorConfig;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsBlockView;
 import games.cubi.raycastedantiesp.packetevents.view.PacketEventsEntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
@@ -28,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.IntSupplier;
+import java.util.List;
 
 public final class RaycastedAntiESP extends JavaPlugin implements CommandExecutor {
     private static ConfigManager config;
@@ -54,7 +55,11 @@ public final class RaycastedAntiESP extends JavaPlugin implements CommandExecuto
 
     @Override
     public void onLoad() {
-        config = ConfigManager.initialiseConfigManager(getResource("config.yml"), getDataFolder().toPath(), new PaperTileEntityConfig.Factory.FactoryProvider());
+        config = ConfigManager.initialiseConfigManager(
+                getResource("config.yml"),
+                getDataFolder().toPath(),
+                List.of(PacketEventsBlockProcessorConfig.EXTENSION)
+        );
         Plugin packetEvents = Bukkit.getPluginManager().getPlugin("packetevents");
         if (packetEvents == null) {
             throw new IllegalStateException("PacketEvents is required but was not found.");

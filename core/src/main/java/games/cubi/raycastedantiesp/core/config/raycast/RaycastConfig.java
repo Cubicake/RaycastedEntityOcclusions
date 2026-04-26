@@ -1,51 +1,52 @@
 package games.cubi.raycastedantiesp.core.config.raycast;
 
-import games.cubi.raycastedantiesp.core.config.ConfigNodeUtil;
 import games.cubi.raycastedantiesp.core.config.Config;
-import games.cubi.raycastedantiesp.core.config.ConfigFactory;
+import games.cubi.raycastedantiesp.core.config.ConfigReader;
 import org.spongepowered.configurate.ConfigurationNode;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class RaycastConfig implements Config {
-    private static final RaycastConfig DEFAULTS = new RaycastConfig(false);
+    private final boolean enabled;
+    private final boolean hideSoundsWhenHidden;
     private final byte maxOccludingCount;
     private final short alwaysShowRadius;
     private final short raycastRadius;
-    private final short visibleRecheckInterval;
-    private final boolean enabled;
+    private final short hideOnSpawnDistance;
+    private final short visibleRecheckIntervalTicks;
 
-    public RaycastConfig(byte maxOccludingCount, short alwaysShowRadius, short raycastRadius, short visibleRecheckInterval, boolean enabled) {
-        this.maxOccludingCount = maxOccludingCount;
-        this.alwaysShowRadius = alwaysShowRadius;
-        this.raycastRadius = raycastRadius;
-        this.visibleRecheckInterval = visibleRecheckInterval;
+    public RaycastConfig(boolean enabled, boolean hideSoundsWhenHidden, int maxOccludingCount, int alwaysShowRadius,
+                         int raycastRadius, int hideOnSpawnDistance, int visibleRecheckIntervalTicks) {
         this.enabled = enabled;
-    }
-
-    public RaycastConfig(int maxOccludingCount, int alwaysShowRadius, int raycastRadius, int visibleRecheckInterval, boolean enabled) {
+        this.hideSoundsWhenHidden = hideSoundsWhenHidden;
         this.maxOccludingCount = (byte) maxOccludingCount;
         this.alwaysShowRadius = (short) alwaysShowRadius;
         this.raycastRadius = (short) raycastRadius;
-        this.visibleRecheckInterval = (short) visibleRecheckInterval;
-        this.enabled = enabled;
+        this.hideOnSpawnDistance = (short) hideOnSpawnDistance;
+        this.visibleRecheckIntervalTicks = (short) visibleRecheckIntervalTicks;
     }
 
-    public RaycastConfig(boolean enabled) {
-        this.enabled = enabled;
-        if (enabled) throw new IllegalArgumentException("Abstract config created without parameters while enabled");
-        maxOccludingCount = -1; alwaysShowRadius = 48; raycastRadius = -1; visibleRecheckInterval = -1;
-
+    protected static RaycastConfig load(ConfigurationNode node, String path, boolean hasHideSoundsWhenHidden) {
+        return new RaycastConfig(
+                ConfigReader.bool(ConfigReader.node(node, "enabled"), path + ".enabled"),
+                hasHideSoundsWhenHidden && ConfigReader.bool(ConfigReader.node(node, "hide-sounds-when-hidden"), path + ".hide-sounds-when-hidden"),
+                ConfigReader.integer(ConfigReader.node(node, "max-occluding-count"), path + ".max-occluding-count"),
+                ConfigReader.integer(ConfigReader.node(node, "always-show-radius"), path + ".always-show-radius"),
+                ConfigReader.integer(ConfigReader.node(node, "raycast-radius"), path + ".raycast-radius"),
+                ConfigReader.integer(ConfigReader.node(node, "hide-on-spawn-distance"), path + ".hide-on-spawn-distance"),
+                ConfigReader.integer(ConfigReader.node(node, "visible-recheck-interval-ticks"), path + ".visible-recheck-interval-ticks")
+        );
     }
 
-    public RaycastConfig(RaycastConfig other) {
-        this.maxOccludingCount = other.maxOccludingCount;
-        this.alwaysShowRadius = other.alwaysShowRadius;
-        this.raycastRadius = other.raycastRadius;
-        this.visibleRecheckInterval = other.visibleRecheckInterval;
-        this.enabled = other.enabled;
+    public boolean isEnabled() {
+        return enabled;
     }
 
+    public boolean enabled() {
+        return enabled;
+    }
+
+    public boolean hideSoundsWhenHidden() {
+        return hideSoundsWhenHidden;
+    }
 
     public byte getMaxOccludingCount() {
         return maxOccludingCount;
@@ -59,50 +60,11 @@ public class RaycastConfig implements Config {
         return raycastRadius;
     }
 
+    public short hideOnSpawnDistance() {
+        return hideOnSpawnDistance;
+    }
+
     public short getVisibleRecheckIntervalTicks() {
-        return visibleRecheckInterval;
-    }
-
-    protected short getRawVisibleRecheckInterval() {
-        return visibleRecheckInterval;
-    }
-
-    public int getVisibleRecheckIntervalSeconds() {
-        return  (visibleRecheckInterval * 20);
-    }
-
-    public boolean isEnabled() { return enabled; }
-
-    public static abstract class Factory<T extends RaycastConfig> implements ConfigFactory<T> {
-        private final String path;
-
-        public Factory(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public String getFullPath() {
-            return path;
-        }
-
-        public @NotNull RaycastConfig getFromConfig(ConfigurationNode config, @NotNull RaycastConfig defaults) {
-            return new RaycastConfig(
-                    ConfigNodeUtil.getInt(config, path+".max-occluding-count", defaults.getMaxOccludingCount()),
-                    ConfigNodeUtil.getInt(config, path+".always-show-radius", defaults.getAlwaysShowRadius()),
-                    ConfigNodeUtil.getInt(config, path+".raycast-radius", defaults.getRaycastRadius()),
-                    ConfigNodeUtil.getInt(config, path+".visible-recheck-interval", defaults.getRawVisibleRecheckInterval()),
-                    ConfigNodeUtil.getBoolean(config, path+".enabled", defaults.isEnabled())
-            );
-        }
-
-        public @NotNull ConfigFactory<T> setDefaults(ConfigurationNode config, @Nullable RaycastConfig defaults) {
-            RaycastConfig fallback = defaults != null ? defaults : DEFAULTS;
-            ConfigNodeUtil.addDefault(config, path+".enabled", fallback.isEnabled());
-            ConfigNodeUtil.addDefault(config, path+".max-occluding-count", fallback.getMaxOccludingCount());
-            ConfigNodeUtil.addDefault(config, path+".always-show-radius", fallback.getAlwaysShowRadius());
-            ConfigNodeUtil.addDefault(config, path+".raycast-radius", fallback.getRaycastRadius());
-            ConfigNodeUtil.addDefault(config, path+".visible-recheck-interval", fallback.getRawVisibleRecheckInterval());
-            return this;
-        }
+        return visibleRecheckIntervalTicks;
     }
 }

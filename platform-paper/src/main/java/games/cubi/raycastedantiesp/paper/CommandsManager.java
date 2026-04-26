@@ -49,8 +49,12 @@ public class CommandsManager {
                 .executes(context -> helpCommand(context, plugin)))
             .then(Commands.literal("reload")
                 .executes(context -> {
-                    config.load();
-                    context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
+                    try {
+                        config.load();
+                        context.getSource().getSender().sendMessage("[RaycastedAntiESP] Config reloaded.");
+                    } catch (RuntimeException e) {
+                        context.getSource().getSender().sendRichMessage("<red>[RaycastedAntiESP] Config reload rejected: <white>" + e.getMessage());
+                    }
                     return Command.SINGLE_SUCCESS;
                 }))
             .then(Commands.literal("config-values")
@@ -74,22 +78,54 @@ public class CommandsManager {
                     return 0;
                 })
                 .then(Commands.argument("key", StringArgumentType.string())
-                    .then(Commands.argument("value", StringArgumentType.string())
+                    .then(Commands.argument("value", StringArgumentType.greedyString())
                         .executes(context -> {
                             CommandSender sender = context.getSource().getSender();
                             String key = StringArgumentType.getString(context, "key");
                             String value = StringArgumentType.getString(context, "value");
 
-                            int result = config.setConfigValue(key, value);
-                            if (result == -1) {
-                                sender.sendRichMessage("<red>Invalid inputs");
-                            } else if (result == 0) {
-                                //Integer value out of bounds 0 - 256
-                                sender.sendRichMessage("<red>Invalid value for <white>" + key + "<red>, must be between 0 and 256");
-                            }
-                            else {
-                                sender.sendRichMessage("<white>Set <green>" + key + "<white> to <green>" + value);
-                            }
+                            ConfigManager.SetConfigResult result = config.setConfigValue(key, value);
+                            sendConfigMutationResult(sender, result, "Set", key, value);
+                            return 0;
+                        })
+                    )
+                )
+            )
+            .then(Commands.literal("add")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    sender.sendRichMessage("<red>Usage: /raycastedantiesp add <key> <value>");
+                    return 0;
+                })
+                .then(Commands.argument("key", StringArgumentType.string())
+                    .then(Commands.argument("value", StringArgumentType.greedyString())
+                        .executes(context -> {
+                            CommandSender sender = context.getSource().getSender();
+                            String key = StringArgumentType.getString(context, "key");
+                            String value = StringArgumentType.getString(context, "value");
+
+                            ConfigManager.SetConfigResult result = config.addConfigListValue(key, value);
+                            sendConfigMutationResult(sender, result, "Added", key, value);
+                            return 0;
+                        })
+                    )
+                )
+            )
+            .then(Commands.literal("remove")
+                .executes(context -> {
+                    CommandSender sender = context.getSource().getSender();
+                    sender.sendRichMessage("<red>Usage: /raycastedantiesp remove <key> <value>");
+                    return 0;
+                })
+                .then(Commands.argument("key", StringArgumentType.string())
+                    .then(Commands.argument("value", StringArgumentType.greedyString())
+                        .executes(context -> {
+                            CommandSender sender = context.getSource().getSender();
+                            String key = StringArgumentType.getString(context, "key");
+                            String value = StringArgumentType.getString(context, "value");
+
+                            ConfigManager.SetConfigResult result = config.removeConfigListValue(key, value);
+                            sendConfigMutationResult(sender, result, "Removed", key, value);
                             return 0;
                         })
                     )
@@ -158,7 +194,20 @@ public class CommandsManager {
         sender.sendRichMessage("<green>/raycastedantiesp reload <gray>- Reloads the config");
         sender.sendRichMessage("<green>/raycastedantiesp config-values <gray>- Shows all config values");
         sender.sendRichMessage("<green>/raycastedantiesp set <key> <value> <gray>- Sets a config value");
+        sender.sendRichMessage("<green>/raycastedantiesp add <key> <value> <gray>- Adds a value to a list config");
+        sender.sendRichMessage("<green>/raycastedantiesp remove <key> <value> <gray>- Removes a value from a list config");
         return Command.SINGLE_SUCCESS;
+    }
+
+    private static void sendConfigMutationResult(CommandSender sender, ConfigManager.SetConfigResult result, String action, String key, String value) {
+        if (!result.success()) {
+            sender.sendRichMessage("<red>Invalid config change: <white>" + result.message());
+            return;
+        }
+        sender.sendRichMessage("<white>" + action + " <green>" + value + "<white> for <green>" + key);
+        if (result.restartRequired()) {
+            sender.sendRichMessage("<yellow>This change was saved but requires a restart: <white>" + result.message());
+        }
     }
 
     private static int testCommand(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

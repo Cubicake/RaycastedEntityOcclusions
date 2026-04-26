@@ -2,6 +2,7 @@ package games.cubi.raycastedantiesp.paper.staging;
 
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.packetevents.BlockInfoResolver;
+import games.cubi.raycastedantiesp.packetevents.config.PacketEventsBlockProcessorConfig;
 import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import io.github.retrooper.packetevents.util.SpigotReflectionUtil;
 import org.bukkit.Bukkit;
@@ -25,6 +26,19 @@ public class PacketEventsPaperBlockInfoResolver implements BlockInfoResolver {
         boolean[][] result = iterateBlockIDs(false);
         occlusionArray = result[0];
         tileEntityArray = result[1];
+        PacketEventsBlockProcessorConfig config = RaycastedAntiESP.getConfigManager().getExtensionConfig(PacketEventsBlockProcessorConfig.class);
+        if (config != null) {
+            for (int blockStateId : config.tileEntityExemptedIds()) {
+                if (blockStateId >= 0 && blockStateId < tileEntityArray.length) {
+                    tileEntityArray[blockStateId] = false;
+                }
+            }
+            for (int blockStateId : config.tileEntityForceIncludedIds()) {
+                if (blockStateId >= 0 && blockStateId < tileEntityArray.length) {
+                    tileEntityArray[blockStateId] = true;
+                }
+            }
+        }
     }
 
     /**

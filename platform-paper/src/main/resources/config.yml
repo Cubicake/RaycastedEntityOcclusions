@@ -1,0 +1,56 @@
+config-version: '2.0'
+checks:
+    player:
+        enabled: true
+        hide-sounds-when-hidden: true
+        max-occluding-count: 3
+        always-show-radius: 8
+        raycast-radius: 64
+        hide-on-spawn-distance: 32
+        visible-recheck-interval-ticks: 5
+    entity:
+        enabled: true
+        hide-sounds-when-hidden: true
+        max-occluding-count: 3
+        always-show-radius: 8
+        raycast-radius: 48
+        hide-on-spawn-distance: 32
+        visible-recheck-interval-ticks: 5
+    tile-entity:
+        enabled: true
+        max-occluding-count: 3
+        always-show-radius: 8
+        raycast-radius: 48
+        hide-on-spawn-distance: 32
+        visible-recheck-interval-ticks: -1
+    sound-effects:
+        enabled: true
+        max-occluding-count: 3
+        always-play-radius: 8
+        raycast-radius: 48
+    chunk-section:
+        enabled: false
+        max-occluding-count: 6
+        always-show-radius-chunks: 2
+        visible-recheck-interval-ticks: -1
+engine:
+    mode: simple
+    simple:
+        async-processing-threads: 1
+    netty:
+block-processor:
+    mode: packetevents
+    track-all-blocks: false
+    packetevents:
+        tile-entity-exempted-ids:
+            - 9779
+        tile-entity-force-included-ids:
+debug:
+    info-level: 5
+    info-exempted-classes:
+    warn-level: 5
+    warn-exempted-classes:
+    error-level: 5
+    error-exempted-classes:
+    particles: false
+    timings: false
