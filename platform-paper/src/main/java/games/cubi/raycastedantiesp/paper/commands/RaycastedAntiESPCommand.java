@@ -30,6 +30,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+// Credit to Strokkur for making StrokkCommands, a non-hideous way to use the power of brigadier.
+
 @Command("raycastedantiesp")
 @Aliases({"raesp", "antiesp", "reo"})
 @Description("Command for management of the RaycastedAntiESP plugin")
@@ -169,6 +171,7 @@ public class RaycastedAntiESPCommand {
             player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");
         }
 
+        @DefaultExecutes
         public void helpCommand(@NotNull CommandSender sender) {
             sender.sendRichMessage("<white>Test subcommands:");
             sender.sendRichMessage("<green>/raycastedantiesp test location-drift <gray>- Tests the drift between Bukkit and PacketEvents entity locations");

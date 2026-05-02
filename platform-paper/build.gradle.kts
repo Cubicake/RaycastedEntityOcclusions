@@ -21,8 +21,8 @@ dependencies {
     compileOnly("org.spongepowered:configurate-core:4.2.0")
     compileOnly("org.spongepowered:configurate-yaml:4.2.0")
 
-    compileOnly("net.strokkur.commands:annotations-paper:2.1.1")
-    annotationProcessor("net.strokkur.commands:processor-paper:2.1.1")
+    compileOnly("net.strokkur.commands:annotations-paper:2.1.2")
+    annotationProcessor("net.strokkur.commands:processor-paper:2.1.2")
 
     implementation("org.jetbrains:annotations:24.0.1")
 
