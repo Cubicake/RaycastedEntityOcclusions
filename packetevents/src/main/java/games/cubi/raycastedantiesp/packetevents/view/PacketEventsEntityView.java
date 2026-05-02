@@ -18,6 +18,19 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
     private final Map<UUID, PacketEventsEntity> entitiesByUUID = new ConcurrentHashMap<>();
     private final Map<Integer, UUID> entityUUIDsByID = new ConcurrentHashMap<>();
     private final ConcurrentLinkedQueue<EntityViewTransition> transitions = new ConcurrentLinkedQueue<>();
+    private final boolean isPlayerView;
+
+    public PacketEventsEntityView(boolean isPlayerView) {
+        this.isPlayerView = isPlayerView;
+    }
+
+    public static PacketEventsEntityView createPlayerView() {
+        return new PacketEventsEntityView(true);
+    }
+
+    public static PacketEventsEntityView createEntityView() {
+        return new PacketEventsEntityView(false);
+    }
 
     @Override
     public void insertEntity(PacketEventsEntity entity) {
@@ -75,6 +88,23 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
     @Override
     public PacketEventsEntity getEntity(int entityID) {
         return getTrackedEntity(entityID);
+    }
+
+    @Override
+    public boolean exists(UUID entityUUID) {
+        return entitiesByUUID.containsKey(entityUUID);
+    }
+
+    @Override
+    public boolean exists(int entityID) {
+        return entityUUIDsByID.containsKey(entityID);
+    }
+
+    @Override
+    public boolean isVisible(int entityID) {
+        PacketEventsEntity entity = getTrackedEntity(entityID);
+        assert entity != null;
+        return entity.visible();
     }
 
     @Override
@@ -156,6 +186,11 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
             drained.add(transition);
         }
         return drained;
+    }
+
+    @Override
+    public boolean isPlayerView() {
+        return isPlayerView;
     }
 
     @Override

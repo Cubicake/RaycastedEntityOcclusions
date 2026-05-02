@@ -27,10 +27,16 @@ public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>>  extends Clea
 
     int getEntityID(UUID entityUUID);
 
+    boolean exists(UUID entityUUID);
+
+    boolean exists(int entityID);
+
     @Deprecated
     boolean isVisible(UUID entityUUID, int currentTick);
 
     boolean isVisible(UUID entityUUID);
+
+    boolean isVisible(int entityID);
 
     void setVisibility(UUID entityUUID, boolean visible, int currentTick);
 
@@ -41,6 +47,8 @@ public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>>  extends Clea
     boolean hasPendingTransitions();
 
     List<EntityViewTransition> drainTransitions();
+
+    boolean isPlayerView();
 
     default <T> T cast() {
         return (T) this;
