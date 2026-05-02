@@ -27,7 +27,10 @@ public interface EntityView<T extends EntityLocatable<?, ?, ?, ?>>  extends Clea
 
     int getEntityID(UUID entityUUID);
 
+    @Deprecated
     boolean isVisible(UUID entityUUID, int currentTick);
+
+    boolean isVisible(UUID entityUUID);
 
     void setVisibility(UUID entityUUID, boolean visible, int currentTick);
 

@@ -94,6 +94,11 @@ public class PacketEventsEntityView implements EntityView<PacketEventsEntity> {
 
     @Override
     public boolean isVisible(UUID entityUUID, int currentTick) {
+        return isVisible(entityUUID);
+    }
+
+    @Override
+    public boolean isVisible(UUID entityUUID) {
         PacketEventsEntity entity = entitiesByUUID.get(entityUUID);
         return entity == null || entity.visible();
     }
