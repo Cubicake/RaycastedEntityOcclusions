@@ -25,7 +25,7 @@ public class PlayerData {
 
         blockView = ViewRegistry.createBlockView();
         entityView = ViewRegistry.createEntityView();
-        playerView = ViewRegistry.createEntityView();
+        playerView = ViewRegistry.createPlayerEntityView();
         ownLocation = new ThreadSafeLocatable(null, 0, 0, 0);
     }
 
