@@ -17,6 +17,14 @@ public class PacketEventsEntity extends NettyEntityLocatable<EntityType, Paintin
         super(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection, visible);
     }
 
+    private PacketEventsEntity(int selfEntityID, UUID selfEntityUUID) {
+        super(selfEntityID, selfEntityUUID);
+    }
+
+    public static PacketEventsEntity createSelfEntity(int selfEntityID, UUID selfEntityUUID) {
+        return new PacketEventsEntity(selfEntityID, selfEntityUUID);
+    }
+
     @Override
     public boolean strictlyEquals(Object other) {
         if (this == other) return true;

@@ -19,6 +19,7 @@ import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.raycast.TileEntityConfig;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.view.BlockView;
 import games.cubi.raycastedantiesp.core.view.BlockViewTransition;
 import games.cubi.raycastedantiesp.core.locatables.TileEntityLocatable;
@@ -63,7 +64,7 @@ public abstract class PacketEventsBlockViewController implements PacketListener 
             hideOnSpawnDistanceSquared = tileEntityConfig.hideOnSpawnDistance() * tileEntityConfig.hideOnSpawnDistance();
         }
 
-        PlayerData playerData = common.ensurePlayerData(viewerUUID, event);
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(viewerUUID);
         if (playerData == null) {
             return;
         }

@@ -58,6 +58,15 @@ public abstract class NettyEntityLocatable<EntityType, PaintingType, Direction, 
         this.visible = visible;
     }
 
+    protected NettyEntityLocatable(int selfPlayerID, UUID entityUUID) {
+        entityID = selfPlayerID;
+        this.entityUUID = entityUUID;
+        spawnType = SpawnType.SELF;
+        entityType = null;
+        paintingDirection = null;
+        paintingType = null;
+    }
+
     public NettyEntityLocatable(UUID world, double x, double y, double z, int entityID, UUID entityUUID, SpawnType spawnType, PaintingType paintingType, Direction paintingDirection, boolean visible) {
         this.world = world;
         this.x = x; this.y = y; this.z = z;

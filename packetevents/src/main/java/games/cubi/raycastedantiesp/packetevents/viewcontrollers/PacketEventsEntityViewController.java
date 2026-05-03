@@ -18,6 +18,7 @@ import games.cubi.locatables.Locatable;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.locatables.NettyEntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
 import games.cubi.raycastedantiesp.core.view.controller.PacketEntityViewController;
@@ -52,9 +53,12 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
             return;
         }
 
-        PlayerData playerData = common.ensurePlayerData(viewerUUID, event);
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(viewerUUID);
         if (playerData == null) {
-            return;
+            if (!(event.getPacketType() == PacketType.Play.Server.JOIN_GAME)) return;
+
+            WrapperPlayServerJoinGame packet = new WrapperPlayServerJoinGame(event);
+            playerData = handlePlayPhaseLoginPacket(packet.getEntityId(), viewerUUID, currentTickSupplier.getAsInt());
         }
 
         if (ConfigManager.get().getEntityConfig() != entityConfig) {
@@ -197,6 +201,10 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
             }
             default -> {}
         }
+    }
+
+    protected NettyEntityLocatable<?,?,?,?> createSelfEntity(int entityID, UUID playerUUID) {
+        return PacketEventsEntity.createSelfEntity(entityID, playerUUID);
     }
 
     /*
@@ -663,6 +671,10 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
                         entity.pitch(),
                         metadata
                 );
+            }
+            case SELF -> {
+                Logger.errorAndReturn(new RuntimeException("Should not build spawn packet for self entity"), 1, PacketEventsEntityViewController.class);
+                yield null;
             }
         };
     }

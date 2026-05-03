@@ -19,9 +19,13 @@ public class PlayerData {
     private final EntityView<?> playerView;
 
     public PlayerData(UUID player, boolean hasBypassPermission, int joinTick) {
+        this(player, joinTick);
+        this.hasBypassPermission = hasBypassPermission;
+    }
+
+    public PlayerData(UUID player, int joinTick) {
         this.joinTick = joinTick;
         this.playerUUID = player;
-        this.hasBypassPermission = hasBypassPermission;
 
         blockView = ViewRegistry.createBlockView();
         entityView = ViewRegistry.createEntityView();

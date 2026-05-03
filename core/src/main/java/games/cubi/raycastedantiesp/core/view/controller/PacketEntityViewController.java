@@ -19,6 +19,14 @@ public abstract class PacketEntityViewController<P> {
     protected double hideOnSpawnEntityDistanceSquared = 0;
     protected double hideOnSpawnPlayerDistanceSquared = 0;
 
+    protected PlayerData handlePlayPhaseLoginPacket(int entityID, UUID playerUUID, int currentTick) {
+        PlayerData playerData = new PlayerData(playerUUID, currentTick);
+        playerData.playerView().insertEntity(createSelfEntity(entityID, playerUUID).cast());
+        return playerData;
+    }
+
+    protected abstract NettyEntityLocatable<?,?,?,?> createSelfEntity(int entityID, UUID playerUUID);
+
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */

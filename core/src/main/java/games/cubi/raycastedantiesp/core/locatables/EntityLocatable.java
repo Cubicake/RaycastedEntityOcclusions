@@ -14,6 +14,7 @@ public interface EntityLocatable<EntityType, PaintingType, Direction, PacketRepl
         ENTITY,
         PAINTING,
         PLAYER,
+        SELF, // Used to track the player's own position. Should never be shown or hidden.
     }
 
     int entityID();
