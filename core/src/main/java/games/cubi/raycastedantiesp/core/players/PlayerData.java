@@ -69,4 +69,17 @@ public class PlayerData {
     public void setBypassPermission(boolean hasBypassPermission) {
         this.hasBypassPermission = hasBypassPermission;
     } //todo: need to link up
+
+    @Override
+    public String toString() {
+        return "PlayerData{" +
+                "playerUUID=" + playerUUID +
+                ", joinTick=" + joinTick +
+                ", hasBypassPermission=" + hasBypassPermission +
+                ", ownLocation=" + ownLocation +
+                ", blockView=" + blockView +
+                ", entityView=" + entityView +
+                ", playerView=" + playerView +
+                '}';
+    }
 }

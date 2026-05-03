@@ -6,6 +6,7 @@ import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.RaycastConfig;
 import games.cubi.raycastedantiesp.core.locatables.NettyEntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
+import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 
 import java.util.UUID;
@@ -19,10 +20,13 @@ public abstract class PacketEntityViewController<P> {
     protected double hideOnSpawnEntityDistanceSquared = 0;
     protected double hideOnSpawnPlayerDistanceSquared = 0;
 
-    protected PlayerData handlePlayPhaseLoginPacket(int entityID, UUID playerUUID, int currentTick) {
-        PlayerData playerData = new PlayerData(playerUUID, currentTick);
+    protected void handlePlayPhaseLoginPacket(int entityID, UUID playerUUID, int currentTick) {
+        PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(playerUUID);
         playerData.playerView().insertEntity(createSelfEntity(entityID, playerUUID).cast());
-        return playerData;
+    }
+
+    protected PlayerData handleLoginPhaseLoginPacket(UUID playerUUID, int currentTick) {
+        return PlayerRegistry.getInstance().registerAndGetPlayer(playerUUID, currentTick);
     }
 
     protected abstract NettyEntityLocatable<?,?,?,?> createSelfEntity(int entityID, UUID playerUUID);

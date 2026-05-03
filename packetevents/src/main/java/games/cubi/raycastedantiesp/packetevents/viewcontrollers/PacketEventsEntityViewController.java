@@ -11,6 +11,7 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
+import com.github.retrooper.packetevents.wrapper.login.server.WrapperLoginServerLoginSuccess;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
@@ -54,11 +55,15 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         }
 
         PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(viewerUUID);
-        if (playerData == null) {
-            if (!(event.getPacketType() == PacketType.Play.Server.JOIN_GAME)) return;
 
+        if (event.getPacketType() == PacketType.Login.Server.LOGIN_SUCCESS) {
+            handleLoginPhaseLoginPacket(viewerUUID, currentTickSupplier.getAsInt());
+            return;
+        }
+
+        if (event.getPacketType() == PacketType.Play.Server.JOIN_GAME) {
             WrapperPlayServerJoinGame packet = new WrapperPlayServerJoinGame(event);
-            playerData = handlePlayPhaseLoginPacket(packet.getEntityId(), viewerUUID, currentTickSupplier.getAsInt());
+            handlePlayPhaseLoginPacket(packet.getEntityId(), viewerUUID, currentTickSupplier.getAsInt());
         }
 
         if (ConfigManager.get().getEntityConfig() != entityConfig) {

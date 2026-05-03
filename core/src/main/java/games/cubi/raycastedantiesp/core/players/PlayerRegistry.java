@@ -25,6 +25,13 @@ public class PlayerRegistry {
         playerDataMap.putIfAbsent(playerUUID, new PlayerData(playerUUID, hasBypassPermission, joinTick));
     }
 
+    /** Forcefully registers a player and returns the new PlayerData, even if they were already registered.**/
+    public PlayerData registerAndGetPlayer(UUID playerUUID, int joinTick) {
+        PlayerData newData = new PlayerData(playerUUID, joinTick);
+        playerDataMap.put(playerUUID, newData);
+        return newData;
+    }
+
     public PlayerData registerAndGetPlayer(UUID playerUUID, boolean hasBypassPermission, int joinTick) {
         PlayerData newData = new PlayerData(playerUUID, hasBypassPermission, joinTick);
         PlayerData existingData = playerDataMap.putIfAbsent(playerUUID, newData);
