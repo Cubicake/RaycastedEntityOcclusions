@@ -233,32 +233,34 @@ public abstract class PacketEntityViewController<P> {
     abstract NettyEntityLocatable<?,?,?,?> trackEntitySpawn(PlayerData playerData, P packet, UUID world, int currentTick, EntityLocatable.SpawnType spawnType);
 
     /**   @return The entity ID of the entity   */
-    abstract int processRelativeMovePacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processRelativeMovePacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processRelativeMoveAndRotationPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processRelativeMoveAndRotationPacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processTeleportPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processTeleportPacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processPositionSyncPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processPositionSyncPacket(P packet, PlayerData playerData, int currentTick);
+
+    protected abstract void cachePacket(P packet, int entityID, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int cachePacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processRotationPacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processRotationPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processHeadLookPacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processHeadLookPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processEntityVelocityPacket(P packet, PlayerData playerData, int currentTick);
 
     /**   @return The entity ID of the entity   */
-    abstract int processEntityVelocityPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract int processEntityPassengersPacket(P packet, PlayerData playerData, int currentTick);
 
-    /**   @return The entity ID of the entity   */
-    abstract int processEntityPassengersPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract void processDestroyEntitiesPacket(P packet, PlayerData playerData, int currentTick);
 
-    /**   @return The entity ID of the entity   */
-    abstract int processDestroyEntitiesPacket(P packet, PlayerData playerData, int currentTick);
+    protected abstract void insertEntityToPlayerView(NettyEntityLocatable<?,?,?,?> entity, PlayerData playerData);
+
+    protected abstract void insertEntityToEntityView(NettyEntityLocatable<?,?,?,?> entity, PlayerData playerData);
 }
