@@ -1,11 +1,9 @@
 package games.cubi.raycastedantiesp.core.view.controller;
 
 import games.cubi.logs.Logger;
-import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.config.raycast.EntityConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.PlayerConfig;
 import games.cubi.raycastedantiesp.core.config.raycast.RaycastConfig;
-import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.raycastedantiesp.core.locatables.NettyEntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;
@@ -29,17 +27,20 @@ public abstract class PacketEntityViewController<P> {
             Logger.error(new RuntimeException("World null when handling spawn living entity packet, uuid=" + playerData.getPlayerUUID() + " tick=" + currentTick), 2, PacketEntityViewController.class);
             return true;
         }
-        NettyEntityLocatable<?,?,?,?> entity = trackEntitySpawn(playerData, packet, world, currentTick, EntityLocatable.SpawnType.LIVING);
+        NettyEntityLocatable<?,?,?,?> entity = processLivingEntitySpawn(playerData, packet, world, currentTick);
 
-        if (!entity.visible() && entityConfig.enabled()) {
+        if (entityConfig.enabled()) {
             double distanceSquared = playerData.ownLocation().distanceSquared(entity);
             if (distanceSquared > hideOnSpawnEntityDistanceSquared) {
+                entity.setVisible(false);
                 entity.setClientVisible(false);
+                insertEntityToEntityView(entity, playerData);
                 return true;
             }
         } else {
             entity.setClientVisible(true);
         }
+        insertEntityToEntityView(entity, playerData);
         return false;
     }
     /**
@@ -51,17 +52,20 @@ public abstract class PacketEntityViewController<P> {
             return true;
         }
 
-        NettyEntityLocatable<?,?,?,?> entity = trackEntitySpawn(playerData, packet, world, currentTick, EntityLocatable.SpawnType.ENTITY);
+        NettyEntityLocatable<?,?,?,?> entity = processEntitySpawn(playerData, packet, world, currentTick);
 
-        if (!entity.visible() && entityConfig.enabled()) {
+        if (entityConfig.enabled()) {
             double distanceSquared = playerData.ownLocation().distanceSquared(entity);
             if (distanceSquared > hideOnSpawnEntityDistanceSquared) {
+                entity.setVisible(false);
                 entity.setClientVisible(false);
+                insertEntityToEntityView(entity, playerData);
                 return true;
             }
         } else {
             entity.setClientVisible(true);
         }
+        insertEntityToEntityView(entity, playerData);
         return false;
     }
     /**
@@ -72,17 +76,20 @@ public abstract class PacketEntityViewController<P> {
             Logger.error(new RuntimeException("World null when handling spawn painting packet, uuid=" + playerData.getPlayerUUID() + " tick=" + currentTick), 2, PacketEntityViewController.class);
             return true;
         }
-        NettyEntityLocatable<?,?,?,?> entity = trackEntitySpawn(playerData, packet, world, currentTick, EntityLocatable.SpawnType.PAINTING);
+        NettyEntityLocatable<?,?,?,?> entity = processPaintingSpawn(playerData, packet, world, currentTick);
 
-        if (!entity.visible() && entityConfig.enabled()) {
+        if (entityConfig.enabled()) {
             double distanceSquared = playerData.ownLocation().distanceSquared(entity);
             if (distanceSquared > hideOnSpawnEntityDistanceSquared) {
+                entity.setVisible(false);
                 entity.setClientVisible(false);
+                insertEntityToEntityView(entity, playerData);
                 return true;
             }
         } else {
             entity.setClientVisible(true);
         }
+        insertEntityToEntityView(entity, playerData);
         return false;
     }
     /**
@@ -93,17 +100,20 @@ public abstract class PacketEntityViewController<P> {
             Logger.error(new RuntimeException("World null when handling spawn player packet, uuid=" + playerData.getPlayerUUID() + " tick=" + currentTick), 2, PacketEntityViewController.class);
             return true;
         }
-        NettyEntityLocatable<?,?,?,?> entity = trackEntitySpawn(playerData, packet, world, currentTick, EntityLocatable.SpawnType.PLAYER);
+        NettyEntityLocatable<?,?,?,?> entity = processPlayerSpawn(playerData, packet, world, currentTick);
 
-        if (!entity.visible() && playerConfig.enabled()) {
+        if (playerConfig.enabled()) {
             double distanceSquared = playerData.ownLocation().distanceSquared(entity);
             if (distanceSquared > hideOnSpawnPlayerDistanceSquared) {
+                entity.setVisible(false);
                 entity.setClientVisible(false);
+                insertEntityToPlayerView(entity, playerData);
                 return true;
             }
         } else {
             entity.setClientVisible(true);
         }
+        insertEntityToPlayerView(entity, playerData);
         return false;
     }
     /**
@@ -151,29 +161,39 @@ public abstract class PacketEntityViewController<P> {
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */
-    protected boolean handleEntityMetadata(P packet, PlayerData playerData, int currentTick) {
-        int entityID = cachePacket(packet, playerData, currentTick);
+    protected boolean handleEntityMetadata(P packet, int entityID, PlayerData playerData, int currentTick) {
+        cachePacket(packet, entityID, playerData, currentTick);
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
+    /**
+     * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
+     */
+    protected boolean handleRemoveEntityEffect(P packet, int entityID, PlayerData playerData, int currentTick) {
+        cachePacket(packet, entityID, playerData, currentTick);
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
+    /**
+     * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
+     */
+    protected boolean handleEntityEquipment(P packet, int entityID, PlayerData playerData, int currentTick) {
+        cachePacket(packet, entityID, playerData, currentTick);
         return cancelIfEnabledAndHidden(entityID, playerData);
     }
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */
-    protected boolean handleEntityEquipment(P packet, PlayerData playerData, int currentTick) {
-        int entityID = cachePacket(packet, playerData, currentTick);
+    protected boolean handleEntityVelocity(P packet, int entityID, PlayerData playerData, int currentTick) {
+        processEntityVelocityPacket(packet, playerData, currentTick);
+        cachePacket(packet, entityID, playerData, currentTick); //todo: may be wrong?
         return cancelIfEnabledAndHidden(entityID, playerData);
     }
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */
-    protected boolean handleEntityVelocity(P packet, PlayerData playerData, int currentTick) {
-        int entityID = processEntityVelocityPacket(packet, playerData, currentTick);
-        return cancelIfEnabledAndHidden(entityID, playerData);
-    }
-    /**
-     * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
-     */
-    protected boolean handleEntityEffect(P packet, PlayerData playerData, int currentTick) {
-        int entityID = cachePacket(packet, playerData, currentTick);
+    protected boolean handleEntityEffect(P packet, int entityID, PlayerData playerData, int currentTick) {
+        cachePacket(packet, entityID, playerData, currentTick);
         return cancelIfEnabledAndHidden(entityID, playerData);
     }
     /**
@@ -183,12 +203,9 @@ public abstract class PacketEntityViewController<P> {
         int entityID = processEntityPassengersPacket(packet, playerData, currentTick);
         return cancelIfEnabledAndHidden(entityID, playerData);
     }
-    /**
-     * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
-     */
-    protected boolean handleDestroyEntities(P packet, PlayerData playerData, int currentTick) {
-        int entityID = processDestroyEntitiesPacket(packet, playerData, currentTick);
-        return cancelIfEnabledAndHidden(entityID, playerData);
+
+    protected void handleDestroyEntities(P packet, PlayerData playerData, int currentTick) {
+        processDestroyEntitiesPacket(packet, playerData, currentTick);
     }
 
     /**
@@ -206,6 +223,14 @@ public abstract class PacketEntityViewController<P> {
         return null;
     }
 
+    protected NettyEntityLocatable<?,?,?,?> entityFromID(int entityID, PlayerData playerData) {
+        EntityView<?> entityView = viewFromEntityID(entityID, playerData);
+        if (entityView == null) {
+            return null;
+        }
+        return (NettyEntityLocatable<?, ?, ?, ?>) entityView.getEntity(entityID);
+    }
+
     protected RaycastConfig getCorrectConfig(EntityView<?> entityView) {
         if (entityView.isPlayerView()) {
             return playerConfig;
@@ -220,6 +245,11 @@ public abstract class PacketEntityViewController<P> {
     protected boolean cancelIfEnabledAndHidden(int entityID, PlayerData playerData) {
         EntityView<?> entityView = viewFromEntityID(entityID, playerData);
 
+        if (entityView == null) {
+            Logger.error("Checked if packet for entity should be cancelled, but entity did not exist. ID: " + entityID + " for player: " + playerData.getPlayerUUID(), 2, PacketEntityViewController.class);
+            return true;
+        }
+
         if (entityView.isVisible(entityID)) {
             return false;
         }
@@ -228,9 +258,24 @@ public abstract class PacketEntityViewController<P> {
     }
 
     /**
-     * @return The created entity.
+     * @return The created entity, with a default visibility of <code>true</code>. Does not insert the entity into any views, that is the responsibility of the caller.
      */
-    abstract NettyEntityLocatable<?,?,?,?> trackEntitySpawn(PlayerData playerData, P packet, UUID world, int currentTick, EntityLocatable.SpawnType spawnType);
+    protected abstract NettyEntityLocatable<?,?,?,?> processLivingEntitySpawn(PlayerData playerData, P packet, UUID world, int currentTick);
+
+    /**
+     * @return The created entity, with a default visibility of <code>true</code>. Does not insert the entity into any views, that is the responsibility of the caller.
+     */
+    protected abstract NettyEntityLocatable<?,?,?,?> processEntitySpawn(PlayerData playerData, P packet, UUID world, int currentTick);
+
+    /**
+     * @return The created entity, with a default visibility of <code>true</code>. Does not insert the entity into any views, that is the responsibility of the caller.
+     */
+    protected abstract NettyEntityLocatable<?,?,?,?> processPaintingSpawn(PlayerData playerData, P packet, UUID world, int currentTick);
+
+    /**
+     * @return The created entity, with a default visibility of <code>true</code>. Does not insert the entity into any views, that is the responsibility of the caller.
+     */
+    protected abstract NettyEntityLocatable<?,?,?,?> processPlayerSpawn(PlayerData playerData, P packet, UUID world, int currentTick);
 
     /**   @return The entity ID of the entity   */
     protected abstract int processRelativeMovePacket(P packet, PlayerData playerData, int currentTick);

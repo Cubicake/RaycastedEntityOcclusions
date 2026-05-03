@@ -8,33 +8,15 @@ import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.Equipment;
 import com.github.retrooper.packetevents.protocol.player.User;
 import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
-import com.github.retrooper.packetevents.protocol.world.Direction;
-import com.github.retrooper.packetevents.protocol.world.PaintingType;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerDestroyEntities;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEffect;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityEquipment;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityPositionSync;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRelativeMove;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRelativeMoveAndRotation;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRotation;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityTeleport;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityVelocity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoRemove;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfoUpdate;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSetPassengers;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnEntity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPainting;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
+import com.github.retrooper.packetevents.wrapper.play.server.*;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.locatables.Locatable;
 import games.cubi.logs.Logger;
+import games.cubi.raycastedantiesp.core.locatables.NettyEntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.EntityViewTransition;
@@ -42,7 +24,6 @@ import games.cubi.raycastedantiesp.core.view.controller.PacketEntityViewControll
 import games.cubi.raycastedantiesp.packetevents.locatables.PacketEventsEntity;
 import games.cubi.raycastedantiesp.packetevents.replaydata.PacketEventsEntityReplayData;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -138,71 +119,81 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         }
     }*/
 
+    final boolean REQUIRE_EVENT_CANCELLATION = true; //code readability helper constant
+
     private void handleEntityPackets(PacketSendEvent event, User viewer, PlayerData playerData, UUID world, int currentTick) {
         switch (event.getPacketType()) {
             case PacketType.Play.Server.SPAWN_LIVING_ENTITY -> {
-                if (handleLivingEntitySpawn(new WrapperPlayServerSpawnLivingEntity(event), playerData, world, currentTick))
+                if (handleLivingEntitySpawn(new WrapperPlayServerSpawnLivingEntity(event), playerData, world, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.SPAWN_ENTITY -> {
-                if (handleEntitySpawn(new WrapperPlayServerSpawnEntity(event), playerData, world, currentTick))
+                if (handleEntitySpawn(new WrapperPlayServerSpawnEntity(event), playerData, world, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.SPAWN_PAINTING -> {
-                if (handlePaintingSpawn(new WrapperPlayServerSpawnPainting(event), playerData, world, currentTick))
+                if (handlePaintingSpawn(new WrapperPlayServerSpawnPainting(event), playerData, world, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.SPAWN_PLAYER -> {
-                if (handlePlayerSpawn(new WrapperPlayServerSpawnPlayer(event), playerData, world, currentTick))
+                if (handlePlayerSpawn(new WrapperPlayServerSpawnPlayer(event), playerData, world, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_RELATIVE_MOVE -> {
-                if (handleRelativeMove(new WrapperPlayServerEntityRelativeMove(event), playerData, currentTick))
+                if (handleRelativeMove(new WrapperPlayServerEntityRelativeMove(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_RELATIVE_MOVE_AND_ROTATION -> {
-                if (handleRelativeMoveAndRotation(new WrapperPlayServerEntityRelativeMoveAndRotation(event), playerData, currentTick))
+                if (handleRelativeMoveAndRotation(new WrapperPlayServerEntityRelativeMoveAndRotation(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_TELEPORT -> {
-                if (handleTeleport(new WrapperPlayServerEntityTeleport(event), playerData, currentTick))
+                if (handleTeleport(new WrapperPlayServerEntityTeleport(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_POSITION_SYNC -> {
-                if (handlePositionSync(new WrapperPlayServerEntityPositionSync(event), playerData, currentTick))
+                if (handlePositionSync(new WrapperPlayServerEntityPositionSync(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_ROTATION -> {
-                if (handleEntityRotation(new WrapperPlayServerEntityRotation(event), playerData, currentTick))
+                if (handleEntityRotation(new WrapperPlayServerEntityRotation(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_HEAD_LOOK -> {
-                if (handleEntityHeadLook(new WrapperPlayServerEntityHeadLook(event), playerData, currentTick))
+                if (handleEntityHeadLook(new WrapperPlayServerEntityHeadLook(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_METADATA -> {
-                if (handleEntityMetadata(new WrapperPlayServerEntityMetadata(event), playerData, currentTick))
+                WrapperPlayServerEntityMetadata packet = new WrapperPlayServerEntityMetadata(event);
+                if (handleEntityMetadata(packet, packet.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
+                    event.setCancelled(true);
+            }
+            case PacketType.Play.Server.REMOVE_ENTITY_EFFECT -> {
+                WrapperPlayServerRemoveEntityEffect packet = new WrapperPlayServerRemoveEntityEffect(event);
+                if (handleRemoveEntityEffect(packet, packet.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_EQUIPMENT -> {
-                if (handleEntityEquipment(new WrapperPlayServerEntityEquipment(event), playerData, currentTick))
+                WrapperPlayServerEntityEquipment packet = new WrapperPlayServerEntityEquipment(event);
+                if (handleEntityEquipment(packet, packet.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_VELOCITY -> {
-                if (handleEntityVelocity(new WrapperPlayServerEntityVelocity(event), playerData, currentTick))
+                WrapperPlayServerEntityVelocity packet = new WrapperPlayServerEntityVelocity(event);
+                if (handleEntityVelocity(packet, packet.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.ENTITY_EFFECT -> {
-                if (handleEntityEffect(new WrapperPlayServerEntityEffect(event), playerData, currentTick))
+                WrapperPlayServerEntityEffect packet = new WrapperPlayServerEntityEffect(event);
+                if (handleEntityEffect(packet, packet.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.SET_PASSENGERS -> {
-                if (handleEntityPassengers(new WrapperPlayServerSetPassengers(event), playerData, currentTick))
+                if (handleEntityPassengers(new WrapperPlayServerSetPassengers(event), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.DESTROY_ENTITIES -> {
-                if (handleDestroyEntities(new WrapperPlayServerDestroyEntities(event), playerData, currentTick))
-                    event.setCancelled(true);
+                handleDestroyEntities(new WrapperPlayServerDestroyEntities(event), playerData, currentTick);
             }
             default -> {}
         }
@@ -235,7 +226,9 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
             } else {
                 entity.setClientVisible(true);
             }
-        } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY) {
+        }
+
+        else if (event.getPacketType() == PacketType.Play.Server.SPAWN_ENTITY) {
             if (world == null) {
                 return;
             }
@@ -357,226 +350,214 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         }
     }*/
 
-    private PacketEventsEntity trackEntitySpawn(
-            EntityView<PacketEventsEntity> entityView,
-            UUID entityUUID,
-            int entityID,
-            UUID world,
-            double x,
-            double y,
-            double z,
-            Locatable playerLocation,
-            EntityLocatable.SpawnType spawnType,
-            EntityType entityType
-    ) {
-        if (entityUUID == null) return null;
-
-        double distanceSquared = playerLocation != null ? playerLocation.distanceSquared(x, y, z) : 0;
-        boolean visible;
-
-        if (spawnType == EntityLocatable.SpawnType.PLAYER) {
-            visible = distanceSquared <= hideOnSpawnPlayerDistanceSquared;
-        } else {
-            visible = distanceSquared <= hideOnSpawnEntityDistanceSquared;
-        }
-
-        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, entityType, visible);
-        entityView.insertEntity(entity);
-
-        //entity.setLastChecked(currentTick); //test that this is safe to remove
-        ensureReplayData(entity);
-        return entity;
-    }
-
-    private PacketEventsEntity trackEntitySpawn(
-            EntityView<PacketEventsEntity> entityView,
-            UUID entityUUID,
-            int entityID,
-            UUID world,
-            double x,
-            double y,
-            double z,
-            Locatable playerLocation,
-            EntityLocatable.SpawnType spawnType,
-            PaintingType paintingType,
-            Direction paintingDirection
-    ) {
-        if (entityUUID == null) return null;
-
-        double distanceSquared = playerLocation != null ? playerLocation.distanceSquared(x, y, z) : 0;
-        boolean visible;
-
-        if (spawnType == EntityLocatable.SpawnType.PLAYER) {
-            visible = distanceSquared <= hideOnSpawnPlayerDistanceSquared;
-        } else {
-            visible = distanceSquared <= hideOnSpawnEntityDistanceSquared;
-        }
-
-        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, paintingType, paintingDirection, visible);
-        entityView.insertEntity(entity);
-
-        //entity.setLastChecked(currentTick); //test that this is safe to remove
-        ensureReplayData(entity);
-        return entity;
-    }
-
-    private void handleRelativeMove(PacketSendEvent event, PlayerData playerData, int entityID, double deltaX, double deltaY, double deltaZ, boolean onGround, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, entityID);
-        if (lookup == null) {
-            return;
-        }
-        lookup.view().moveRelative(entityID, deltaX, deltaY, deltaZ, currentTick);
-        lookup.entity().setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private void handleRelativeMoveAndRotation(
-            PacketSendEvent event,
-            PlayerData playerData,
-            int entityID,
-            double deltaX,
-            double deltaY,
-            double deltaZ,
-            float yaw,
-            float pitch,
-            boolean onGround,
-            int currentTick
-    ) {
-        EntityLookup lookup = lookupEntity(playerData, entityID);
-        if (lookup == null) {
-            return;
-        }
-        lookup.view().moveRelative(entityID, deltaX, deltaY, deltaZ, currentTick);
-        lookup.entity().setYaw(yaw).setPitch(pitch).setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private void handleTeleport(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityTeleport packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
-        }
-        lookup.view().moveAbsolute(packet.getEntityId(), packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), currentTick);
-        lookup.entity()
+    @Override
+    protected NettyEntityLocatable<?,?,?,?> processLivingEntitySpawn(PlayerData playerData, PacketWrapper<?> packetWrapper, UUID world, int currentTick) {
+        WrapperPlayServerSpawnLivingEntity packet = (WrapperPlayServerSpawnLivingEntity) packetWrapper;
+        PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getEntityUUID(), packet.getEntityId(), world,
+                packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.LIVING, packet.getEntityType());
+        entity
                 .setYaw(packet.getYaw())
                 .setPitch(packet.getPitch())
-                .setVelocity(packet.getDeltaMovement().getX(), packet.getDeltaMovement().getY(), packet.getDeltaMovement().getZ())
-                .setOnGround(packet.isOnGround());
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+                .setHeadYaw(packet.getHeadPitch())
+                .setVelocity(packet.getVelocity().getX(), packet.getVelocity().getY(), packet.getVelocity().getZ())
+                .setMetadata(copyEntityMetadata(packet.getEntityMetadata()));
+        return entity;
     }
 
-    private void handlePositionSync(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityPositionSync packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getId());
-        if (lookup == null) {
+    @Override
+    protected NettyEntityLocatable<?,?,?,?> processEntitySpawn(PlayerData playerData, PacketWrapper<?> packetWrapper, UUID world, int currentTick) {
+        WrapperPlayServerSpawnEntity packet = (WrapperPlayServerSpawnEntity) packetWrapper;
+        if (packet.getUUID().isEmpty()) {
+            Logger.errorAndReturn(new RuntimeException("Entity UUID null when handling spawn entity packet, id=" + packet.getEntityId() + " tick=" + currentTick), 2, PacketEventsEntityViewController.class);
+            return null;
+        }
+        UUID entityUUID = packet.getUUID().get();
+
+        PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), entityUUID, packet.getEntityId(), world,
+                packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.ENTITY, packet.getEntityType());
+        Vector3d velocity = packet.getVelocity().orElseGet(Vector3d::zero);
+        entity.setEntityData(packet.getData())
+                .setYaw(packet.getYaw())
+                .setPitch(packet.getPitch())
+                .setHeadYaw(packet.getHeadYaw())
+                .setVelocity(velocity.getX(), velocity.getY(), velocity.getZ());
+        return entity;
+    }
+
+    @Override
+    protected NettyEntityLocatable<?,?,?,?> processPaintingSpawn(PlayerData playerData, PacketWrapper<?> packetWrapper, UUID world, int currentTick) {
+        WrapperPlayServerSpawnPainting packet = (WrapperPlayServerSpawnPainting) packetWrapper;
+        PacketEventsEntity entity = new PacketEventsEntity(world, packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), packet.getEntityId(), packet.getUUID(), EntityLocatable.SpawnType.PAINTING, packet.getType().orElse(null), packet.getDirection(), true);
+        ensureReplayData(entity);
+        return entity;
+    }
+
+    @Override
+    protected NettyEntityLocatable<?,?,?,?> processPlayerSpawn(PlayerData playerData, PacketWrapper<?> packetWrapper, UUID world, int currentTick) {
+        WrapperPlayServerSpawnPlayer packet = (WrapperPlayServerSpawnPlayer) packetWrapper;
+        PacketEventsEntity entity = trackEntitySpawn(playerData.playerView().cast(), packet.getUUID(), packet.getEntityId(), world,
+                packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.PLAYER, null);
+        entity.setYaw(packet.getYaw())
+                .setPitch(packet.getPitch())
+                .setHeadYaw(packet.getYaw())
+                .setMetadata(copyEntityMetadata(packet.getEntityMetadata()));
+        return entity;
+    }
+
+    @Override
+    protected int processRelativeMovePacket(PacketWrapper<?> packetWrapper, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityRelativeMove packet = (WrapperPlayServerEntityRelativeMove) packetWrapper;
+        int entityID = packet.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received relative move packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
+        }
+        entity.add(packet.getDeltaX(), packet.getDeltaY(), packet.getDeltaZ());
+        entity.setOnGround(packet.isOnGround());
+
+        return entityID;
+    }
+
+    @Override
+    protected int processRelativeMoveAndRotationPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityRelativeMoveAndRotation packetWrapper = (WrapperPlayServerEntityRelativeMoveAndRotation) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received relative move and rotation packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
+        }
+        entity.add(packetWrapper.getDeltaX(), packetWrapper.getDeltaY(), packetWrapper.getDeltaZ());
+        entity.setYaw(packetWrapper.getYaw()).setPitch(packetWrapper.getPitch()).setOnGround(packetWrapper.isOnGround());
+
+        return entityID;
+    }
+
+    @Override
+    protected int processTeleportPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityTeleport packetWrapper = (WrapperPlayServerEntityTeleport) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received teleport packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
+        }
+        Vector3d position = packetWrapper.getPosition();
+        Vector3d velocity = packetWrapper.getDeltaMovement();
+        entity.set(position.getX(), position.getY(), position.getZ());
+        entity.setYaw(packetWrapper.getYaw()).setPitch(packetWrapper.getPitch()).setVelocity(velocity.x, velocity.y, velocity.z).setOnGround(packetWrapper.isOnGround());
+
+        return entityID;
+    }
+
+    @Override
+    protected int processPositionSyncPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityPositionSync packetWrapper = (WrapperPlayServerEntityPositionSync) packet;
+        int entityID = packetWrapper.getId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received position sync packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
+        }
+        Vector3d position = packetWrapper.getValues().getPosition();
+        Vector3d velocity = packetWrapper.getValues().getDeltaMovement();
+        entity.set(position.getX(), position.getY(), position.getZ());
+        entity.setYaw(packetWrapper.getValues().getYaw()).setPitch(packetWrapper.getValues().getPitch()).setVelocity(velocity.x, velocity.y, velocity.z).setOnGround(packetWrapper.isOnGround());
+
+        return entityID;
+    }
+
+    @Override
+    protected void cachePacket(PacketWrapper<?> packet, int entityID, PlayerData playerData, int currentTick) {
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Attempted to cache packet for unknown entity, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 2, PacketEventsEntityViewController.class);
             return;
         }
-        lookup.view().moveAbsolute(
-                packet.getId(),
-                packet.getValues().getPosition().getX(),
-                packet.getValues().getPosition().getY(),
-                packet.getValues().getPosition().getZ(),
-                currentTick
-        );
-        lookup.entity()
-                .setYaw(packet.getValues().getYaw())
-                .setPitch(packet.getValues().getPitch())
-                .setVelocity(packet.getValues().getDeltaMovement().getX(), packet.getValues().getDeltaMovement().getY(), packet.getValues().getDeltaMovement().getZ())
-                .setOnGround(packet.isOnGround());
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+        ensureReplayData((PacketEventsEntity) entity).addPacket(packet);
     }
 
-    private void handleRotation(PacketSendEvent event, PlayerData playerData, int entityID, float yaw, float pitch, boolean onGround, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, entityID);
-        if (lookup == null) {
-            return;
+    @Override
+    protected int processRotationPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityRotation packetWrapper = (WrapperPlayServerEntityRotation) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received rotation packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
         }
-        lookup.entity().setYaw(yaw).setPitch(pitch).setOnGround(onGround);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+        entity.setYaw(packetWrapper.getYaw()).setPitch(packetWrapper.getPitch()).setOnGround(packetWrapper.isOnGround());
+
+        return entityID;
     }
 
-    private void handleHeadLook(PacketSendEvent event, PlayerData playerData, int entityID, float headYaw, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, entityID);
-        if (lookup == null) {
-            return;
+    @Override
+    protected int processHeadLookPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityHeadLook packetWrapper = (WrapperPlayServerEntityHeadLook) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received head look packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
         }
-        lookup.entity().setHeadYaw(headYaw);
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+        entity.setHeadYaw(packetWrapper.getHeadYaw());
+
+        return entityID;
     }
 
-    private void handleEntityMetadata(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityMetadata packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
+    @Override
+    protected int processEntityVelocityPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerEntityVelocity packetWrapper = (WrapperPlayServerEntityVelocity) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received velocity packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
         }
-        lookup.entity().setMetadata(copyEntityMetadata(packet.getEntityMetadata()));
-        ensureReplayData(lookup.entity()).setMetadataPacket(copyEntityMetadataPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+        entity.setVelocity(packetWrapper.getVelocity().getX(), packetWrapper.getVelocity().getY(), packetWrapper.getVelocity().getZ());
+
+        return entityID;
     }
 
-    private void handleEntityEquipment(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityEquipment packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
+    @Override
+    protected int processEntityPassengersPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerSetPassengers packetWrapper = (WrapperPlayServerSetPassengers) packet;
+        int entityID = packetWrapper.getEntityId();
+
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Received set passengers packet for unknown entity, id=" + entityID, 2, PacketEventsEntityViewController.class);
+            return entityID;
         }
-        lookup.entity().setEquipment(copyEquipment(packet.getEquipment()));
-        ensureReplayData(lookup.entity()).setEquipmentPacket(copyEntityEquipmentPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
+        entity.setPassengerIDs(packetWrapper.getPassengers().clone());
+
+        return entityID;
     }
 
-    private void handleEntityVelocity(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityVelocity packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
+    @Override
+    protected void processDestroyEntitiesPacket(PacketWrapper<?> packet, PlayerData playerData, int currentTick) {
+        WrapperPlayServerDestroyEntities packetWrapper = (WrapperPlayServerDestroyEntities) packet;
+        for (int entityID : packetWrapper.getEntityIds()) {
+            EntityView<?> entityView = viewFromEntityID(entityID, playerData);
+            if (entityView == null) {
+                Logger.error("Could not find view for entity when processing destroy packet, id=" + entityID, 2, PacketEventsEntityViewController.class);
+                continue;
+            }
+            entityView.removeEntity(entityID, currentTick);
         }
-        lookup.entity().setVelocity(packet.getVelocity().getX(), packet.getVelocity().getY(), packet.getVelocity().getZ());
-        ensureReplayData(lookup.entity()).setVelocityPacket(copyEntityVelocityPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
-    }
 
-    private void handleEntityEffect(PacketSendEvent event, PlayerData playerData, WrapperPlayServerEntityEffect packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
-        }
-        ensureReplayData(lookup.entity()).addEffectPacket(copyEffectPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private void handleEntityPassengers(PacketSendEvent event, PlayerData playerData, WrapperPlayServerSetPassengers packet, int currentTick) {
-        EntityLookup lookup = lookupEntity(playerData, packet.getEntityId());
-        if (lookup == null) {
-            return;
-        }
-        lookup.entity().setPassengerIDs(packet.getPassengers().clone());
-        ensureReplayData(lookup.entity()).setPassengersPacket(copySetPassengersPacket(packet));
-        if (!lookup.view().isVisible(lookup.entity().entityUUID(), currentTick)) {
-            event.setCancelled(true);
-        }
-    }
-
-    private void handleDestroyEntities(PacketSendEvent event, User viewer, PlayerData playerData, WrapperPlayServerDestroyEntities packet, int currentTick) {
+        /* I think this old logic is wrong
         List<Integer> remaining = new ArrayList<>();
-        for (int entityID : packet.getEntityIds()) {
+        WrapperPlayServerDestroyEntities packetWrapper = (WrapperPlayServerDestroyEntities) packet;
+        for (int entityID : packetWrapper.getEntityIds()) {
 
             EntityLookup lookup = lookupEntity(playerData, entityID);
             if (lookup == null) {
@@ -600,7 +581,15 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         event.setCancelled(true);
         if (!remaining.isEmpty()) {
             viewer.sendPacketSilently(new WrapperPlayServerDestroyEntities(remaining.stream().mapToInt(Integer::intValue).toArray()));
-        }
+        }*/
+    }
+
+    private PacketEventsEntity trackEntitySpawn(EntityView<PacketEventsEntity> entityView, UUID entityUUID, int entityID, UUID world, double x, double y, double z,
+                                                Locatable playerLocation, EntityLocatable.SpawnType spawnType, EntityType entityType) {
+
+        PacketEventsEntity entity = new PacketEventsEntity(world, x, y, z, entityID, entityUUID, spawnType, entityType, true /*default value as this is handled in PacketEntityViewController*/);
+        ensureReplayData(entity);
+        return entity;
     }
 
     private void processEntityTransitions(UUID viewerUUID, User viewer, EntityView<PacketEventsEntity> entityView, boolean playerTargets) {
@@ -628,18 +617,6 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
                 }
             }
         }
-    }
-
-    private EntityLookup lookupEntity(PlayerData playerData, int entityID) {
-        PacketEventsEntity playerEntity = getTrackedEntity(cast(playerData.playerView()), entityID);
-        if (playerEntity != null) {
-            return new EntityLookup(playerEntity, playerData.playerView());
-        }
-        PacketEventsEntity entity = getTrackedEntity(cast(playerData.entityView()), entityID);
-        if (entity != null) {
-            return new EntityLookup(entity, playerData.entityView());
-        }
-        return null;
     }
 
     private PacketWrapper<?> buildSpawnPacket(PacketEventsEntity entity) {
@@ -761,6 +738,13 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         );
     }
 
+    private WrapperPlayServerRemoveEntityEffect copyRemoveEntityEffectPacket(WrapperPlayServerRemoveEntityEffect packet) {
+        return new WrapperPlayServerRemoveEntityEffect(
+                packet.getEntityId(),
+                packet.getPotionType()
+        );
+    }
+
     private PacketWrapper<?> copySpawnPacket(PacketWrapper<?> packet) {
         if (packet instanceof WrapperPlayServerSpawnLivingEntity living) {
             return new WrapperPlayServerSpawnLivingEntity(
@@ -854,31 +838,30 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         return replayData;
     }
 
-    private PacketEventsPlayerReplayData ensurePlayerReplayData(PacketEventsEntity entity) {
-        PacketEventsPlayerReplayData replayData = cast(entity.packetReplayData());
-        if (replayData == null) {
-            replayData = PacketEventsPlayerReplayData.create();
-            entity.setPacketReplayData(replayData);
-        }
-        return replayData;
-    }
-
     private void sendEntityShow(User viewer, PacketEventsEntity entity, PacketEventsEntityReplayData replayData, boolean playerTargets) {
-        if (playerTargets) {
-            PacketEventsPlayerReplayData data = replayData.asPlayerReplayData();
-            for (WrapperPlayServerPlayerInfoUpdate playerInfoUpdate : data.playerInfoUpdates()) {
-                viewer.writePacketSilently(playerInfoUpdate);
-            }
-        }
-
         viewer.writePacketSilently(buildSpawnPacket(entity));
         sendEntityAbsoluteCorrection(viewer, entity);
-        common.writeIfPresent(viewer, replayData.metadataPacket() != null ? replayData.metadataPacket() : buildMetadataPacket(entity));
-        common.writeIfPresent(viewer, replayData.equipmentPacket() != null ? replayData.equipmentPacket() : buildEquipmentPacket(entity));
-        common.writeIfPresent(viewer, replayData.velocityPacket() != null ? replayData.velocityPacket() : buildVelocityPacket(entity));
-        common.writeIfPresent(viewer, replayData.passengersPacket() != null ? replayData.passengersPacket() : buildPassengersPacket(entity));
-        for (WrapperPlayServerEntityEffect effectPacket : replayData.effectPackets()) {
-            viewer.writePacketSilently(effectPacket);
+        for (PacketWrapper<?> cachedPacket : replayData.getPackets()) {
+            //viewer.writePacketSilently(cachedPacket);
+            if (cachedPacket.getClass() == WrapperPlayServerEntityMetadata.class) {
+                WrapperPlayServerEntityMetadata metadataPacket = copyEntityMetadataPacket((WrapperPlayServerEntityMetadata) cachedPacket);
+                viewer.writePacketSilently(metadataPacket);
+            } else if (cachedPacket.getClass() == WrapperPlayServerEntityEquipment.class) {
+                WrapperPlayServerEntityEquipment equipmentPacket = copyEntityEquipmentPacket((WrapperPlayServerEntityEquipment) cachedPacket);
+                viewer.writePacketSilently(equipmentPacket);
+            } else if (cachedPacket.getClass() == WrapperPlayServerSetPassengers.class) {
+                WrapperPlayServerSetPassengers passengersPacket = copySetPassengersPacket((WrapperPlayServerSetPassengers) cachedPacket);
+                viewer.writePacketSilently(passengersPacket);
+            } else if (cachedPacket.getClass() == WrapperPlayServerEntityVelocity.class) {
+                WrapperPlayServerEntityVelocity velocityPacket = copyEntityVelocityPacket((WrapperPlayServerEntityVelocity) cachedPacket);
+                viewer.writePacketSilently(velocityPacket);
+            } else if (cachedPacket.getClass() == WrapperPlayServerEntityEffect.class) {
+                viewer.writePacketSilently(copyEffectPacket((WrapperPlayServerEntityEffect) cachedPacket));
+            } else if (cachedPacket.getClass() == WrapperPlayServerRemoveEntityEffect.class) {
+                viewer.writePacketSilently(copyRemoveEntityEffectPacket((WrapperPlayServerRemoveEntityEffect) cachedPacket));
+            } else {
+                Logger.warning("Unsupported cached packet type for replay: " + cachedPacket.getClass().getName(), 2, PacketEventsEntityViewController.class);
+            }
         }
     }
 
@@ -898,8 +881,11 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         viewer.writePacketSilently(new WrapperPlayServerEntityHeadLook(entity.entityID(), entity.headYaw()));
     }
 
-    private record EntityLookup(
-            PacketEventsEntity entity,
-            EntityView<?> view
-    ) {}
+    protected void insertEntityToPlayerView(NettyEntityLocatable<?,?,?,?> entity, PlayerData playerData) {
+        playerData.playerView().insertEntity(entity.cast());
+    }
+
+    protected void insertEntityToEntityView(NettyEntityLocatable<?,?,?,?> entity, PlayerData playerData) {
+        playerData.entityView().insertEntity(entity.cast()); //todo: no need to put here, move to abstract packet view controller
+    }
 }
