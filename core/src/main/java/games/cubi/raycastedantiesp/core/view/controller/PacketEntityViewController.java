@@ -7,6 +7,7 @@ import games.cubi.raycastedantiesp.core.config.raycast.RaycastConfig;
 import games.cubi.raycastedantiesp.core.locatables.NettyEntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
+import games.cubi.raycastedantiesp.core.utils.Packet;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 
 import java.util.UUID;
@@ -58,6 +59,7 @@ public abstract class PacketEntityViewController<P> {
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */
+    @Packet(Packet.Packets.SPAWN_ENTITY)
     protected boolean handleEntitySpawn(P packet, PlayerData playerData, UUID world, int currentTick) {
         if (world == null) {
             Logger.error(new RuntimeException("World null when handling spawn entity packet, uuid=" + playerData.getPlayerUUID() + " tick=" + currentTick), 2, PacketEntityViewController.class);
@@ -80,6 +82,22 @@ public abstract class PacketEntityViewController<P> {
         insertEntityToEntityView(entity, playerData);
         return false;
     }
+
+    @Packet(Packet.Packets.ENTITY_ANIMATION)
+    protected boolean handleEntityAnimation(int entityID, PlayerData playerData) {
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
+    @Packet(Packet.Packets.ENTITY_EVENT)
+    protected boolean handleEntityEvent(int entityID, PlayerData playerData) {
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
+    @Packet(Packet.Packets.HURT_ANIMATION)
+    protected boolean handleHurtAnimation(int entityID, PlayerData playerData) {
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
     /**
      * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
      */

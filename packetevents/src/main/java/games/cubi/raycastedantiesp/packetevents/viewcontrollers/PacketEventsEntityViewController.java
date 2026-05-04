@@ -1,6 +1,5 @@
 package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
-import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
@@ -12,7 +11,6 @@ import com.github.retrooper.packetevents.protocol.teleport.RelativeFlag;
 import com.github.retrooper.packetevents.util.Vector3d;
 import com.github.retrooper.packetevents.util.Vector3i;
 import com.github.retrooper.packetevents.wrapper.PacketWrapper;
-import com.github.retrooper.packetevents.wrapper.login.server.WrapperLoginServerLoginSuccess;
 import com.github.retrooper.packetevents.wrapper.play.server.*;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
 import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
@@ -140,6 +138,18 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
             }
             case PacketType.Play.Server.SPAWN_ENTITY -> {
                 if (handleEntitySpawn(new WrapperPlayServerSpawnEntity(event), playerData, world, currentTick) == REQUIRE_EVENT_CANCELLATION)
+                    event.setCancelled(true);
+            }
+            case PacketType.Play.Server.ENTITY_ANIMATION -> {
+                if (handleEntityAnimation(new WrapperPlayServerEntityAnimation(event).getEntityId(), playerData) == REQUIRE_EVENT_CANCELLATION)
+                    event.setCancelled(true);
+            }
+            case PacketType.Play.Server.ENTITY_STATUS -> {
+                if (handleEntityEvent(new WrapperPlayServerEntityStatus(event).getEntityId(), playerData) == REQUIRE_EVENT_CANCELLATION)
+                    event.setCancelled(true);
+            }
+            case PacketType.Play.Server.HURT_ANIMATION -> {
+                if (handleHurtAnimation(new WrapperPlayServerHurtAnimation(event).getEntityId(), playerData) == REQUIRE_EVENT_CANCELLATION)
                     event.setCancelled(true);
             }
             case PacketType.Play.Server.SPAWN_PAINTING -> {
