@@ -15,6 +15,7 @@ public @interface Packet {
         ENTITY_ANIMATION("https://minecraft.wiki/w/Java_Edition_protocol/Packets#Entity_Animation", "WrapperPlayServerEntityAnimation"),
         ENTITY_EVENT("https://minecraft.wiki/w/Java_Edition_protocol/Packets#Entity_Event", "WrapperPlayServerEntityStatus"),
         HURT_ANIMATION("https://minecraft.wiki/w/Java_Edition_protocol/Packets#Hurt_Animation", "WrapperPlayServerHurtAnimation"),
+        UPDATE_ATTRIBUTES("https://minecraft.wiki/w/Java_Edition_protocol/Packets#Update_Attributes", "WrapperPlayServerUpdateAttributes"),
         ;
 
         Packets(String wikiURL, String PEName) {

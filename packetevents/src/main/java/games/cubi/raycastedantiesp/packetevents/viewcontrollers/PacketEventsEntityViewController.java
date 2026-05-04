@@ -216,6 +216,11 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
             case PacketType.Play.Server.DESTROY_ENTITIES -> {
                 handleDestroyEntities(new WrapperPlayServerDestroyEntities(event), playerData, currentTick);
             }
+            case PacketType.Play.Server.UPDATE_ATTRIBUTES -> {
+                WrapperPlayServerUpdateAttributes wrapper = new WrapperPlayServerUpdateAttributes(event);
+                if (handleAttributeUpdate(wrapper, wrapper.getEntityId(), playerData, currentTick) == REQUIRE_EVENT_CANCELLATION)
+                    event.setCancelled(true);
+            }
             default -> {}
         }
     }
@@ -891,6 +896,7 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         sendEntityAbsoluteCorrection(viewer, entity);
         for (PacketWrapper<?> cachedPacket : replayData.getPackets()) {
             //viewer.writePacketSilently(cachedPacket);
+
             if (cachedPacket.getClass() == WrapperPlayServerEntityMetadata.class) {
                 WrapperPlayServerEntityMetadata metadataPacket = copyEntityMetadataPacket((WrapperPlayServerEntityMetadata) cachedPacket);
                 viewer.writePacketSilently(metadataPacket);
@@ -907,7 +913,12 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
                 viewer.writePacketSilently(copyEffectPacket((WrapperPlayServerEntityEffect) cachedPacket));
             } else if (cachedPacket.getClass() == WrapperPlayServerRemoveEntityEffect.class) {
                 viewer.writePacketSilently(copyRemoveEntityEffectPacket((WrapperPlayServerRemoveEntityEffect) cachedPacket));
-            } else {
+            } else if (cachedPacket.getClass() == WrapperPlayServerUpdateAttributes.class) {
+                WrapperPlayServerUpdateAttributes existing = (WrapperPlayServerUpdateAttributes) cachedPacket;
+                WrapperPlayServerUpdateAttributes copy = new WrapperPlayServerUpdateAttributes(existing.getEntityId(), existing.getProperties());
+                viewer.writePacketSilently(copy);
+            }
+            else {
                 Logger.warning("Unsupported cached packet type for replay: " + cachedPacket.getClass().getName(), 2, PacketEventsEntityViewController.class);
             }
         }

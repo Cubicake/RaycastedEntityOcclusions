@@ -239,6 +239,14 @@ public abstract class PacketEntityViewController<P> {
     }
 
     /**
+     * @return Whether or not to cancel the packet event. <code>true</code> to cancel, <code>false</code> to do nothing.
+     */
+    protected boolean handleAttributeUpdate(P packet, int entityID, PlayerData playerData, int currentTick) {
+        cachePacket(packet, entityID, playerData, currentTick);
+        return cancelIfEnabledAndHidden(entityID, playerData);
+    }
+
+    /**
      * @return Either the entity or player view for this player, depending on the entity ID
      */
     protected EntityView<?> viewFromEntityID(int entityID, PlayerData playerData) {
