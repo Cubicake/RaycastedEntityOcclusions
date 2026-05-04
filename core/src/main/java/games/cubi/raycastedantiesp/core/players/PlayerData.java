@@ -2,10 +2,14 @@ package games.cubi.raycastedantiesp.core.players;
 
 import games.cubi.locatables.Locatable;
 import games.cubi.locatables.implementations.ThreadSafeLocatable;
+import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.view.BlockView;
 import games.cubi.raycastedantiesp.core.view.EntityView;
 import games.cubi.raycastedantiesp.core.view.ViewRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.UUID;
 
 public class PlayerData {
@@ -39,6 +43,34 @@ public class PlayerData {
 
     public EntityView<?> playerView() {
         return playerView;
+    }
+
+    private final Queue<Runnable> nettyTasks = new java.util.concurrent.ConcurrentLinkedQueue<>();
+
+    /**
+     * Schedules a task to run as soon as possible on the Netty thread for this player. The task will be run immediately when the next packet is sent to this player. Safe to call from any thread.
+     * @param task The task to run on the Netty thread for this player.
+     * @Appropriate_Calling_Threads All
+     */
+    public void runNettyTaskASAP(Runnable task) {
+        nettyTasks.add(task);
+    }
+
+    /**
+      * @Appropriate_Calling_Threads Netty thread associated with this player
+     */
+    public void runAllNettyTasks() {
+        List<Runnable> tasksToRun = new ArrayList<>();
+        for (Runnable task; (task = nettyTasks.poll()) != null; ) {
+            tasksToRun.add(task);
+        }
+        for (Runnable task : tasksToRun) {
+            try {
+                task.run();
+            } catch (Exception e) {
+                Logger.error("Error while running netty task for player " + playerUUID, e, 3, PlayerData.class);
+            }
+        }
     }
 
     public BlockView blockView() {
