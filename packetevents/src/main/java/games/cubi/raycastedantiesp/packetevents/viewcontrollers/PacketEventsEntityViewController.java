@@ -1,5 +1,6 @@
 package games.cubi.raycastedantiesp.packetevents.viewcontrollers;
 
+import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.protocol.entity.data.EntityData;
@@ -81,6 +82,7 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         int currentTick = currentTickSupplier.getAsInt();
 
         //handlePlayerInfoPackets(event, event.getUser(), playerData, world, currentTick);
+        playerData.runAllNettyTasks();
         handleEntityPackets(event, event.getUser(), playerData, world, currentTick);
 
         if (playerData.entityView().hasPendingTransitions()) {
@@ -366,6 +368,7 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
     @Override
     protected NettyEntityLocatable<?,?,?,?> processLivingEntitySpawn(PlayerData playerData, PacketWrapper<?> packetWrapper, UUID world, int currentTick) {
         WrapperPlayServerSpawnLivingEntity packet = (WrapperPlayServerSpawnLivingEntity) packetWrapper;
+        Logger.debug("SpawnLiv: " + packet.getEntityId());
         PacketEventsEntity entity = trackEntitySpawn(playerData.entityView().cast(), packet.getEntityUUID(), packet.getEntityId(), world,
                 packet.getPosition().getX(), packet.getPosition().getY(), packet.getPosition().getZ(), playerData.ownLocation(), EntityLocatable.SpawnType.LIVING, packet.getEntityType());
         entity
@@ -485,13 +488,31 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         return entityID;
     }
 
+
+
     @Override
     protected void cachePacket(PacketWrapper<?> packet, int entityID, PlayerData playerData, int currentTick) {
         NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
         if (entity == null) {
-            Logger.error("Attempted to cache packet for unknown entity, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 2, PacketEventsEntityViewController.class);
+            Logger.error("Attempted to cache packet for unknown entity, id=" + entityID + " packet=" + packet.getClass().getSimpleName() + ". Will attempt again.", 2, PacketEventsEntityViewController.class);
+            playerData.runNettyTaskASAP(() -> retryCachePacket(packet, entityID, playerData, 5));
             return;
         }
+        ensureReplayData((PacketEventsEntity) entity).addPacket(packet);
+    }
+
+    // yeah this is stupid but idk why packet order is off to begin with. For some reason, a WrapperPlayServerEntityEquipment was firing before the corresponding spawn packet, but only on first join. Adding delay allows the spawn packet to be handled first.
+    private void retryCachePacket(PacketWrapper<?> packet, int entityID, PlayerData playerData, int countDown) {
+        if (countDown > 0) {
+            playerData.runNettyTaskASAP(() -> retryCachePacket(packet, entityID, playerData, countDown - 1));
+            return;
+        }
+        NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
+        if (entity == null) {
+            Logger.error("Again failed to cache packet, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 2, PacketEventsEntityViewController.class);
+            return;
+        }
+        Logger.info("Successfully cached packet on retry attempt, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 5, PacketEventsEntityViewController.class);
         ensureReplayData((PacketEventsEntity) entity).addPacket(packet);
     }
 

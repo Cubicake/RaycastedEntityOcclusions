@@ -231,7 +231,7 @@ public abstract class PacketEntityViewController<P> {
         if (playerData.playerView().exists(entityID)) {
             return playerData.playerView();
         }
-        Logger.errorAndReturn(new RuntimeException("Could not find view for entityID=" + entityID + " uuid=" + playerData.getPlayerUUID()), 1, PacketEntityViewController.class);
+        Logger.warning("Could not find view for entityID=" + entityID + " uuid=" + playerData.getPlayerUUID(), 4, PacketEntityViewController.class);
         return null;
     }
 
