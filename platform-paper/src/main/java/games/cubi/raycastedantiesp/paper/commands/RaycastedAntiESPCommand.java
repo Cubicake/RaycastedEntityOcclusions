@@ -7,6 +7,7 @@ import games.cubi.locatables.MutableLocatable;
 import games.cubi.locatables.implementations.MutableLocatableImpl;
 import games.cubi.logs.Logger;
 import games.cubi.raycastedantiesp.core.config.ConfigManager;
+import games.cubi.raycastedantiesp.core.locatables.EntityLocatable;
 import games.cubi.raycastedantiesp.core.players.PlayerData;
 import games.cubi.raycastedantiesp.core.players.PlayerRegistry;
 import games.cubi.raycastedantiesp.core.raycast.RaycastUtil;
@@ -15,6 +16,7 @@ import games.cubi.raycastedantiesp.paper.RaycastedAntiESP;
 import games.cubi.raycastedantiesp.paper.UpdateChecker;
 import games.cubi.raycastedantiesp.paper.staging.PacketEventsPaperBlockInfoResolver;
 
+import io.github.retrooper.packetevents.util.SpigotConversionUtil;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 
 import net.strokkur.commands.*;
@@ -169,6 +171,17 @@ public class RaycastedAntiESPCommand {
             PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
             AbstractBlockView<?> pbsm = (AbstractBlockView<?>) playerData.blockView();
             player.sendMessage(pbsm.loadedChunkCount() +"chunks loaded");
+        }
+
+        @Executes("entity-id")
+        void getFromEntityID(int entityID, Player player) {
+            PlayerData playerData = PlayerRegistry.getInstance().getPlayerData(player.getUniqueId());
+            EntityLocatable<?, ?, ?, ?> entityLocatable = playerData.entityView().getEntity(entityID);
+            Entity bukkitEntity = SpigotConversionUtil.getEntityById(player.getWorld(), entityID);
+            player.sendRichMessage("Entity with ID " + entityID + ":");
+            player.sendRichMessage("According to Bukkit: " + bukkitEntity);
+            player.sendRichMessage("Bukkit type: " + bukkitEntity.getAsString());
+            player.sendRichMessage("According to PacketEvents: " + entityLocatable);
         }
 
         @DefaultExecutes
