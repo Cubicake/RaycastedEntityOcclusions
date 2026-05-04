@@ -504,7 +504,7 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
     protected void cachePacket(PacketWrapper<?> packet, int entityID, PlayerData playerData, int currentTick) {
         NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
         if (entity == null) {
-            Logger.error("Attempted to cache packet for unknown entity, id=" + entityID + " packet=" + packet.getClass().getSimpleName() + ". Will attempt again.", 2, PacketEventsEntityViewController.class);
+            Logger.error("Attempted to cache packet for unknown entity, id=" + entityID + " packet=" + packet.getClass().getSimpleName() + ". Will attempt again.", 6, PacketEventsEntityViewController.class);
             playerData.runNettyTaskASAP(() -> retryCachePacket(packet, entityID, playerData, 5));
             return;
         }
@@ -519,10 +519,10 @@ public abstract class PacketEventsEntityViewController extends PacketEntityViewC
         }
         NettyEntityLocatable<?,?,?,?> entity = entityFromID(entityID, playerData);
         if (entity == null) {
-            Logger.error("Again failed to cache packet, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 2, PacketEventsEntityViewController.class);
+            Logger.error("Failed to cache packet twice, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 2, PacketEventsEntityViewController.class);
             return;
         }
-        Logger.info("Successfully cached packet on retry attempt, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 5, PacketEventsEntityViewController.class);
+        Logger.info("Successfully cached packet on retry attempt, id=" + entityID + " packet=" + packet.getClass().getSimpleName(), 6, PacketEventsEntityViewController.class);
         ensureReplayData((PacketEventsEntity) entity).addPacket(packet);
     }
 

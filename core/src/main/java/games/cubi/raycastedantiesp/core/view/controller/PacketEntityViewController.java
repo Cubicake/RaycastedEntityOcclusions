@@ -249,7 +249,7 @@ public abstract class PacketEntityViewController<P> {
         if (playerData.playerView().exists(entityID)) {
             return playerData.playerView();
         }
-        Logger.warning("Could not find view for entityID=" + entityID + " uuid=" + playerData.getPlayerUUID(), 4, PacketEntityViewController.class);
+        Logger.warning("Could not find view for entityID=" + entityID + " uuid=" + playerData.getPlayerUUID(), 6, PacketEntityViewController.class);
         return null;
     }
 
@@ -276,7 +276,7 @@ public abstract class PacketEntityViewController<P> {
         EntityView<?> entityView = viewFromEntityID(entityID, playerData);
 
         if (entityView == null) {
-            Logger.error("Checked if packet for entity should be cancelled, but entity did not exist. ID: " + entityID + " for player: " + playerData.getPlayerUUID(), 2, PacketEntityViewController.class);
+            Logger.warning("Checked if packet for entity should be cancelled, but entity did not exist. ID: " + entityID + " for player: " + playerData.getPlayerUUID(), 6, PacketEntityViewController.class);
             return true;
         }
 
